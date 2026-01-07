@@ -1,0 +1,6 @@
+[submodule "cheff"]
+	path = cheff
+	url = https://github.com/Panaconda/chexray-diffusion.git
+[submodule "machex"]
+	path = machex
+	url = https://github.com/Panaconda/machex.git
