@@ -1,0 +1,29 @@
+#torch==1.11
+torchvision
+pytorch-lightning==1.6
+opencv-python-headless
+numba
+numpy==1.26.4
+albumentations
+pudb
+imageio
+imageio-ffmpeg
+omegaconf
+test-tube
+streamlit
+einops
+torch-fidelity
+transformers==4.26.1
+wandb
+kornia
+
+# Added dependencies for LoRA project
+peft==0.2.0
+torch==1.13.0
+
+# Local packages
+-e ./cheff
+
+# External repositories
+-e "git+https://github.com/CompVis/taming-transformers.git@master#egg=taming-transformers"
+-e "git+https://github.com/openai/CLIP.git@main#egg=clip"
