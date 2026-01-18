@@ -169,12 +169,17 @@ def main():
             
             # Super-resolution to 1024x1024
             print("         → Super-resolution (1024×1024)...", end=" ", flush=True)
-            image_hr = sr_model.sample(image_gray)  # Returns [1, 1, 1024, 1024]
+            image = sr_model.sample(
+                image_gray,
+                method='ddim',
+                sampling_steps=100,
+                eta=0.0
+            )
             print("✓")
             
             # Save image
             output_path = samples_dir / f"sample_{idx:03d}.png"
-            save_image(image_hr, output_path, normalize=True, value_range=(-1, 1))
+            save_image(image, output_path)
             print(f"         ✓ Saved to: {output_path}")
             
             # Track metadata
