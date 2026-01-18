@@ -71,35 +71,26 @@ def main():
     
     # Set default model paths if not specified
     if args.model_path is None:
-        args.model_path = 'trained_models/cheff_diff_t2i.pt'
+        args.model_path = '../trained_models/cheff_diff_t2i.pt'
     if args.ae_path is None:
-        args.ae_path = 'trained_models/cheff_autoencoder.pt'
+        args.ae_path = '../trained_models/cheff_autoencoder.pt'
     if args.sr_path is None:
-        args.sr_path = 'trained_models/cheff_sr_fine.pt'
+        args.sr_path = '../trained_models/cheff_sr_fine.pt'
     
     # Check if model files exist
     if args.model_path is None or not os.path.exists(args.model_path):
         print(f"Error: Diffusion model not found.")
-        print("Expected locations:")
-        print("  - cheff/trained_models/")
-        print("  - ../cheff-models/")
-        print("  - ~/cheff-starter/cheff-models/")
+        print("Expected location: cheff/trained_models/")
         return
     
     if args.ae_path is None or not os.path.exists(args.ae_path):
         print(f"Error: Autoencoder model not found.")
-        print("Expected locations:")
-        print("  - cheff/trained_models/")
-        print("  - ../cheff-models/")
-        print("  - ~/cheff-starter/cheff-models/")
+        print("Expected location: cheff/trained_models/")
         return
     
     if args.full_res and (args.sr_path is None or not os.path.exists(args.sr_path)):
         print(f"Error: SR model not found.")
-        print("Expected locations:")
-        print("  - cheff/trained_models/")
-        print("  - ../cheff-models/")
-        print("  - ~/cheff-starter/cheff-models/")
+        print("Expected location: cheff/trained_models/")
         return
     
     # Setup device
