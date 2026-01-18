@@ -16,13 +16,22 @@ This will:
 - Install PyTorch with CUDA support (auto-detected)
 - Install all dependencies from requirements.txt
 
-### 2. Download Pre-trained Models
+### 2. Upload Pre-trained Models
+
+Create a `cheff-starter/cheff-models/` directory and upload the model files:
 
 ```bash
-bash download_models.sh
+# On the GPU machine
+mkdir -p ~/cheff-starter/cheff-models
+
+# From your local machine
+scp cheff_autoencoder.pt ubuntu@<gpu-ip>:~/cheff-starter/cheff-models/
+scp cheff_diff_t2i.pt ubuntu@<gpu-ip>:~/cheff-starter/cheff-models/
+scp cheff_diff_uncond.pt ubuntu@<gpu-ip>:~/cheff-starter/cheff-models/
+scp cheff_sr_fine.pt ubuntu@<gpu-ip>:~/cheff-starter/cheff-models/
 ```
 
-Downloads all required models (~2.4GB total):
+Required models (~2.4GB total):
 - `cheff_autoencoder.pt` (~200MB) - VAE encoder/decoder
 - `cheff_diff_t2i.pt` (~900MB) - Text-to-image diffusion
 - `cheff_diff_uncond.pt` (~900MB) - Unconditional diffusion
@@ -30,7 +39,7 @@ Downloads all required models (~2.4GB total):
 
 ### 3. Generate Images
 
-Activate the environment and generate:
+The script automatically detects models from `~/cheff-starter/cheff-models/`:
 
 ```bash
 source venv/bin/activate

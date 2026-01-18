@@ -9,6 +9,23 @@ import torch
 from cheff import CheffLDMT2I, CheffSRModel
 from torchvision.utils import save_image
 import os
+from pathlib import Path
+
+def find_model_path(model_name):
+    """Find model in project root, parent directory, or sibling cheff-starter directory."""
+    # Check multiple common locations
+    search_paths = [
+        Path('trained_models') / model_name,  # Local: cheff/trained_models/
+        Path('../trained_models') / model_name,  # Project root: applied_dl/trained_models/
+        Path('../cheff-starter/cheff-models') / model_name,  # Sibling: ~/cheff-starter/cheff-models/
+        Path.home() / 'cheff-starter' / 'cheff-models' / model_name,  # Absolute: ~/cheff-starter/cheff-models/
+    ]
+    
+    for path in search_paths:
+        if path.exists():
+            return str(path.resolve())
+    
+    return None
 
 def main():
     parser = argparse.ArgumentParser(description='Generate chest X-ray from text prompt')
@@ -44,20 +61,20 @@ def main():
     parser.add_argument(
         '--model-path',
         type=str,
-        default='trained_models/cheff_diff_t2i.pt',
-        help='Path to diffusion model checkpoint'
+        default=None,
+        help='Path to diffusion model checkpoint (auto-detected from persistent volume)'
     )
     parser.add_argument(
         '--ae-path',
         type=str,
-        default='trained_models/cheff_autoencoder.pt',
-        help='Path to autoencoder checkpoint'
+        default=None,
+        help='Path to autoencoder checkpoint (auto-detected from persistent volume)'
     )
     parser.add_argument(
         '--sr-path',
         type=str,
-        default='trained_models/cheff_sr_fine.pt',
-        help='Path to super-resolution model checkpoint'
+        default=None,
+        help='Path to super-resolution model checkpoint (auto-detected from persistent volume)'
     )
     parser.add_argument(
         '--eta',
@@ -68,20 +85,37 @@ def main():
     
     args = parser.parse_args()
     
+    # Auto-detect model paths if not specified
+    if args.model_path is None:
+        args.model_path = find_model_path('cheff_diff_t2i.pt')
+    if args.ae_path is None:
+        args.ae_path = find_model_path('cheff_autoencoder.pt')
+    if args.sr_path is None:
+        args.sr_path = find_model_path('cheff_sr_fine.pt')
+    
     # Check if model files exist
-    if not os.path.exists(args.model_path):
-        print(f"Error: Model file not found: {args.model_path}")
-        print("Please download models using: bash download_models.sh")
+    if args.model_path is None or not os.path.exists(args.model_path):
+        print(f"Error: Diffusion model not found.")
+        print("Expected locations:")
+        print("  - cheff/trained_models/")
+        print("  - applied_dl/trained_models/")
+        print("  - ~/cheff-starter/cheff-models/")
         return
     
-    if not os.path.exists(args.ae_path):
-        print(f"Error: Autoencoder file not found: {args.ae_path}")
-        print("Please download models using: bash download_models.sh")
+    if args.ae_path is None or not os.path.exists(args.ae_path):
+        print(f"Error: Autoencoder model not found.")
+        print("Expected locations:")
+        print("  - cheff/trained_models/")
+        print("  - applied_dl/trained_models/")
+        print("  - ~/cheff-starter/cheff-models/")
         return
     
-    if args.full_res and not os.path.exists(args.sr_path):
-        print(f"Error: SR model file not found: {args.sr_path}")
-        print("Please download models using: bash download_models.sh")
+    if args.full_res and (args.sr_path is None or not os.path.exists(args.sr_path)):
+        print(f"Error: SR model not found.")
+        print("Expected locations:")
+        print("  - cheff/trained_models/")
+        print("  - applied_dl/trained_models/")
+        print("  - ~/cheff-starter/cheff-models/")
         return
     
     # Setup device
