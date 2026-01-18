@@ -112,8 +112,8 @@ def main():
     # Load diffusion model
     print("\nLoading diffusion model...")
     ldm = CheffLDMT2I(
-        checkpoint_path=diffusion_path,
-        autoencoder_path=autoencoder_path,
+        model_path=diffusion_path,
+        ae_path=autoencoder_path,
         device=device
     )
     print("✓ Diffusion model loaded")
@@ -121,7 +121,7 @@ def main():
     # Load SR model
     print("Loading super-resolution model...")
     sr_model = CheffSRModel(
-        checkpoint_path=sr_path,
+        model_path=sr_path,
         device=device
     )
     print("✓ SR model loaded")
@@ -150,8 +150,17 @@ def main():
         try:
             # Generate 256x256 image
             print("         → Diffusion (256×256)...", end=" ", flush=True)
-            image = ldm.sample(prompt, num_samples=1)  # Returns [1, 3, 256, 256]
+            image = ldm.sample(
+                sampling_steps=100,
+                eta=1.0,
+                decode=True,
+                conditioning=prompt
+            )
             print("✓")
+            
+            # Post-process
+            image = image.clamp(-1, 1)
+            image = (image + 1) / 2  # Convert from [-1, 1] to [0, 1]
             
             # Convert RGB to grayscale for SR model (expects 1 channel)
             print("         → Converting to grayscale...", end=" ", flush=True)
