@@ -1,0 +1,425 @@
+ ./setup.sh
+🚀 Cheff Setup
+Python 3.9: Python 3.9.25
+
+[notice] A new release of pip is available: 23.0.1 -> 25.3
+[notice] To update, run: pip install --upgrade pip
+Looking in indexes: https://download.pytorch.org/whl/cu121
+Collecting torch
+  Using cached https://download.pytorch.org/whl/cu121/torch-2.5.1%2Bcu121-cp39-cp39-linux_x86_64.whl (780.4 MB)
+Collecting torchvision
+  Using cached https://download.pytorch.org/whl/cu121/torchvision-0.20.1%2Bcu121-cp39-cp39-linux_x86_64.whl (7.3 MB)
+Collecting torchaudio
+  Using cached https://download.pytorch.org/whl/cu121/torchaudio-2.5.1%2Bcu121-cp39-cp39-linux_x86_64.whl (3.4 MB)
+Collecting triton==3.1.0
+  Using cached https://download.pytorch.org/whl/triton-3.1.0-cp39-cp39-manylinux_2_17_x86_64.manylinux2014_x86_64.whl (209.5 MB)
+Collecting typing-extensions>=4.8.0
+  Obtaining dependency information for typing-extensions>=4.8.0 from https://download.pytorch.org/whl/typing_extensions-4.15.0-py3-none-any.whl.metadata
+  Using cached https://download.pytorch.org/whl/typing_extensions-4.15.0-py3-none-any.whl.metadata (3.3 kB)
+Discarding https://download.pytorch.org/whl/typing_extensions-4.15.0-py3-none-any.whl (from https://download.pytorch.org/whl/cu121/typing-extensions/): Requested typing-extensions>=4.8.0 from https://download.pytorch.org/whl/typing_extensions-4.15.0-py3-none-any.whl (from torch) has inconsistent Name: expected 'typing-extensions', but metadata has 'typing_extensions'
+  Obtaining dependency information for typing-extensions>=4.8.0 from https://download.pytorch.org/whl/typing_extensions-4.14.0-py3-none-any.whl.metadata
+  Using cached https://download.pytorch.org/whl/typing_extensions-4.14.0-py3-none-any.whl.metadata (3.0 kB)
+Discarding https://download.pytorch.org/whl/typing_extensions-4.14.0-py3-none-any.whl (from https://download.pytorch.org/whl/cu121/typing-extensions/): Requested typing-extensions>=4.8.0 from https://download.pytorch.org/whl/typing_extensions-4.14.0-py3-none-any.whl (from torch) has inconsistent Name: expected 'typing-extensions', but metadata has 'typing_extensions'
+  Obtaining dependency information for typing-extensions>=4.8.0 from https://download.pytorch.org/whl/typing_extensions-4.12.2-py3-none-any.whl.metadata
+  Using cached https://download.pytorch.org/whl/typing_extensions-4.12.2-py3-none-any.whl.metadata (3.0 kB)
+Discarding https://download.pytorch.org/whl/typing_extensions-4.12.2-py3-none-any.whl (from https://download.pytorch.org/whl/cu121/typing-extensions/): Requested typing-extensions>=4.8.0 from https://download.pytorch.org/whl/typing_extensions-4.12.2-py3-none-any.whl (from torch) has inconsistent Name: expected 'typing-extensions', but metadata has 'typing_extensions'
+  Using cached https://download.pytorch.org/whl/typing_extensions-4.9.0-py3-none-any.whl (32 kB)
+Collecting nvidia-nvtx-cu12==12.1.105
+  Using cached https://download.pytorch.org/whl/cu121/nvidia_nvtx_cu12-12.1.105-py3-none-manylinux1_x86_64.whl (99 kB)
+Collecting nvidia-cuda-runtime-cu12==12.1.105
+  Using cached https://download.pytorch.org/whl/cu121/nvidia_cuda_runtime_cu12-12.1.105-py3-none-manylinux1_x86_64.whl (823 kB)
+Collecting nvidia-cublas-cu12==12.1.3.1
+  Using cached https://download.pytorch.org/whl/cu121/nvidia_cublas_cu12-12.1.3.1-py3-none-manylinux1_x86_64.whl (410.6 MB)
+Collecting fsspec
+  Obtaining dependency information for fsspec from https://files.pythonhosted.org/packages/eb/02/a6b21098b1d5d6249b7c5ab69dde30108a71e4e819d4a9778f1de1d5b70d/fsspec-2025.10.0-py3-none-any.whl.metadata
+  Using cached fsspec-2025.10.0-py3-none-any.whl.metadata (10 kB)
+Collecting filelock
+  Obtaining dependency information for filelock from https://files.pythonhosted.org/packages/42/14/42b2651a2f46b022ccd948bca9f2d5af0fd8929c4eec235b8d6d844fbe67/filelock-3.19.1-py3-none-any.whl.metadata
+  Using cached filelock-3.19.1-py3-none-any.whl.metadata (2.1 kB)
+Collecting nvidia-nccl-cu12==2.21.5
+  Using cached https://download.pytorch.org/whl/nvidia_nccl_cu12-2.21.5-py3-none-manylinux2014_x86_64.whl (188.7 MB)
+Collecting nvidia-cuda-cupti-cu12==12.1.105
+  Using cached https://download.pytorch.org/whl/cu121/nvidia_cuda_cupti_cu12-12.1.105-py3-none-manylinux1_x86_64.whl (14.1 MB)
+Collecting nvidia-cufft-cu12==11.0.2.54
+  Using cached https://download.pytorch.org/whl/cu121/nvidia_cufft_cu12-11.0.2.54-py3-none-manylinux1_x86_64.whl (121.6 MB)
+Collecting nvidia-cudnn-cu12==9.1.0.70
+  Using cached https://download.pytorch.org/whl/cu121/nvidia_cudnn_cu12-9.1.0.70-py3-none-manylinux2014_x86_64.whl (664.8 MB)
+Collecting nvidia-curand-cu12==10.3.2.106
+  Using cached https://download.pytorch.org/whl/cu121/nvidia_curand_cu12-10.3.2.106-py3-none-manylinux1_x86_64.whl (56.5 MB)
+Collecting nvidia-cusparse-cu12==12.1.0.106
+  Using cached https://download.pytorch.org/whl/cu121/nvidia_cusparse_cu12-12.1.0.106-py3-none-manylinux1_x86_64.whl (196.0 MB)
+Collecting nvidia-cuda-nvrtc-cu12==12.1.105
+  Using cached https://download.pytorch.org/whl/cu121/nvidia_cuda_nvrtc_cu12-12.1.105-py3-none-manylinux1_x86_64.whl (23.7 MB)
+Collecting jinja2
+  Obtaining dependency information for jinja2 from https://download.pytorch.org/whl/jinja2-3.1.6-py3-none-any.whl.metadata
+  Using cached https://download.pytorch.org/whl/jinja2-3.1.6-py3-none-any.whl.metadata (2.9 kB)
+Discarding https://download.pytorch.org/whl/jinja2-3.1.6-py3-none-any.whl (from https://download.pytorch.org/whl/cu121/jinja2/): Requested jinja2 from https://download.pytorch.org/whl/jinja2-3.1.6-py3-none-any.whl (from torch) has inconsistent Name: expected 'jinja2', but metadata has 'Jinja2'
+  Obtaining dependency information for jinja2 from https://download.pytorch.org/whl/Jinja2-3.1.4-py3-none-any.whl.metadata
+  Using cached https://download.pytorch.org/whl/Jinja2-3.1.4-py3-none-any.whl.metadata (2.6 kB)
+Discarding https://download.pytorch.org/whl/Jinja2-3.1.4-py3-none-any.whl#sha256=bc5dd2abb727a5319567b7a813e6a2e7318c39f4f487cfe6c89c6f9c7d25197d (from https://download.pytorch.org/whl/cu121/jinja2/): Requested jinja2 from https://download.pytorch.org/whl/Jinja2-3.1.4-py3-none-any.whl#sha256=bc5dd2abb727a5319567b7a813e6a2e7318c39f4f487cfe6c89c6f9c7d25197d (from torch) has inconsistent Name: expected 'jinja2', but metadata has 'Jinja2'
+  Using cached https://download.pytorch.org/whl/Jinja2-3.1.3-py3-none-any.whl (133 kB)
+Collecting nvidia-cusolver-cu12==11.4.5.107
+  Using cached https://download.pytorch.org/whl/cu121/nvidia_cusolver_cu12-11.4.5.107-py3-none-manylinux1_x86_64.whl (124.2 MB)
+Collecting sympy==1.13.1
+  Obtaining dependency information for sympy==1.13.1 from https://files.pythonhosted.org/packages/b2/fe/81695a1aa331a842b582453b605175f419fe8540355886031328089d840a/sympy-1.13.1-py3-none-any.whl.metadata
+  Using cached sympy-1.13.1-py3-none-any.whl.metadata (12 kB)
+Collecting networkx
+  Obtaining dependency information for networkx from https://files.pythonhosted.org/packages/d5/f0/8fbc882ca80cf077f1b246c0e3c3465f7f415439bdea6b899f6b19f61f70/networkx-3.2.1-py3-none-any.whl.metadata
+  Using cached networkx-3.2.1-py3-none-any.whl.metadata (5.2 kB)
+Collecting nvidia-nvjitlink-cu12
+  Obtaining dependency information for nvidia-nvjitlink-cu12 from https://download.pytorch.org/whl/nvidia_nvjitlink_cu12-12.9.86-py3-none-manylinux2010_x86_64.manylinux_2_12_x86_64.whl.metadata
+  Using cached https://download.pytorch.org/whl/nvidia_nvjitlink_cu12-12.9.86-py3-none-manylinux2010_x86_64.manylinux_2_12_x86_64.whl.metadata (1.7 kB)
+Collecting mpmath<1.4,>=1.1.0
+  Obtaining dependency information for mpmath<1.4,>=1.1.0 from https://files.pythonhosted.org/packages/43/e3/7d92a15f894aa0c9c4b49b8ee9ac9850d6e63b03c9c32c0367a13ae62209/mpmath-1.3.0-py3-none-any.whl.metadata
+  Using cached mpmath-1.3.0-py3-none-any.whl.metadata (8.6 kB)
+Collecting pillow!=8.3.*,>=5.3.0
+  Obtaining dependency information for pillow!=8.3.*,>=5.3.0 from https://files.pythonhosted.org/packages/a5/a0/98a3630f0b57f77bae67716562513d3032ae70414fcaf02750279c389a9e/pillow-11.3.0-cp39-cp39-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl.metadata
+  Using cached pillow-11.3.0-cp39-cp39-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl.metadata (9.0 kB)
+Collecting numpy
+  Obtaining dependency information for numpy from https://files.pythonhosted.org/packages/b9/14/78635daab4b07c0930c919d451b8bf8c164774e6a3413aed04a6d95758ce/numpy-2.0.2-cp39-cp39-manylinux_2_17_x86_64.manylinux2014_x86_64.whl.metadata
+  Using cached numpy-2.0.2-cp39-cp39-manylinux_2_17_x86_64.manylinux2014_x86_64.whl.metadata (60 kB)
+Collecting MarkupSafe>=2.0
+  Using cached https://download.pytorch.org/whl/MarkupSafe-2.1.5-cp39-cp39-manylinux_2_17_x86_64.manylinux2014_x86_64.whl (25 kB)
+Using cached sympy-1.13.1-py3-none-any.whl (6.2 MB)
+Using cached pillow-11.3.0-cp39-cp39-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl (6.6 MB)
+Using cached filelock-3.19.1-py3-none-any.whl (15 kB)
+Using cached fsspec-2025.10.0-py3-none-any.whl (200 kB)
+Using cached networkx-3.2.1-py3-none-any.whl (1.6 MB)
+Using cached numpy-2.0.2-cp39-cp39-manylinux_2_17_x86_64.manylinux2014_x86_64.whl (19.5 MB)
+Using cached mpmath-1.3.0-py3-none-any.whl (536 kB)
+Using cached https://download.pytorch.org/whl/nvidia_nvjitlink_cu12-12.9.86-py3-none-manylinux2010_x86_64.manylinux_2_12_x86_64.whl (39.7 MB)
+Using cached sympy-1.13.1-py3-none-any.whl (6.2 MB)
+Using cached pillow-11.3.0-cp39-cp39-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl (6.6 MB)
+Using cached filelock-3.19.1-py3-none-any.whl (15 kB)
+Using cached fsspec-2025.10.0-py3-none-any.whl (200 kB)
+Using cached networkx-3.2.1-py3-none-any.whl (1.6 MB)
+Using cached numpy-2.0.2-cp39-cp39-manylinux_2_17_x86_64.manylinux2014_x86_64.whl (19.5 MB)
+Using cached mpmath-1.3.0-py3-none-any.whl (536 kB)
+Using cached https://download.pytorch.org/whl/nvidia_nvjitlink_cu12-12.9.86-py3-none-manylinux2010_x86_64.manylinux_2_12_x86_64.whl (39.7 MB)
+Installing collected packages: mpmath, typing-extensions, sympy, pillow, nvidia-nvtx-cu12, nvidia-nvjitlink-cu12, nvidia-nccl-cu12, nvidia-curand-cu12, nvidia-cufft-cu12, nvidia-cuda-runtime-cu12, nvidia-cuda-nvrtc-cu12, nvidia-cuda-cupti-cu12, nvidia-cublas-cu12, numpy, networkx, MarkupSafe, fsspec, filelock, triton, nvidia-cusparse-cu12, nvidia-cudnn-cu12, jinja2, nvidia-cusolver-cu12, torch, torchvision, torchaudio
+Successfully installed MarkupSafe-2.1.5 filelock-3.19.1 fsspec-2025.10.0 jinja2-3.1.3 mpmath-1.3.0 networkx-3.2.1 numpy-2.0.2 nvidia-cublas-cu12-12.1.3.1 nvidia-cuda-cupti-cu12-12.1.105 nvidia-cuda-nvrtc-cu12-12.1.105 nvidia-cuda-runtime-cu12-12.1.105 nvidia-cudnn-cu12-9.1.0.70 nvidia-cufft-cu12-11.0.2.54 nvidia-curand-cu12-10.3.2.106 nvidia-cusolver-cu12-11.4.5.107 nvidia-cusparse-cu12-12.1.0.106 nvidia-nccl-cu12-2.21.5 nvidia-nvjitlink-cu12-12.9.86 nvidia-nvtx-cu12-12.1.105 pillow-11.3.0 sympy-1.13.1 torch-2.5.1+cu121 torchaudio-2.5.1+cu121 torchvision-0.20.1+cu121 triton-3.1.0 typing-extensions-4.9.0
+
+[notice] A new release of pip is available: 23.0.1 -> 25.3
+[notice] To update, run: pip install --upgrade pip
+Obtaining file:///lambda/nfs/cheff-starter/applied_dl/cheff (from -r requirements.txt (line 25))
+  Preparing metadata (setup.py) ... done
+Obtaining taming-transformers from git+https://github.com/CompVis/taming-transformers.git@master#egg=taming-transformers (from -r requirements.txt (line 28))
+  Cloning https://github.com/CompVis/taming-transformers.git (to revision master) to ./venv/src/taming-transformers
+  Running command git clone --filter=blob:none --quiet https://github.com/CompVis/taming-transformers.git /lambda/nfs/cheff-starter/applied_dl/venv/src/taming-transformers
+  Resolved https://github.com/CompVis/taming-transformers.git to commit 3ba01b241669f5ade541ce990f7650a3b8f65318
+  Preparing metadata (setup.py) ... done
+Obtaining clip from git+https://github.com/openai/CLIP.git@main#egg=clip (from -r requirements.txt (line 29))
+  Cloning https://github.com/openai/CLIP.git (to revision main) to ./venv/src/clip
+  Running command git clone --filter=blob:none --quiet https://github.com/openai/CLIP.git /lambda/nfs/cheff-starter/applied_dl/venv/src/clip
+  Resolved https://github.com/openai/CLIP.git to commit dcba3cb2e2827b402d2701e7e1c7d9fed8a20ef1
+  Preparing metadata (setup.py) ... done
+Requirement already satisfied: torchvision in ./venv/lib/python3.9/site-packages (from -r requirements.txt (line 2)) (0.20.1+cu121)
+Collecting pytorch-lightning==1.6
+  Using cached pytorch_lightning-1.6.0-py3-none-any.whl (582 kB)
+Collecting opencv-python-headless
+  Downloading opencv_python_headless-4.13.0.90-cp37-abi3-manylinux_2_28_x86_64.whl (62.5 MB)
+     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 62.5/62.5 MB 28.4 MB/s eta 0:00:00
+Collecting numba
+  Using cached numba-0.60.0-cp39-cp39-manylinux2014_x86_64.manylinux_2_17_x86_64.whl (3.7 MB)
+Collecting numpy==1.26.4
+  Using cached numpy-1.26.4-cp39-cp39-manylinux_2_17_x86_64.manylinux2014_x86_64.whl (18.2 MB)
+Collecting albumentations
+  Using cached albumentations-2.0.8-py3-none-any.whl (369 kB)
+Collecting pudb
+  Using cached pudb-2025.1.5-py3-none-any.whl (92 kB)
+Collecting imageio
+  Using cached imageio-2.37.2-py3-none-any.whl (317 kB)
+Collecting imageio-ffmpeg
+  Using cached imageio_ffmpeg-0.6.0-py3-none-manylinux2014_x86_64.whl (29.5 MB)
+Collecting omegaconf
+  Using cached omegaconf-2.3.0-py3-none-any.whl (79 kB)
+Collecting test-tube
+  Using cached test_tube-0.7.5.tar.gz (21 kB)
+  Preparing metadata (setup.py) ... done
+Collecting streamlit
+  Using cached streamlit-1.50.0-py3-none-any.whl (10.1 MB)
+Collecting einops
+  Using cached einops-0.8.1-py3-none-any.whl (64 kB)
+Collecting torch-fidelity
+  Using cached torch_fidelity-0.3.0-py3-none-any.whl (37 kB)
+Collecting transformers==4.26.1
+  Using cached transformers-4.26.1-py3-none-any.whl (6.3 MB)
+Collecting wandb
+  Using cached wandb-0.24.0-py3-none-manylinux_2_28_x86_64.whl (22.8 MB)
+Collecting kornia
+  Using cached kornia-0.8.2-py2.py3-none-any.whl (1.1 MB)
+Collecting peft==0.2.0
+  Using cached peft-0.2.0-py3-none-any.whl (40 kB)
+Collecting torch==1.13.0
+  Using cached torch-1.13.0-cp39-cp39-manylinux1_x86_64.whl (890.2 MB)
+Collecting packaging>=17.0
+  Using cached packaging-25.0-py3-none-any.whl (66 kB)
+Requirement already satisfied: fsspec[http]!=2021.06.0,>=2021.05.0 in ./venv/lib/python3.9/site-packages (from pytorch-lightning==1.6->-r requirements.txt (line 3)) (2025.10.0)
+Collecting torchmetrics>=0.4.1
+  Using cached torchmetrics-1.8.2-py3-none-any.whl (983 kB)
+Requirement already satisfied: typing-extensions>=4.0.0 in ./venv/lib/python3.9/site-packages (from pytorch-lightning==1.6->-r requirements.txt (line 3)) (4.9.0)
+Collecting tqdm>=4.41.0
+  Using cached tqdm-4.67.1-py3-none-any.whl (78 kB)
+Collecting tensorboard>=2.2.0
+  Using cached tensorboard-2.20.0-py3-none-any.whl (5.5 MB)
+Collecting PyYAML>=5.4
+  Using cached pyyaml-6.0.3-cp39-cp39-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl (750 kB)
+Collecting pyDeprecate<0.4.0,>=0.3.1
+  Using cached pyDeprecate-0.3.2-py3-none-any.whl (10 kB)
+Collecting requests
+  Using cached requests-2.32.5-py3-none-any.whl (64 kB)
+Collecting huggingface-hub<1.0,>=0.11.0
+  Using cached huggingface_hub-0.36.0-py3-none-any.whl (566 kB)
+Requirement already satisfied: filelock in ./venv/lib/python3.9/site-packages (from transformers==4.26.1->-r requirements.txt (line 16)) (3.19.1)
+Collecting regex!=2019.12.17
+  Using cached regex-2026.1.15-cp39-cp39-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl (791 kB)
+Collecting tokenizers!=0.11.3,<0.14,>=0.11.1
+  Using cached tokenizers-0.13.3-cp39-cp39-manylinux_2_17_x86_64.manylinux2014_x86_64.whl (7.8 MB)
+Collecting accelerate
+  Using cached accelerate-1.10.1-py3-none-any.whl (374 kB)
+Collecting psutil
+  Using cached psutil-7.2.1-cp36-abi3-manylinux2010_x86_64.manylinux_2_12_x86_64.manylinux_2_28_x86_64.whl (154 kB)
+Collecting nvidia-cublas-cu11==11.10.3.66
+  Using cached nvidia_cublas_cu11-11.10.3.66-py3-none-manylinux1_x86_64.whl (317.1 MB)
+Collecting nvidia-cudnn-cu11==8.5.0.96
+  Using cached nvidia_cudnn_cu11-8.5.0.96-2-py3-none-manylinux1_x86_64.whl (557.1 MB)
+Collecting nvidia-cuda-runtime-cu11==11.7.99
+  Using cached nvidia_cuda_runtime_cu11-11.7.99-py3-none-manylinux1_x86_64.whl (849 kB)
+Collecting nvidia-cuda-nvrtc-cu11==11.7.99
+  Using cached nvidia_cuda_nvrtc_cu11-11.7.99-2-py3-none-manylinux1_x86_64.whl (21.0 MB)
+Requirement already satisfied: setuptools in ./venv/lib/python3.9/site-packages (from nvidia-cublas-cu11==11.10.3.66->torch==1.13.0->-r requirements.txt (line 22)) (79.0.1)
+Collecting wheel
+  Using cached wheel-0.45.1-py3-none-any.whl (72 kB)
+Collecting torchvision
+  Using cached torchvision-0.23.0-cp39-cp39-manylinux_2_28_x86_64.whl (8.6 MB)
+  Using cached torchvision-0.22.1-cp39-cp39-manylinux_2_28_x86_64.whl (7.5 MB)
+  Using cached torchvision-0.22.0-cp39-cp39-manylinux_2_28_x86_64.whl (7.4 MB)
+Requirement already satisfied: pillow!=8.3.*,>=5.3.0 in ./venv/lib/python3.9/site-packages (from torchvision->-r requirements.txt (line 2)) (11.3.0)
+  Using cached torchvision-0.21.0-cp39-cp39-manylinux1_x86_64.whl (7.2 MB)
+  Using cached torchvision-0.20.1-cp39-cp39-manylinux1_x86_64.whl (7.2 MB)
+  Using cached torchvision-0.20.0-cp39-cp39-manylinux1_x86_64.whl (7.2 MB)
+  Using cached torchvision-0.19.1-cp39-cp39-manylinux1_x86_64.whl (7.0 MB)
+  Using cached torchvision-0.19.0-cp39-cp39-manylinux1_x86_64.whl (7.0 MB)
+  Using cached torchvision-0.18.1-cp39-cp39-manylinux1_x86_64.whl (7.0 MB)
+  Using cached torchvision-0.18.0-cp39-cp39-manylinux1_x86_64.whl (7.0 MB)
+  Using cached torchvision-0.17.2-cp39-cp39-manylinux1_x86_64.whl (6.9 MB)
+  Using cached torchvision-0.17.1-cp39-cp39-manylinux1_x86_64.whl (6.9 MB)
+  Using cached torchvision-0.17.0-cp39-cp39-manylinux1_x86_64.whl (6.9 MB)
+  Using cached torchvision-0.16.2-cp39-cp39-manylinux1_x86_64.whl (6.8 MB)
+  Using cached torchvision-0.16.1-cp39-cp39-manylinux1_x86_64.whl (6.8 MB)
+  Using cached torchvision-0.16.0-cp39-cp39-manylinux1_x86_64.whl (6.9 MB)
+  Using cached torchvision-0.15.2-cp39-cp39-manylinux1_x86_64.whl (6.0 MB)
+  Using cached torchvision-0.15.1-cp39-cp39-manylinux1_x86_64.whl (6.0 MB)
+  Using cached torchvision-0.14.1-cp39-cp39-manylinux1_x86_64.whl (24.2 MB)
+  Using cached torchvision-0.14.0-cp39-cp39-manylinux1_x86_64.whl (24.3 MB)
+Collecting opencv-python-headless
+  Using cached opencv_python_headless-4.12.0.88-cp37-abi3-manylinux2014_x86_64.manylinux_2_17_x86_64.whl (54.0 MB)
+  Using cached opencv_python_headless-4.11.0.86-cp37-abi3-manylinux_2_17_x86_64.manylinux2014_x86_64.whl (50.0 MB)
+Collecting llvmlite<0.44,>=0.43.0dev0
+  Using cached llvmlite-0.43.0-cp39-cp39-manylinux_2_17_x86_64.manylinux2014_x86_64.whl (43.9 MB)
+Collecting albucore==0.0.24
+  Using cached albucore-0.0.24-py3-none-any.whl (15 kB)
+Collecting pydantic>=2.9.2
+  Using cached pydantic-2.12.5-py3-none-any.whl (463 kB)
+Collecting eval-type-backport
+  Using cached eval_type_backport-0.3.1-py3-none-any.whl (6.1 kB)
+Collecting scipy>=1.10.0
+  Using cached scipy-1.13.1-cp39-cp39-manylinux_2_17_x86_64.manylinux2014_x86_64.whl (38.6 MB)
+Collecting stringzilla>=3.10.4
+  Using cached stringzilla-4.6.0-cp39-cp39-manylinux_2_17_x86_64.manylinux2014_x86_64.manylinux_2_28_x86_64.whl (2.1 MB)
+Collecting simsimd>=5.9.2
+  Using cached simsimd-6.5.12-cp39-cp39-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl (581 kB)
+Collecting urwid>=2.4
+  Using cached urwid-3.0.3-py3-none-any.whl (296 kB)
+Collecting pygments>=2.19
+  Using cached pygments-2.19.2-py3-none-any.whl (1.2 MB)
+Collecting typing-extensions>=4.0.0
+  Using cached typing_extensions-4.15.0-py3-none-any.whl (44 kB)
+Collecting urwid-readline
+  Using cached urwid_readline-0.15.1-py3-none-any.whl
+Collecting jedi<1,>=0.18
+  Using cached jedi-0.19.2-py2.py3-none-any.whl (1.6 MB)
+Collecting antlr4-python3-runtime==4.9.*
+  Using cached antlr4-python3-runtime-4.9.3.tar.gz (117 kB)
+  Preparing metadata (setup.py) ... done
+Collecting pandas>=0.20.3
+  Using cached pandas-2.3.3-cp39-cp39-manylinux_2_24_x86_64.manylinux_2_28_x86_64.whl (12.8 MB)
+Collecting future
+  Using cached future-1.0.0-py3-none-any.whl (491 kB)
+Collecting watchdog<7,>=2.1.5
+  Using cached watchdog-6.0.0-py3-none-manylinux2014_x86_64.whl (79 kB)
+Collecting blinker<2,>=1.5.0
+  Using cached blinker-1.9.0-py3-none-any.whl (8.5 kB)
+Collecting tornado!=6.5.0,<7,>=6.0.3
+  Using cached tornado-6.5.4-cp39-abi3-manylinux_2_5_x86_64.manylinux1_x86_64.manylinux_2_17_x86_64.manylinux2014_x86_64.whl (445 kB)
+Collecting gitpython!=3.1.19,<4,>=3.0.7
+  Using cached gitpython-3.1.46-py3-none-any.whl (208 kB)
+Collecting pyarrow>=7.0
+  Using cached pyarrow-21.0.0-cp39-cp39-manylinux_2_28_x86_64.whl (42.7 MB)
+Collecting protobuf<7,>=3.20
+  Using cached protobuf-6.33.4-cp39-abi3-manylinux2014_x86_64.whl (323 kB)
+Collecting tenacity<10,>=8.1.0
+  Using cached tenacity-9.1.2-py3-none-any.whl (28 kB)
+Collecting click<9,>=7.0
+  Using cached click-8.1.8-py3-none-any.whl (98 kB)
+Collecting altair!=5.4.0,!=5.4.1,<6,>=4.0
+  Using cached altair-5.5.0-py3-none-any.whl (731 kB)
+Collecting pydeck<1,>=0.8.0b4
+  Using cached pydeck-0.9.1-py2.py3-none-any.whl (6.9 MB)
+Collecting toml<2,>=0.10.1
+  Using cached toml-0.10.2-py2.py3-none-any.whl (16 kB)
+Collecting cachetools<7,>=4.0
+  Using cached cachetools-6.2.4-py3-none-any.whl (11 kB)
+Collecting platformdirs
+  Using cached platformdirs-4.4.0-py3-none-any.whl (18 kB)
+Collecting sentry-sdk>=2.0.0
+  Using cached sentry_sdk-2.49.0-py2.py3-none-any.whl (415 kB)
+Collecting kornia_rs>=0.1.9
+  Using cached kornia_rs-0.1.10-cp39-cp39-manylinux_2_17_x86_64.manylinux2014_x86_64.whl (3.0 MB)
+Collecting kornia
+  Using cached kornia-0.8.1-py2.py3-none-any.whl (1.1 MB)
+Collecting ftfy
+  Using cached ftfy-6.3.1-py3-none-any.whl (44 kB)
+Collecting jsonschema>=3.0
+  Using cached jsonschema-4.25.1-py3-none-any.whl (90 kB)
+Collecting narwhals>=1.14.2
+  Using cached narwhals-2.15.0-py3-none-any.whl (432 kB)
+Requirement already satisfied: jinja2 in ./venv/lib/python3.9/site-packages (from altair!=5.4.0,!=5.4.1,<6,>=4.0->streamlit->-r requirements.txt (line 13)) (3.1.3)
+Collecting aiohttp!=4.0.0a0,!=4.0.0a1
+  Using cached aiohttp-3.13.3-cp39-cp39-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl (1.7 MB)
+Collecting gitdb<5,>=4.0.1
+  Using cached gitdb-4.0.12-py3-none-any.whl (62 kB)
+Collecting hf-xet<2.0.0,>=1.1.3
+  Using cached hf_xet-1.2.0-cp37-abi3-manylinux_2_17_x86_64.manylinux2014_x86_64.whl (3.3 MB)
+Collecting parso<0.9.0,>=0.8.4
+  Using cached parso-0.8.5-py2.py3-none-any.whl (106 kB)
+Collecting tzdata>=2022.7
+  Using cached tzdata-2025.3-py2.py3-none-any.whl (348 kB)
+Collecting python-dateutil>=2.8.2
+  Using cached python_dateutil-2.9.0.post0-py2.py3-none-any.whl (229 kB)
+Collecting pytz>=2020.1
+  Using cached pytz-2025.2-py2.py3-none-any.whl (509 kB)
+Collecting typing-inspection>=0.4.2
+  Using cached typing_inspection-0.4.2-py3-none-any.whl (14 kB)
+Collecting annotated-types>=0.6.0
+  Using cached annotated_types-0.7.0-py3-none-any.whl (13 kB)
+Collecting pydantic-core==2.41.5
+  Using cached pydantic_core-2.41.5-cp39-cp39-manylinux_2_17_x86_64.manylinux2014_x86_64.whl (2.1 MB)
+Collecting idna<4,>=2.5
+  Using cached idna-3.11-py3-none-any.whl (71 kB)
+Collecting charset_normalizer<4,>=2
+  Using cached charset_normalizer-3.4.4-cp39-cp39-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl (153 kB)
+Collecting certifi>=2017.4.17
+  Using cached certifi-2026.1.4-py3-none-any.whl (152 kB)
+Collecting urllib3<3,>=1.21.1
+  Using cached urllib3-2.6.3-py3-none-any.whl (131 kB)
+Collecting markdown>=2.6.8
+  Using cached markdown-3.9-py3-none-any.whl (107 kB)
+Collecting absl-py>=0.4
+  Using cached absl_py-2.3.1-py3-none-any.whl (135 kB)
+Collecting werkzeug>=1.0.1
+  Using cached werkzeug-3.1.5-py3-none-any.whl (225 kB)
+Collecting tensorboard-data-server<0.8.0,>=0.7.0
+  Using cached tensorboard_data_server-0.7.2-py3-none-manylinux_2_31_x86_64.whl (6.6 MB)
+Collecting grpcio>=1.48.2
+  Using cached grpcio-1.76.0-cp39-cp39-manylinux2014_x86_64.manylinux_2_17_x86_64.whl (6.6 MB)
+Collecting lightning-utilities>=0.8.0
+  Using cached lightning_utilities-0.15.2-py3-none-any.whl (29 kB)
+Collecting torchmetrics>=0.4.1
+  Using cached torchmetrics-1.8.1-py3-none-any.whl (982 kB)
+  Using cached torchmetrics-1.8.0-py3-none-any.whl (981 kB)
+  Using cached torchmetrics-1.7.4-py3-none-any.whl (963 kB)
+  Using cached torchmetrics-1.7.3-py3-none-any.whl (962 kB)
+  Using cached torchmetrics-1.7.2-py3-none-any.whl (962 kB)
+  Using cached torchmetrics-1.7.1-py3-none-any.whl (961 kB)
+  Using cached torchmetrics-1.7.0-py3-none-any.whl (960 kB)
+  Using cached torchmetrics-1.6.3-py3-none-any.whl (931 kB)
+  Using cached torchmetrics-1.6.2-py3-none-any.whl (931 kB)
+  Using cached torchmetrics-1.6.1-py3-none-any.whl (927 kB)
+  Using cached torchmetrics-1.6.0-py3-none-any.whl (926 kB)
+  Using cached torchmetrics-1.5.2-py3-none-any.whl (891 kB)
+Collecting wcwidth
+  Using cached wcwidth-0.2.14-py2.py3-none-any.whl (37 kB)
+Collecting accelerate
+  Using cached accelerate-1.10.0-py3-none-any.whl (374 kB)
+  Using cached accelerate-1.9.0-py3-none-any.whl (367 kB)
+  Using cached accelerate-1.8.1-py3-none-any.whl (365 kB)
+  Using cached accelerate-1.8.0-py3-none-any.whl (365 kB)
+  Using cached accelerate-1.7.0-py3-none-any.whl (362 kB)
+  Using cached accelerate-1.6.0-py3-none-any.whl (354 kB)
+  Using cached accelerate-1.5.2-py3-none-any.whl (345 kB)
+  Using cached accelerate-1.5.1-py3-none-any.whl (345 kB)
+  Using cached accelerate-1.5.0-py3-none-any.whl (345 kB)
+  Using cached accelerate-1.4.0-py3-none-any.whl (342 kB)
+  Using cached accelerate-1.3.0-py3-none-any.whl (336 kB)
+  Using cached accelerate-1.2.1-py3-none-any.whl (336 kB)
+Collecting safetensors>=0.4.3
+  Using cached safetensors-0.7.0-cp38-abi3-manylinux_2_17_x86_64.manylinux2014_x86_64.whl (507 kB)
+Collecting attrs>=17.3.0
+  Using cached attrs-25.4.0-py3-none-any.whl (67 kB)
+Collecting yarl<2.0,>=1.17.0
+  Using cached yarl-1.22.0-cp39-cp39-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl (346 kB)
+Collecting async-timeout<6.0,>=4.0
+  Using cached async_timeout-5.0.1-py3-none-any.whl (6.2 kB)
+Collecting multidict<7.0,>=4.5
+  Using cached multidict-6.7.0-cp39-cp39-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl (239 kB)
+Collecting propcache>=0.2.0
+  Using cached propcache-0.4.1-cp39-cp39-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl (197 kB)
+Collecting frozenlist>=1.1.1
+  Using cached frozenlist-1.8.0-cp39-cp39-manylinux1_x86_64.manylinux_2_28_x86_64.manylinux_2_5_x86_64.whl (219 kB)
+Collecting aiohappyeyeballs>=2.5.0
+  Using cached aiohappyeyeballs-2.6.1-py3-none-any.whl (15 kB)
+Collecting aiosignal>=1.4.0
+  Using cached aiosignal-1.4.0-py3-none-any.whl (7.5 kB)
+Collecting smmap<6,>=3.0.1
+  Using cached smmap-5.0.2-py3-none-any.whl (24 kB)
+Requirement already satisfied: MarkupSafe>=2.0 in ./venv/lib/python3.9/site-packages (from jinja2->altair!=5.4.0,!=5.4.1,<6,>=4.0->streamlit->-r requirements.txt (line 13)) (2.1.5)
+Collecting rpds-py>=0.7.1
+  Using cached rpds_py-0.27.1-cp39-cp39-manylinux_2_17_x86_64.manylinux2014_x86_64.whl (384 kB)
+Collecting jsonschema-specifications>=2023.03.6
+  Using cached jsonschema_specifications-2025.9.1-py3-none-any.whl (18 kB)
+Collecting referencing>=0.28.4
+  Using cached referencing-0.36.2-py3-none-any.whl (26 kB)
+Collecting importlib-metadata>=4.4
+  Using cached importlib_metadata-8.7.1-py3-none-any.whl (27 kB)
+Collecting six>=1.5
+  Using cached six-1.17.0-py2.py3-none-any.whl (11 kB)
+Collecting zipp>=3.20
+  Using cached zipp-3.23.0-py3-none-any.whl (10 kB)
+Installing collected packages: tokenizers, simsimd, pytz, antlr4-python3-runtime, zipp, wheel, werkzeug, wcwidth, watchdog, urllib3, tzdata, typing-extensions, tqdm, tornado, toml, tensorboard-data-server, tenacity, stringzilla, smmap, six, safetensors, rpds-py, regex, PyYAML, pygments, pyDeprecate, pyarrow, psutil, protobuf, propcache, platformdirs, parso, packaging, nvidia-cuda-nvrtc-cu11, numpy, narwhals, llvmlite, kornia_rs, imageio-ffmpeg, idna, hf-xet, future, frozenlist, eval-type-backport, einops, click, charset_normalizer, certifi, cachetools, blinker, attrs, async-timeout, annotated-types, aiohappyeyeballs, absl-py, urwid, typing-inspection, sentry-sdk, scipy, requests, referencing, python-dateutil, pydeck, pydantic-core, opencv-python-headless, omegaconf, nvidia-cuda-runtime-cu11, nvidia-cublas-cu11, numba, multidict, lightning-utilities, jedi, importlib-metadata, imageio, grpcio, gitdb, ftfy, aiosignal, yarl, urwid-readline, pydantic, pandas, nvidia-cudnn-cu11, markdown, jsonschema-specifications, huggingface-hub, gitpython, albucore, wandb, transformers, torch, tensorboard, pudb, jsonschema, albumentations, aiohttp, torchvision, torchmetrics, test-tube, taming-transformers, kornia, cheff, altair, accelerate, torch-fidelity, streamlit, pytorch-lightning, peft, clip
+  DEPRECATION: antlr4-python3-runtime is being installed using the legacy 'setup.py install' method, because it does not have a 'pyproject.toml' and the 'wheel' package is not installed. pip 23.1 will enforce this behaviour change. A possible replacement is to enable the '--use-pep517' option. Discussion can be found at https://github.com/pypa/pip/issues/8559
+  Running setup.py install for antlr4-python3-runtime ... done
+  Attempting uninstall: typing-extensions
+    Found existing installation: typing_extensions 4.9.0
+    Uninstalling typing_extensions-4.9.0:
+      Successfully uninstalled typing_extensions-4.9.0
+  Attempting uninstall: numpy
+    Found existing installation: numpy 2.0.2
+    Uninstalling numpy-2.0.2:
+      Successfully uninstalled numpy-2.0.2
+
+
+
+  Attempting uninstall: torch
+    Found existing installation: torch 2.5.1+cu121
+    Uninstalling torch-2.5.1+cu121:
+      Successfully uninstalled torch-2.5.1+cu121
+  Attempting uninstall: torchvision
+    Found existing installation: torchvision 0.20.1+cu121
+    Uninstalling torchvision-0.20.1+cu121:
+      Successfully uninstalled torchvision-0.20.1+cu121
+  DEPRECATION: test-tube is being installed using the legacy 'setup.py install' method, because it does not have a 'pyproject.toml' and the 'wheel' package is not installed. pip 23.1 will enforce this behaviour change. A possible replacement is to enable the '--use-pep517' option. Discussion can be found at https://github.com/pypa/pip/issues/8559
+  Running setup.py install for test-tube ... done
+  Running setup.py develop for taming-transformers
+  Running setup.py develop for cheff
+  Running setup.py develop for clip
+ERROR: pip's dependency resolver does not currently take into account all the packages that are installed. This behaviour is the source of the following dependency conflicts.
+torchaudio 2.5.1+cu121 requires torch==2.5.1, but you have torch 1.13.0 which is incompatible.
+Successfully installed PyYAML-6.0.3 absl-py-2.3.1 accelerate-1.2.1 aiohappyeyeballs-2.6.1 aiohttp-3.13.3 aiosignal-1.4.0 albucore-0.0.24 albumentations-2.0.8 altair-5.5.0 annotated-types-0.7.0 antlr4-python3-runtime-4.9.3 async-timeout-5.0.1 attrs-25.4.0 blinker-1.9.0 cachetools-6.2.4 certifi-2026.1.4 charset_normalizer-3.4.4 cheff-0.0.1 click-8.1.8 clip-1.0 einops-0.8.1 eval-type-backport-0.3.1 frozenlist-1.8.0 ftfy-6.3.1 future-1.0.0 gitdb-4.0.12 gitpython-3.1.46 grpcio-1.76.0 hf-xet-1.2.0 huggingface-hub-0.36.0 idna-3.11 imageio-2.37.2 imageio-ffmpeg-0.6.0 importlib-metadata-8.7.1 jedi-0.19.2 jsonschema-4.25.1 jsonschema-specifications-2025.9.1 kornia-0.8.1 kornia_rs-0.1.10 lightning-utilities-0.15.2 llvmlite-0.43.0 markdown-3.9 multidict-6.7.0 narwhals-2.15.0 numba-0.60.0 numpy-1.26.4 nvidia-cublas-cu11-11.10.3.66 nvidia-cuda-nvrtc-cu11-11.7.99 nvidia-cuda-runtime-cu11-11.7.99 nvidia-cudnn-cu11-8.5.0.96 omegaconf-2.3.0 opencv-python-headless-4.11.0.86 packaging-25.0 pandas-2.3.3 parso-0.8.5 peft-0.2.0 platformdirs-4.4.0 propcache-0.4.1 protobuf-6.33.4 psutil-7.2.1 pudb-2025.1.5 pyDeprecate-0.3.2 pyarrow-21.0.0 pydantic-2.12.5 pydantic-core-2.41.5 pydeck-0.9.1 pygments-2.19.2 python-dateutil-2.9.0.post0 pytorch-lightning-1.6.0 pytz-2025.2 referencing-0.36.2 regex-2026.1.15 requests-2.32.5 rpds-py-0.27.1 safetensors-0.7.0 scipy-1.13.1 sentry-sdk-2.49.0 simsimd-6.5.12 six-1.17.0 smmap-5.0.2 streamlit-1.50.0 stringzilla-4.6.0 taming-transformers-0.0.1 tenacity-9.1.2 tensorboard-2.20.0 tensorboard-data-server-0.7.2 test-tube-0.7.5 tokenizers-0.13.3 toml-0.10.2 torch-1.13.0 torch-fidelity-0.3.0 torchmetrics-1.5.2 torchvision-0.14.0 tornado-6.5.4 tqdm-4.67.1 transformers-4.26.1 typing-extensions-4.15.0 typing-inspection-0.4.2 tzdata-2025.3 urllib3-2.6.3 urwid-3.0.3 urwid-readline-0.15.1 wandb-0.24.0 watchdog-6.0.0 wcwidth-0.2.14 werkzeug-3.1.5 wheel-0.45.1 yarl-1.22.0 zipp-3.23.0
+
+[notice] A new release of pip is available: 23.0.1 -> 25.3
+[notice] To update, run: pip install --upgrade pip
+PyTorch 1.13.0+cu117, CUDA: True
+Cheff: OK
+
+✅ Setup complete!

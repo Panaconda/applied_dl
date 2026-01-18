@@ -1,8 +1,8 @@
 # Setup
 
-## 1. Setup Environment
+## 1. Setup Environment (H100 GPU)
 
-Has to use Python 3.9 to enable interaction with older dependencies.
+Optimized for H100 GPUs with Python 3.9 and PyTorch 2.x:
 
 ```bash
 # Create persistent directory structure
@@ -12,14 +12,14 @@ cd ~/cheff-starter
 # Clone and setup
 git clone https://github.com/Panaconda/applied_dl.git
 cd applied_dl
-bash setup.sh
+bash setup_h100.sh
 ```
 
 This will:
-- Install Python 3.9 (if needed)
-- Create virtual environment in project root
-- Install PyTorch with CUDA support (auto-detected)
-- Install all dependencies from requirements.txt
+- Install Python 3.9
+- Create virtual environment
+- Install PyTorch 2.x with CUDA 12.1 (H100 compatible)
+- Install all dependencies (pytorch-lightning 1.6, transformers, etc.)
 
 ### 2. Upload Pre-trained Models
 

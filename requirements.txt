@@ -1,6 +1,4 @@
-#torch==1.11
-torchvision
-pytorch-lightning==1.6
+pytorch-lightning==1.6.5
 opencv-python-headless
 numba
 numpy==1.26.4
@@ -19,7 +17,6 @@ kornia
 
 # Added dependencies for LoRA project
 peft==0.2.0
-torch==1.13.0
 
 # Local packages
 -e ./cheff
