@@ -158,14 +158,18 @@ def main():
         print(f"  SR steps: {args.sr_steps}")
         print("\nThis may take another 60-120 seconds...")
         
+        # Convert RGB to grayscale for SR model (expects 1 channel)
+        from torchvision.transforms.functional import rgb_to_grayscale
+        image_gray = rgb_to_grayscale(image)
+        
         sr_model = CheffSRModel(
             model_path=args.sr_path,
             device=device
         )
         
-        # SR expects image in [0, 1] range
+        # SR expects grayscale image in [0, 1] range
         image = sr_model.sample(
-            image,
+            image_gray,
             method='ddim',
             sampling_steps=args.sr_steps,
             eta=0.0
