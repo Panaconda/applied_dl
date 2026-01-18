@@ -1,6 +1,6 @@
 #torch==1.11
 torchvision
-pytorch-lightning==1.6.5
+pytorch-lightning==1.6
 opencv-python-headless
 numba
 numpy==1.26.4

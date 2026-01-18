@@ -10,7 +10,9 @@ command -v python3.9 &> /dev/null || (sudo apt-get update -qq && sudo apt-get in
 [ -d "venv" ] && rm -rf venv
 python3.9 -m venv venv
 source venv/bin/activate
-pip install --upgrade pip -q
+
+# Downgrade pip for compatibility with pytorch-lightning==1.6
+pip install -q "pip<24.1"
 
 # Install PyTorch with CUDA
 if nvidia-smi &> /dev/null; then
