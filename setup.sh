@@ -4,7 +4,13 @@ set -e
 echo "🚀 Cheff Setup"
 
 # Install Python 3.9 if needed
-command -v python3.9 &> /dev/null || (sudo apt-get update -qq && sudo apt-get install -y python3.9 python3.9-venv python3.9-dev)
+if ! command -v python3.9 &> /dev/null; then
+    echo "Installing Python 3.9..."
+    sudo apt-get update -qq
+    sudo apt-get install -y python3.9 python3.9-venv python3.9-dev
+fi
+
+echo "Python 3.9: $(python3.9 --version)"
 
 # Create venv
 [ -d "venv" ] && rm -rf venv
