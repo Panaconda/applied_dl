@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-01-18T10:47:25.650757",
+  "generated_at": "2026-01-18T11:02:13.888555",
   "device": "cuda",
   "models": {
     "diffusion": "cheff/trained_models/cheff_diff_t2i.pt",
