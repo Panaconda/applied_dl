@@ -1,4 +1,76 @@
-## Setup
+# Setup
 
-Python Version: Python 3.9
-To enable interaction with older dependencies
+## 1. Setup Environment
+
+Has to use Python 3.9 to enable interaction with older dependencies.
+
+```bash
+git clone https://github.com/Panaconda/applied_dl.git
+cd applied_dl
+bash setup.sh
+```
+
+This will:
+- Install Python 3.9 (if needed)
+- Create virtual environment in project root
+- Install PyTorch with CUDA support (auto-detected)
+- Install all dependencies from requirements.txt
+
+### 2. Download Pre-trained Models
+
+```bash
+bash download_models.sh
+```
+
+Downloads all required models (~2.4GB total):
+- `cheff_autoencoder.pt` (~200MB) - VAE encoder/decoder
+- `cheff_diff_t2i.pt` (~900MB) - Text-to-image diffusion
+- `cheff_diff_uncond.pt` (~900MB) - Unconditional diffusion
+- `cheff_sr_fine.pt` (~400MB) - Super-resolution (256×256 → 1024×1024)
+
+### 3. Generate Images
+
+Activate the environment and generate:
+
+```bash
+source venv/bin/activate
+cd cheff
+python test_generation.py --prompt "Chest X-ray showing normal lungs"
+```
+
+**Example prompts:**
+- "Chest X-ray showing bilateral pneumonia"
+- "Normal chest radiograph with clear lung fields"
+- "Chest X-ray demonstrating cardiomegaly"
+- "Frontal chest radiograph showing right lower lobe consolidation"
+
+### Python API
+
+```python
+from cheff import CheffLDMT2I, CheffSRModel
+import torch
+from torchvision.utils import save_image
+
+# Load models
+ldm = CheffLDMT2I(
+    model_path='trained_models/cheff_diff_t2i.pt',
+    ae_path='trained_models/cheff_autoencoder.pt',
+    device='cuda'
+)
+
+sr = CheffSRModel(
+    model_path='trained_models/cheff_sr_fine.pt',
+    device='cuda'
+)
+
+# Generate 256×256 image
+image_256 = ldm.sample(
+    sampling_steps=100,
+    eta=1.0,
+    conditioning="Chest X-ray showing normal lungs"
+)
+
+# Upscale to 1024×1024
+image_1024 = sr.sample(image_256, method='ddim', sampling_steps=100)
+save_image(image_1024, 'output_1024.png')
+```
