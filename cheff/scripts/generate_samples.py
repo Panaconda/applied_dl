@@ -94,9 +94,9 @@ def main():
     print("Loading models...")
     print("-" * 80)
     
-    diffusion_path = "../trained_models/cheff_diff_t2i.pt"
-    autoencoder_path = "../trained_models/cheff_autoencoder.pt"
-    sr_path = "../trained_models/cheff_sr_fine.pt"
+    diffusion_path = "cheff/trained_models/cheff_diff_t2i.pt"
+    autoencoder_path = "cheff/trained_models/cheff_autoencoder.pt"
+    sr_path = "cheff/trained_models/cheff_sr_fine.pt"
     
     # Check if models exist
     for model_path in [diffusion_path, autoencoder_path, sr_path]:
