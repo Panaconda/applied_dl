@@ -12,13 +12,13 @@ import os
 from pathlib import Path
 
 def find_model_path(model_name):
-    """Find model in project root, parent directory, or sibling cheff-starter directory."""
+    """Find model in cheff-models directory (same parent as applied_dl)."""
     # Check multiple common locations
     search_paths = [
         Path('trained_models') / model_name,  # Local: cheff/trained_models/
         Path('../trained_models') / model_name,  # Project root: applied_dl/trained_models/
-        Path('../cheff-starter/cheff-models') / model_name,  # Sibling: ~/cheff-starter/cheff-models/
-        Path.home() / 'cheff-starter' / 'cheff-models' / model_name,  # Absolute: ~/cheff-starter/cheff-models/
+        Path('../../cheff-models') / model_name,  # Parent sibling: cheff-starter/cheff-models/
+        Path('../cheff-models') / model_name,  # Direct sibling: cheff-starter/cheff-models/
     ]
     
     for path in search_paths:
@@ -97,25 +97,22 @@ def main():
     if args.model_path is None or not os.path.exists(args.model_path):
         print(f"Error: Diffusion model not found.")
         print("Expected locations:")
-        print("  - cheff/trained_models/")
-        print("  - applied_dl/trained_models/")
-        print("  - ~/cheff-starter/cheff-models/")
+        print("  - cheff-starter/applied_dl/cheff/trained_models/")
+        print("  - cheff-starter/cheff-models/")
         return
     
     if args.ae_path is None or not os.path.exists(args.ae_path):
         print(f"Error: Autoencoder model not found.")
         print("Expected locations:")
-        print("  - cheff/trained_models/")
-        print("  - applied_dl/trained_models/")
-        print("  - ~/cheff-starter/cheff-models/")
+        print("  - cheff-starter/applied_dl/cheff/trained_models/")
+        print("  - cheff-starter/cheff-models/")
         return
     
     if args.full_res and (args.sr_path is None or not os.path.exists(args.sr_path)):
         print(f"Error: SR model not found.")
         print("Expected locations:")
-        print("  - cheff/trained_models/")
-        print("  - applied_dl/trained_models/")
-        print("  - ~/cheff-starter/cheff-models/")
+        print("  - cheff-starter/applied_dl/cheff/trained_models/")
+        print("  - cheff-starter/cheff-models/")
         return
     
     # Setup device

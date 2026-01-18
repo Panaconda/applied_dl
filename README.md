@@ -5,6 +5,11 @@
 Has to use Python 3.9 to enable interaction with older dependencies.
 
 ```bash
+# Create persistent directory structure
+mkdir -p ~/cheff-starter/cheff-models
+cd ~/cheff-starter
+
+# Clone and setup
 git clone https://github.com/Panaconda/applied_dl.git
 cd applied_dl
 bash setup.sh
@@ -18,17 +23,11 @@ This will:
 
 ### 2. Upload Pre-trained Models
 
-Create a `cheff-starter/cheff-models/` directory and upload the model files:
+Upload model files to `~/cheff-starter/cheff-models/`:
 
 ```bash
-# On the GPU machine
-mkdir -p ~/cheff-starter/cheff-models
-
 # From your local machine
-scp cheff_autoencoder.pt ubuntu@<gpu-ip>:~/cheff-starter/cheff-models/
-scp cheff_diff_t2i.pt ubuntu@<gpu-ip>:~/cheff-starter/cheff-models/
-scp cheff_diff_uncond.pt ubuntu@<gpu-ip>:~/cheff-starter/cheff-models/
-scp cheff_sr_fine.pt ubuntu@<gpu-ip>:~/cheff-starter/cheff-models/
+scp cheff_*.pt ubuntu@<gpu-ip>:~/cheff-starter/cheff-models/
 ```
 
 Required models (~2.4GB total):
@@ -37,9 +36,22 @@ Required models (~2.4GB total):
 - `cheff_diff_uncond.pt` (~900MB) - Unconditional diffusion
 - `cheff_sr_fine.pt` (~400MB) - Super-resolution (256×256 → 1024×1024)
 
+Directory structure:
+```
+~/cheff-starter/
+├── applied_dl/          # Code repository
+│   ├── venv/            # Virtual environment
+│   └── cheff/
+└── cheff-models/        # Model weights (persistent)
+    ├── cheff_autoencoder.pt
+    ├── cheff_diff_t2i.pt
+    ├── cheff_diff_uncond.pt
+    └── cheff_sr_fine.pt
+```
+
 ### 3. Generate Images
 
-The script automatically detects models from `~/cheff-starter/cheff-models/`:
+The script automatically detects models from `../cheff-models/`:
 
 ```bash
 source venv/bin/activate
