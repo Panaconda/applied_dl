@@ -1,0 +1,11 @@
+numpy
+pandas
+pillow
+pydicom
+torch
+torchvision
+tqdm
+pyyaml
+pylibjpeg
+pylibjpeg-libjpeg
+pylibjpeg-openjpeg
