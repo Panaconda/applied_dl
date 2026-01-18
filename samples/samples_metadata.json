@@ -1,0 +1,361 @@
+{
+  "generated_at": "2026-01-18T10:47:25.650757",
+  "device": "cuda",
+  "models": {
+    "diffusion": "cheff/trained_models/cheff_diff_t2i.pt",
+    "autoencoder": "cheff/trained_models/cheff_autoencoder.pt",
+    "sr": "cheff/trained_models/cheff_sr_fine.pt"
+  },
+  "samples": [
+    {
+      "id": 1,
+      "filename": "sample_001.png",
+      "prompt": "Normal chest radiograph. Lungs are clear without focal consolidation, pleural effusion, or pneumothorax. Cardiomediastinal silhouette is within normal limits. No acute osseous abnormality identified.",
+      "resolution": "1024x1024",
+      "super_resolution": true
+    },
+    {
+      "id": 2,
+      "filename": "sample_002.png",
+      "prompt": "Mild bilateral basal atelectasis with low lung volumes. No focal consolidation. Heart size at the upper limits of normal. No pleural effusion or pneumothorax.",
+      "resolution": "1024x1024",
+      "super_resolution": true
+    },
+    {
+      "id": 3,
+      "filename": "sample_003.png",
+      "prompt": "Right lower lobe pneumonia with airspace consolidation and air bronchograms. Trace right-sided pleural effusion. No pneumothorax.",
+      "resolution": "1024x1024",
+      "super_resolution": true
+    },
+    {
+      "id": 4,
+      "filename": "sample_004.png",
+      "prompt": "Left upper lobe consolidation suspicious for lobar pneumonia. Cardiac silhouette normal. No pleural effusion or pneumothorax.",
+      "resolution": "1024x1024",
+      "super_resolution": true
+    },
+    {
+      "id": 5,
+      "filename": "sample_005.png",
+      "prompt": "Diffuse bilateral reticular opacities compatible with interstitial lung disease. No focal consolidation. Heart size normal. No significant pleural effusion.",
+      "resolution": "1024x1024",
+      "super_resolution": true
+    },
+    {
+      "id": 6,
+      "filename": "sample_006.png",
+      "prompt": "Bilateral perihilar ground-glass opacities with mild vascular redistribution, consistent with pulmonary edema. Small bilateral pleural effusions. Enlarged cardiac silhouette.",
+      "resolution": "1024x1024",
+      "super_resolution": true
+    },
+    {
+      "id": 7,
+      "filename": "sample_007.png",
+      "prompt": "Marked cardiomegaly with pulmonary vascular congestion and prominent upper lobe vessels. Small right and left pleural effusions. No focal consolidation.",
+      "resolution": "1024x1024",
+      "super_resolution": true
+    },
+    {
+      "id": 8,
+      "filename": "sample_008.png",
+      "prompt": "Large left pleural effusion causing left lower lobe atelectasis and mild mediastinal shift to the right. No visible pneumothorax.",
+      "resolution": "1024x1024",
+      "super_resolution": true
+    },
+    {
+      "id": 9,
+      "filename": "sample_009.png",
+      "prompt": "Moderate right hydropneumothorax with air\u2013fluid level and partial collapse of the right lung. Left lung clear. Cardiomediastinal silhouette within normal limits.",
+      "resolution": "1024x1024",
+      "super_resolution": true
+    },
+    {
+      "id": 10,
+      "filename": "sample_010.png",
+      "prompt": "Large right tension pneumothorax with near-complete collapse of the right lung and leftward mediastinal shift. Left lung appears hyperinflated.",
+      "resolution": "1024x1024",
+      "super_resolution": true
+    },
+    {
+      "id": 11,
+      "filename": "sample_011.png",
+      "prompt": "Upper lobe\u2013predominant centrilobular emphysema with hyperinflated lungs and flattened hemidiaphragms. No focal consolidation or pleural effusion.",
+      "resolution": "1024x1024",
+      "super_resolution": true
+    },
+    {
+      "id": 12,
+      "filename": "sample_012.png",
+      "prompt": "Chronic obstructive pulmonary disease with hyperlucent lungs, increased retrosternal airspace, and prominent pulmonary arteries. No acute infiltrate.",
+      "resolution": "1024x1024",
+      "super_resolution": true
+    },
+    {
+      "id": 13,
+      "filename": "sample_013.png",
+      "prompt": "Fine reticular and honeycombing pattern in the bilateral subpleural lower lobes, compatible with pulmonary fibrosis. Mildly decreased lung volumes.",
+      "resolution": "1024x1024",
+      "super_resolution": true
+    },
+    {
+      "id": 14,
+      "filename": "sample_014.png",
+      "prompt": "Multiple bilateral pulmonary nodules up to 1.5 cm, predominantly in the lower lobes, suspicious for metastatic disease. No pleural effusion.",
+      "resolution": "1024x1024",
+      "super_resolution": true
+    },
+    {
+      "id": 15,
+      "filename": "sample_015.png",
+      "prompt": "Solitary 2 cm spiculated nodule in the right upper lobe. No associated pleural effusion or lymphadenopathy evident on radiograph.",
+      "resolution": "1024x1024",
+      "super_resolution": true
+    },
+    {
+      "id": 16,
+      "filename": "sample_016.png",
+      "prompt": "Patchy bilateral peripheral ground-glass opacities, more pronounced in the lower zones, compatible with atypical or viral pneumonia pattern.",
+      "resolution": "1024x1024",
+      "super_resolution": true
+    },
+    {
+      "id": 17,
+      "filename": "sample_017.png",
+      "prompt": "Right upper lobe cavitary lesion with thick, irregular walls, suspicious for cavitary tuberculosis. Adjacent fibrotic changes and volume loss.",
+      "resolution": "1024x1024",
+      "super_resolution": true
+    },
+    {
+      "id": 18,
+      "filename": "sample_018.png",
+      "prompt": "Multiple small calcified nodules throughout both lungs, consistent with healed granulomatous disease. No acute infiltrate.",
+      "resolution": "1024x1024",
+      "super_resolution": true
+    },
+    {
+      "id": 19,
+      "filename": "sample_019.png",
+      "prompt": "Bilateral hilar and mediastinal prominence with reticulonodular opacities, compatible with sarcoidosis stage II. No pleural effusion.",
+      "resolution": "1024x1024",
+      "super_resolution": true
+    },
+    {
+      "id": 20,
+      "filename": "sample_020.png",
+      "prompt": "Diffuse bilateral miliary nodular pattern, suggesting miliary tuberculosis or disseminated fungal infection. Cardiac silhouette normal.",
+      "resolution": "1024x1024",
+      "super_resolution": true
+    },
+    {
+      "id": 21,
+      "filename": "sample_021.png",
+      "prompt": "Postoperative changes from median sternotomy with sternal wires and prosthetic heart valve. Mild cardiomegaly. Lungs clear without focal consolidation.",
+      "resolution": "1024x1024",
+      "super_resolution": true
+    },
+    {
+      "id": 22,
+      "filename": "sample_022.png",
+      "prompt": "Left-sided dual-lead pacemaker in appropriate position. Mild pulmonary venous congestion. No focal consolidation or effusion.",
+      "resolution": "1024x1024",
+      "super_resolution": true
+    },
+    {
+      "id": 23,
+      "filename": "sample_023.png",
+      "prompt": "Endotracheal tube tip 3 cm above the carina. Right internal jugular central venous catheter with tip at the cavoatrial junction. Mild bilateral perihilar opacities.",
+      "resolution": "1024x1024",
+      "super_resolution": true
+    },
+    {
+      "id": 24,
+      "filename": "sample_024.png",
+      "prompt": "Right chest tube in place with re-expanded right lung and small residual apical pneumothorax. Lungs otherwise clear.",
+      "resolution": "1024x1024",
+      "super_resolution": true
+    },
+    {
+      "id": 25,
+      "filename": "sample_025.png",
+      "prompt": "Right-sided Port-a-Cath with catheter tip in the superior vena cava. No pneumothorax. Mild left basal atelectasis.",
+      "resolution": "1024x1024",
+      "super_resolution": true
+    },
+    {
+      "id": 26,
+      "filename": "sample_026.png",
+      "prompt": "Kyphoscoliosis of the thoracic spine with associated volume loss of the left hemithorax and crowding of ribs. No focal consolidation or effusion.",
+      "resolution": "1024x1024",
+      "super_resolution": true
+    },
+    {
+      "id": 27,
+      "filename": "sample_027.png",
+      "prompt": "Multiple anterior rib fractures on the left with overlying chest wall soft tissue swelling. Small left pleural effusion without visible pneumothorax.",
+      "resolution": "1024x1024",
+      "super_resolution": true
+    },
+    {
+      "id": 28,
+      "filename": "sample_028.png",
+      "prompt": "Chronic healed rib fractures bilaterally with callus formation. Lungs clear. Heart size within normal limits.",
+      "resolution": "1024x1024",
+      "super_resolution": true
+    },
+    {
+      "id": 29,
+      "filename": "sample_029.png",
+      "prompt": "Hiatal hernia projecting behind the heart with retrocardiac air\u2013fluid level. Lungs clear, no pleural effusion.",
+      "resolution": "1024x1024",
+      "super_resolution": true
+    },
+    {
+      "id": 30,
+      "filename": "sample_030.png",
+      "prompt": "Marked hyperinflation with flattened diaphragms and bullous changes in the upper lobes, consistent with advanced emphysema.",
+      "resolution": "1024x1024",
+      "super_resolution": true
+    },
+    {
+      "id": 31,
+      "filename": "sample_031.png",
+      "prompt": "Left lower lobe consolidation with air bronchograms and silhouetting of the left hemidiaphragm. Small adjacent parapneumonic effusion.",
+      "resolution": "1024x1024",
+      "super_resolution": true
+    },
+    {
+      "id": 32,
+      "filename": "sample_032.png",
+      "prompt": "Right middle lobe collapse with triangular opacity silhouetting the right heart border and volume loss in the right hemithorax.",
+      "resolution": "1024x1024",
+      "super_resolution": true
+    },
+    {
+      "id": 33,
+      "filename": "sample_033.png",
+      "prompt": "Bilateral lower lobe bronchiectasis with tram-track opacities and ring shadows. No significant pleural effusion.",
+      "resolution": "1024x1024",
+      "super_resolution": true
+    },
+    {
+      "id": 34,
+      "filename": "sample_034.png",
+      "prompt": "Right apical pleural thickening with associated volume loss and elevated minor fissure, compatible with prior granulomatous disease.",
+      "resolution": "1024x1024",
+      "super_resolution": true
+    },
+    {
+      "id": 35,
+      "filename": "sample_035.png",
+      "prompt": "Diffuse hazy opacities with air bronchograms and decreased lung volumes, suggesting acute respiratory distress syndrome pattern.",
+      "resolution": "1024x1024",
+      "super_resolution": true
+    },
+    {
+      "id": 36,
+      "filename": "sample_036.png",
+      "prompt": "Prominent pulmonary arteries with pruning of peripheral vessels, compatible with pulmonary arterial hypertension. Heart size mildly enlarged.",
+      "resolution": "1024x1024",
+      "super_resolution": true
+    },
+    {
+      "id": 37,
+      "filename": "sample_037.png",
+      "prompt": "Right main pulmonary artery enlargement with peripheral oligemia in the right lung, suspicious for chronic thromboembolic pulmonary hypertension.",
+      "resolution": "1024x1024",
+      "super_resolution": true
+    },
+    {
+      "id": 38,
+      "filename": "sample_038.png",
+      "prompt": "Cardiomegaly with left ventricular configuration and pulmonary venous congestion, consistent with chronic congestive heart failure.",
+      "resolution": "1024x1024",
+      "super_resolution": true
+    },
+    {
+      "id": 39,
+      "filename": "sample_039.png",
+      "prompt": "Normal cardiomediastinal silhouette with clear lungs in a pediatric patient; mild thymic sail sign noted. No consolidation or effusion.",
+      "resolution": "1024x1024",
+      "super_resolution": true
+    },
+    {
+      "id": 40,
+      "filename": "sample_040.png",
+      "prompt": "Chronic interstitial changes and biapical pleural thickening in an elderly patient, with no acute focal consolidation or effusion.",
+      "resolution": "1024x1024",
+      "super_resolution": true
+    },
+    {
+      "id": 41,
+      "filename": "sample_041.png",
+      "prompt": "Bilateral peribronchial cuffing and increased perihilar markings, consistent with viral bronchiolitis or reactive airway disease.",
+      "resolution": "1024x1024",
+      "super_resolution": true
+    },
+    {
+      "id": 42,
+      "filename": "sample_042.png",
+      "prompt": "Large right upper lobe mass with well-defined margins and associated right hilar enlargement, suspicious for primary bronchogenic carcinoma.",
+      "resolution": "1024x1024",
+      "super_resolution": true
+    },
+    {
+      "id": 43,
+      "filename": "sample_043.png",
+      "prompt": "Multiple lytic lesions in the ribs and clavicles with associated soft tissue masses, compatible with metastatic disease. Lungs otherwise clear.",
+      "resolution": "1024x1024",
+      "super_resolution": true
+    },
+    {
+      "id": 44,
+      "filename": "sample_044.png",
+      "prompt": "Extensive bilateral pleural calcifications with volume loss of both hemithoraces, consistent with prior asbestos exposure.",
+      "resolution": "1024x1024",
+      "super_resolution": true
+    },
+    {
+      "id": 45,
+      "filename": "sample_045.png",
+      "prompt": "Left-sided diaphragmatic elevation with bowel gas pattern projecting into the left hemithorax, suggestive of diaphragmatic hernia or eventration.",
+      "resolution": "1024x1024",
+      "super_resolution": true
+    },
+    {
+      "id": 46,
+      "filename": "sample_046.png",
+      "prompt": "Post-lobectomy changes in the right upper lobe with surgical clips and volume loss, compensatory hyperinflation of remaining right lung.",
+      "resolution": "1024x1024",
+      "super_resolution": true
+    },
+    {
+      "id": 47,
+      "filename": "sample_047.png",
+      "prompt": "Post-pleurodesis changes with diffuse pleural thickening and apical scarring on the left; no recurrent pneumothorax.",
+      "resolution": "1024x1024",
+      "super_resolution": true
+    },
+    {
+      "id": 48,
+      "filename": "sample_048.png",
+      "prompt": "Diffuse bilateral coarse reticulation with traction bronchiectasis and reduced lung volumes, compatible with advanced fibrotic lung disease.",
+      "resolution": "1024x1024",
+      "super_resolution": true
+    },
+    {
+      "id": 49,
+      "filename": "sample_049.png",
+      "prompt": "Bilateral patchy consolidations and ground-glass opacities in peripheral and basal distributions, compatible with organizing pneumonia pattern.",
+      "resolution": "1024x1024",
+      "super_resolution": true
+    },
+    {
+      "id": 50,
+      "filename": "sample_050.png",
+      "prompt": "Predominantly right lower lobe tree-in-bud nodularity and bronchial wall thickening, consistent with endobronchial infectious or inflammatory process.",
+      "resolution": "1024x1024",
+      "super_resolution": true
+    }
+  ]
+}
