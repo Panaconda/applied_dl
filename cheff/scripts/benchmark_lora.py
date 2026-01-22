@@ -252,9 +252,9 @@ class LoRABenchmarker:
             if self.device == 'cuda': 
                 torch.cuda.synchronize()
             
-            print("  Measurement phase (1000 steps)...")
+            print("  Measurement phase (100 steps)...")
             start_time = time.time()
-            steps = 1000
+            steps = 100
             
             with self.measure_memory():
                 for _ in tqdm(range(steps), desc="  Progress"):
