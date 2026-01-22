@@ -63,7 +63,9 @@ class LoRABenchmarker:
             'lora_targets': [
                 "time_embed.0",
                 "time_embed.2",
-                "emb_layers.1"
+                "in_layers.2",
+                "out_layers.3",
+                "out.2"
             ]
         },
         'B_Text_Self': {
@@ -74,7 +76,9 @@ class LoRABenchmarker:
             'lora_targets': [
                 "time_embed.0",
                 "time_embed.2",
-                "emb_layers.1"
+                "in_layers.2",
+                "out_layers.3",
+                "out.2"
             ]
         },
         'C_Text_SelfCross': {
@@ -85,7 +89,9 @@ class LoRABenchmarker:
             'lora_targets': [
                 "time_embed.0",
                 "time_embed.2",
-                "emb_layers.1"
+                "in_layers.2",
+                "out_layers.3",
+                "out.2"
             ]
         }
     }
