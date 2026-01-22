@@ -1,3 +1,5 @@
+# Unconditioned Model Requirements
+
 | Rank | Trainable Params | Total Params | % Trainable | Batch Size | Precision | VRAM Usage |
 | --- | --- | --- | --- | --- | --- | --- |
 | 8 | 2,553,624 | 276,609,787 | 0.92% | 1 | FP32 | 1.49 GB |
@@ -21,3 +23,6 @@
 | 32 | 10,214,496 | 284,270,659 | 3.59% | 16 | FP32 | 5.99 GB |
 | 32 | 10,214,496 | 284,270,659 | 3.59% | 32 | FP32 | 10.79 GB |
 | 32 | 10,214,496 | 284,270,659 | 3.59% | 64 | FP32 | 20.40 GB |
+
+# Text-to-Image Model Requirements
+
