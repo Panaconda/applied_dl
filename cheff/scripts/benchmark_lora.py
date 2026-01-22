@@ -212,6 +212,7 @@ class LoRABenchmarker:
             
             model = self.load_base_model(scenario_config['base_model'], scenario_config['text_conditioning'])
             model = self.inject_lora(model, rank, scenario_config['lora_targets'], scenario_name=scenario_name)
+            model = model.to(self.device)
             
             # Convert model to target precision
             if precision == 'fp16':
