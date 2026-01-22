@@ -8,6 +8,7 @@ from contextlib import contextmanager
 from dataclasses import dataclass, asdict
 from pathlib import Path
 from typing import Dict, List, Optional
+from types import SimpleNamespace
 
 import torch
 import torch.nn as nn
@@ -17,28 +18,23 @@ from tqdm import tqdm
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
+try:
+    from cheff.peft_modules.inject_lora import apply_lora_peft
+except ImportError:
+    sys.path.append(str(Path(__file__).parent / '..' / 'cheff' / 'peft_modules'))
+    from inject_lora import apply_lora_peft
+
 def robust_checkpoint_wrapper(func, inputs, params, flag):
-    """
-    Adapts the legacy signature (func, inputs, params, flag) to torch.utils.checkpoint.
-    """
     return torch.utils.checkpoint.checkpoint(func, *inputs, use_reentrant=False)
 
 try:
     import cheff.ldm.modules.diffusionmodules.util as cheff_util
-    
     print(">> Applying monkey-patch to gradient checkpointing (Pre-Import)...")
     cheff_util.checkpoint = robust_checkpoint_wrapper
-    
 except ImportError:
     print(">> WARNING: Could not apply monkey-patch. Dependencies might be missing.")
 
 from cheff.ldm.inference import CheffLDMT2I
-
-try:
-    from peft import LoraConfig, get_peft_model
-except ImportError:
-    print("ERROR: peft library not installed. Run: pip install peft")
-    sys.exit(1)
 
 @dataclass
 class BenchmarkResult:
@@ -55,28 +51,29 @@ class BenchmarkResult:
     error_message: Optional[str] = None
 
 class LoRABenchmarkerT2I:
-    """Benchmark for Text-to-Image Model (Scenarios B & C)."""
     
     SCENARIOS = {
         'B_Text_Self': {
-            'description': 'Domain Adaptation (Text + Self-Attn)',
+            'description': 'Domain Adaptation (Text + Self-Attn Only)',
             'base_model': 'cheff_diff_t2i.pt',
             'input_channels': 3,
-            'lora_targets': [
-                "time_embed.0", "time_embed.2",
-                "in_layers.2", "out_layers.3", "out.2",
-                "attn1.to_q", "attn1.to_k", "attn1.to_v", "attn1.to_out.0"
-            ]
+            'lora_config': {
+                'adaptation_scope': 'attn',
+                'target_modules': ['to_q', 'to_k', 'to_v', 'to_out.0'],
+                'ff_modules': [],
+                'dropout': 0.05
+            }
         },
-        'C_Text_SelfCross': {
-            'description': 'Concept Injection (Text + Self & Cross-Attn)',
+        'C_Cross_Only': {
+            'description': 'Pure Concept Injection (Cross-Attn Only)',
             'base_model': 'cheff_diff_t2i.pt',
             'input_channels': 3,
-            'lora_targets': [
-                "time_embed.0", "time_embed.2",
-                "in_layers.2", "out_layers.3", "out.2",
-                "to_q", "to_k", "to_v", "to_out.0"
-            ]
+            'lora_config': {
+                'adaptation_scope': 'cross',
+                'target_modules': ['to_q', 'to_k', 'to_v', 'to_out.0'],
+                'ff_modules': [],
+                'dropout': 0.05
+            }
         }
     }
     
@@ -88,41 +85,21 @@ class LoRABenchmarkerT2I:
         self.model_dir = Path(model_dir)
         self.output_dir = Path(output_dir)
         self.output_dir.mkdir(parents=True, exist_ok=True)
-        self.log_dir = self.output_dir / "model_logs_t2i"
-        self.log_dir.mkdir(exist_ok=True)
         self.device = device
         self.results: List[BenchmarkResult] = []
         
-    def load_base_model(self, model_path: str) -> nn.Module:
+    def load_base_model(self, model_path: str):
         full_path = self.model_dir / model_path
         if not full_path.exists():
             raise FileNotFoundError(f"Model not found: {full_path}")
         
         print(f"Loading base model: {model_path}")
-        # Always use T2I Wrapper
         model_wrapper = CheffLDMT2I(
             model_path=str(full_path),
             ae_path=str(self.model_dir / "cheff_autoencoder.pt"),
             device=self.device
         )
-        return model_wrapper.model.model.diffusion_model
-
-    def inject_lora(self, model: nn.Module, rank: int, target_modules: List[str]) -> nn.Module:
-        print(f"  Injecting LoRA (Rank {rank}) into targets: {target_modules[-1]}...") # Print last target (attn)
-        
-        if not hasattr(model, 'config'):
-            from types import SimpleNamespace
-            model.config = SimpleNamespace(to_dict=lambda: {})
-        
-        lora_config = LoraConfig(
-            r=rank,
-            lora_alpha=rank,
-            target_modules=target_modules,
-            lora_dropout=0.05,
-            bias="none",
-            task_type=None
-        )
-        return get_peft_model(model, lora_config)
+        return model_wrapper
 
     def count_parameters(self, model: nn.Module) -> Dict[str, int]:
         trainable = sum(p.numel() for p in model.parameters() if p.requires_grad)
@@ -142,7 +119,6 @@ class LoRABenchmarkerT2I:
 
     def generate_dummy_batch(self, batch_size: int, channels: int = 4, dtype: torch.dtype = torch.float32):
         latents = torch.randn(batch_size, channels, 64, 64, device=self.device, dtype=dtype)
-        # Ensure gradients are required so checkpointing doesn't fail
         latents.requires_grad_(True)
         
         timesteps = torch.randint(0, 1000, (batch_size,), device=self.device)
@@ -161,19 +137,33 @@ class LoRABenchmarkerT2I:
         print(f"\nScenario: {name} | Rank: {rank} | Batch: {batch_size}")
         try:
             dtype = torch.float16 if precision == 'fp16' else torch.float32
-            model = self.load_base_model(config['base_model'])
-            model = self.inject_lora(model, rank, config['lora_targets'])
+            
+            model_wrapper = self.load_base_model(config['base_model'])
+            
+            conf_data = config['lora_config']
+            lora_config_obj = SimpleNamespace(
+                rank=rank,
+                alpha=rank,
+                adaptation_scope=conf_data['adaptation_scope'],
+                target_modules=conf_data['target_modules'],
+                ff_modules=conf_data['ff_modules'],
+                dropout=conf_data['dropout']
+            )
+
+            model_wrapper = apply_lora_peft(model_wrapper, lora_config_obj)
+            
+            model = model_wrapper.model.model.diffusion_model
             model = model.to(self.device).train()
             if precision == 'fp16': model = model.half()
             
             optimizer = torch.optim.AdamW([p for p in model.parameters() if p.requires_grad], lr=1e-4)
             
-            # Warmup
+            print("  Warmup phase...")
             for _ in range(3):
                 batch = self.generate_dummy_batch(batch_size, config['input_channels'], dtype)
                 self._run_step(model, batch)
             
-            # Measure
+            print("  Measurement phase...")
             start_time = time.time()
             steps = 50
             with self.measure_memory():
@@ -202,7 +192,6 @@ class LoRABenchmarkerT2I:
 
     def _run_step(self, model, batch):
         noisy = batch['latents'] + 0.1 * batch['noise']
-        # T2I model REQUIRES context argument
         pred = model(noisy, batch['timesteps'], context=batch['text_embeds'])
         loss = F.mse_loss(pred, batch['noise'])
         loss.backward()
