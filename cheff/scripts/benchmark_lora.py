@@ -107,16 +107,12 @@ class LoRABenchmarker:
                 device=self.device
             )
         
-        # The diffusion model is at wrapper.model.model.diffusion_model
         return model_wrapper.model.model.diffusion_model
 
     def _verify_layer_names(self, model: nn.Module):
-        """Quick safety check to ensure 'attn1' exists in the model."""
         found_attn1 = any("attn1" in name for name, _ in model.named_modules())
         if not found_attn1:
-            print("\n⚠️  WARNING: Could not find standard 'attn1' layers.")
-            print("   The LDM architecture might use different naming (e.g., 'self_attn').")
-            print("   Please check model structure and update 'lora_targets'.\n")
+            print("\n⚠️  WARNING: Could not find standard 'attn1' layers.\n")
     
     def _dump_model(self, model: nn.Module, filename: str):
         """Dump model structure to file."""
@@ -220,13 +216,13 @@ class LoRABenchmarker:
             model = model.to(self.device)
             model.train()
             
-            print("  → Unfreezing time_embed for checkpointing compatibility")
+            if precision == 'fp16':
+                model = model.half()
+            
+            print("  → forcing time_embed parameters to require_grad=True")
             for name, param in model.named_parameters():
                 if "time_embed" in name:
                     param.requires_grad = True
-            
-            if precision == 'fp16':
-                model = model.half()
             
             channels = scenario_config.get('input_channels', 4)
             optimizer = torch.optim.AdamW([p for p in model.parameters() if p.requires_grad], lr=1e-4)
@@ -256,7 +252,6 @@ class LoRABenchmarker:
             
             print(f"  ✓ VRAM: {self.last_peak_memory:.2f} GB")
             print(f"  ✓ Throughput: {throughput:.2f} img/s")
-            print(f"  ✓ Trainable: {params['trainable']:,} ({params['percent']:.2f}%)")
             
             result = BenchmarkResult(
                 scenario=scenario_name,
@@ -272,7 +267,6 @@ class LoRABenchmarker:
                 status="SUCCESS"
             )
             
-            # Cleanup immediately
             del model, optimizer, batch
             if self.device == 'cuda':
                 torch.cuda.empty_cache()
