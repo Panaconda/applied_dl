@@ -190,6 +190,8 @@ class LoRABenchmarker:
         """Generate random tensors (latents + context) for benchmarking."""
         # Use configured channel count (3 for Cheff models, 4 for Stable Diffusion)
         latents = torch.randn(batch_size, channels, 64, 64, device=self.device, dtype=dtype)
+        latents.requires_grad_(True)
+        
         timesteps = torch.randint(0, 1000, (batch_size,), device=self.device)
         
         batch = {
@@ -200,7 +202,10 @@ class LoRABenchmarker:
         
         if text_conditioning:
             # CLIP embedding shape: (Batch, 77 tokens, 768 dim)
-            batch['text_embeds'] = torch.randn(batch_size, 77, 768, device=self.device, dtype=dtype)
+            text_embeds = torch.randn(batch_size, 77, 768, device=self.device, dtype=dtype)            
+            text_embeds.requires_grad_(True)
+            
+            batch['text_embeds'] = text_embeds
             
         return batch
 
