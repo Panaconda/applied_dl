@@ -17,20 +17,28 @@ from tqdm import tqdm
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
+def robust_checkpoint_wrapper(func, inputs, params, flag):
+    """
+    Adapts the legacy signature (func, inputs, params, flag) to torch.utils.checkpoint.
+    """
+    return torch.utils.checkpoint.checkpoint(func, *inputs, use_reentrant=False)
+
+try:
+    import cheff.ldm.modules.diffusionmodules.util as cheff_util
+    
+    print(">> Applying monkey-patch to gradient checkpointing (Pre-Import)...")
+    cheff_util.checkpoint = robust_checkpoint_wrapper
+    
+except ImportError:
+    print(">> WARNING: Could not apply monkey-patch. Dependencies might be missing.")
+
 from cheff.ldm.inference import CheffLDMT2I
-import cheff.ldm.modules.diffusionmodules.util as cheff_util
 
 try:
     from peft import LoraConfig, get_peft_model
 except ImportError:
     print("ERROR: peft library not installed. Run: pip install peft")
     sys.exit(1)
-
-def robust_checkpoint_wrapper(func, inputs, params, flag):
-    return torch.utils.checkpoint.checkpoint(func, *inputs, use_reentrant=False)
-
-print(">> Applying monkey-patch to gradient checkpointing...")
-cheff_util.checkpoint = robust_checkpoint_wrapper
 
 @dataclass
 class BenchmarkResult:
@@ -54,9 +62,6 @@ class LoRABenchmarkerT2I:
             'description': 'Domain Adaptation (Text + Self-Attn)',
             'base_model': 'cheff_diff_t2i.pt',
             'input_channels': 3,
-            # STRATEGY: Style & Coherence
-            # Targets ResNets (Texture) + Self-Attention (Structure). 
-            # Note: We specifically target 'attn1' to isolate Self-Attn.
             'lora_targets': [
                 "time_embed.0", "time_embed.2",
                 "in_layers.2", "out_layers.3", "out.2",
@@ -67,9 +72,6 @@ class LoRABenchmarkerT2I:
             'description': 'Concept Injection (Text + Self & Cross-Attn)',
             'base_model': 'cheff_diff_t2i.pt',
             'input_channels': 3,
-            # STRATEGY: Platinum / Full Brain
-            # Targets ResNets + Self-Attn + Cross-Attn.
-            # Removing "attn1" prefix allows hitting ALL attention blocks.
             'lora_targets': [
                 "time_embed.0", "time_embed.2",
                 "in_layers.2", "out_layers.3", "out.2",
@@ -78,7 +80,7 @@ class LoRABenchmarkerT2I:
         }
     }
     
-    LORA_RANKS = [8, 32, 128]
+    LORA_RANKS = [8, 32, 64, 128]
     BATCH_SIZES = [1, 2, 4, 8, 16, 32, 64]
     PRECISIONS = ['fp32']
     
@@ -140,11 +142,13 @@ class LoRABenchmarkerT2I:
 
     def generate_dummy_batch(self, batch_size: int, channels: int = 4, dtype: torch.dtype = torch.float32):
         latents = torch.randn(batch_size, channels, 64, 64, device=self.device, dtype=dtype)
+        # Ensure gradients are required so checkpointing doesn't fail
+        latents.requires_grad_(True)
+        
         timesteps = torch.randint(0, 1000, (batch_size,), device=self.device)
         
-        # CRITICAL FIX: Use 1280 dimension for OpenCLIP/SD 2.x compatibility
-        # This prevents the "mat1 and mat2 shapes cannot be multiplied" crash
         text_embeds = torch.randn(batch_size, 77, 1280, device=self.device, dtype=dtype)
+        text_embeds.requires_grad_(True)
         
         return {
             'latents': latents,
