@@ -225,11 +225,7 @@ class LoRABenchmarker:
             
             if precision == 'fp16':
                 model = model.half()
-                
-            for name, param in model.named_parameters():
-                if "time_embed" in name:
-                    param.requires_grad = True
-
+            
             channels = scenario_config.get('input_channels', 4)
             optimizer = torch.optim.AdamW([p for p in model.parameters() if p.requires_grad], lr=1e-4)
             
