@@ -98,7 +98,7 @@ class LoRABenchmarker:
     
     LORA_RANKS = [8, 32, 128]
     BATCH_SIZES = [1, 2, 4, 8, 16, 32, 64]
-    PRECISIONS = ['fp32', 'fp16']  # Test both float32 and float16 
+    PRECISIONS = ['fp32']
     
     def __init__(self, model_dir: Path, output_dir: Path, device: str = 'cuda'):
         self.model_dir = Path(model_dir)
