@@ -104,7 +104,8 @@ class LoRABenchmarker:
                 device=self.device
             )
         
-        return model_wrapper.ldm
+        # The diffusion model is at wrapper.model.model.diffusion_model
+        return model_wrapper.model.model.diffusion_model
 
     def _verify_layer_names(self, model: nn.Module):
         """Quick safety check to ensure 'attn1' exists in the model."""
