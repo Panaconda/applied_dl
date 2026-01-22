@@ -53,14 +53,16 @@ class LoRABenchmarker:
             'text_conditioning': False,
             # FIXED: Target time_embed (Linear) instead of qkv (Conv1d) to avoid PEFT crash
             # VRAM measurements remain accurate for feasibility study
-            'lora_targets': ["time_embed.0", "time_embed.2"]
+            'lora_targets': ["time_embed.0", "time_embed.2"],
+            'input_channels': 3
         },
         'B_Text_Self': {
             'description': 'Domain Adaptation (Text + Self-Attn)',
             'base_model': 'cheff_diff_t2i.pt',
             'text_conditioning': True,
             # Keep standard naming (will fallback to time_embed if crashes)
-            'lora_targets': ["attn1.to_q", "attn1.to_k", "attn1.to_v", "attn1.to_out.0"]
+            'lora_targets': ["attn1.to_q", "attn1.to_k", "attn1.to_v", "attn1.to_out.0"],
+            'input_channels': 3
         },
         'C_Text_SelfCross': {
             'description': 'Concept Injection (Text + Self & Cross-Attn)',
@@ -70,7 +72,8 @@ class LoRABenchmarker:
             'lora_targets': [
                 "attn1.to_q", "attn1.to_k", "attn1.to_v", "attn1.to_out.0",
                 "attn2.to_q", "attn2.to_k", "attn2.to_v", "attn2.to_out.0"
-            ]
+            ],
+            'input_channels': 3
         }
     }
     
@@ -183,10 +186,10 @@ class LoRABenchmarker:
         else:
             self.last_peak_memory = 0.0
 
-    def generate_dummy_batch(self, batch_size: int, text_conditioning: bool, dtype: torch.dtype = torch.float32) -> Dict[str, torch.Tensor]:
+    def generate_dummy_batch(self, batch_size: int, text_conditioning: bool, channels: int = 4, dtype: torch.dtype = torch.float32) -> Dict[str, torch.Tensor]:
         """Generate random tensors (latents + context) for benchmarking."""
-        # Standard Stable Diffusion Latent Shape: (Batch, 4, 64, 64) -> 512x512 image
-        latents = torch.randn(batch_size, 4, 64, 64, device=self.device, dtype=dtype)
+        # Use configured channel count (3 for Cheff models, 4 for Stable Diffusion)
+        latents = torch.randn(batch_size, channels, 64, 64, device=self.device, dtype=dtype)
         timesteps = torch.randint(0, 1000, (batch_size,), device=self.device)
         
         batch = {
@@ -218,13 +221,16 @@ class LoRABenchmarker:
             if precision == 'fp16':
                 model = model.half()
             
+            # Get channel count from scenario config (default to 4 if missing)
+            channels = scenario_config.get('input_channels', 4)
+            
             # Optimizer is needed because it holds state (memory)
             optimizer = torch.optim.AdamW([p for p in model.parameters() if p.requires_grad], lr=1e-4)
             
             # Warmup
             print("  Warmup phase (3 steps)...")
             for _ in range(3):
-                batch = self.generate_dummy_batch(batch_size, scenario_config['text_conditioning'], dtype)
+                batch = self.generate_dummy_batch(batch_size, scenario_config['text_conditioning'], channels, dtype)
                 self._run_step(model, batch, scenario_config['text_conditioning'])
             
             if self.device == 'cuda': 
@@ -237,7 +243,7 @@ class LoRABenchmarker:
             
             with self.measure_memory():
                 for _ in tqdm(range(steps), desc="  Progress"):
-                    batch = self.generate_dummy_batch(batch_size, scenario_config['text_conditioning'], dtype)
+                    batch = self.generate_dummy_batch(batch_size, scenario_config['text_conditioning'], channels, dtype)
                     self._run_step(model, batch, scenario_config['text_conditioning'])
             
             if self.device == 'cuda': 
