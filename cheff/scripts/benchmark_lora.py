@@ -207,7 +207,6 @@ class LoRABenchmarker:
         print(f"Scenario: {scenario_name} | Rank: {rank} | Batch: {batch_size} | Precision: {precision}")
         
         try:
-            # Set precision
             dtype = torch.float16 if precision == 'fp16' else torch.float32
             
             model = self.load_base_model(scenario_config['base_model'], scenario_config['text_conditioning'])
@@ -218,11 +217,17 @@ class LoRABenchmarker:
             
             if precision == 'fp16':
                 model = model.half()
-            
-            print("  → forcing time_embed parameters to require_grad=True")
-            for name, param in model.named_parameters():
+
+            def force_grad_hook(module, input, output):
+                output.requires_grad_(True)
+                return output
+
+            hook_handles = []
+            print("  → Attaching gradient hooks for checkpointing compatibility")
+            for name, module in model.named_modules():
                 if "time_embed" in name:
-                    param.requires_grad = True
+                    h = module.register_forward_hook(force_grad_hook)
+                    hook_handles.append(h)
             
             channels = scenario_config.get('input_channels', 4)
             optimizer = torch.optim.AdamW([p for p in model.parameters() if p.requires_grad], lr=1e-4)
@@ -267,6 +272,7 @@ class LoRABenchmarker:
                 status="SUCCESS"
             )
             
+            for h in hook_handles: h.remove()
             del model, optimizer, batch
             if self.device == 'cuda':
                 torch.cuda.empty_cache()
