@@ -65,9 +65,7 @@ class LoRABenchmarker:
                 "time_embed.2",
                 "in_layers.2",
                 "out_layers.3",
-                "out.2",
-                "qkv",
-                "proj_out"
+                "out.2"
             ]
         },
         'B_Text_Self': {
@@ -80,9 +78,7 @@ class LoRABenchmarker:
                 "time_embed.2",
                 "in_layers.2",
                 "out_layers.3",
-                "out.2",
-                "qkv",
-                "proj_out"
+                "out.2"
             ]
         },
         'C_Text_SelfCross': {
@@ -95,9 +91,7 @@ class LoRABenchmarker:
                 "time_embed.2",
                 "in_layers.2",
                 "out_layers.3",
-                "out.2",
-                "qkv",
-                "proj_out"
+                "out.2"
             ]
         }
     }
