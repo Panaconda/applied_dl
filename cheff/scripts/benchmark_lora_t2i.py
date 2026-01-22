@@ -21,18 +21,25 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 try:
     from cheff.peft_modules.inject_lora import apply_lora_peft
 except ImportError:
-    sys.path.append(str(Path(__file__).parent / '..' / 'cheff' / 'peft_modules'))
+    sys.path.append(str(Path(__file__).parent))
     from inject_lora import apply_lora_peft
 
 def robust_checkpoint_wrapper(func, inputs, params, flag):
     return torch.utils.checkpoint.checkpoint(func, *inputs, use_reentrant=False)
 
+print(">> Applying monkey-patch to gradient checkpointing...")
 try:
     import cheff.ldm.modules.diffusionmodules.util as cheff_util
-    print(">> Applying monkey-patch to gradient checkpointing (Pre-Import)...")
+    import cheff.ldm.modules.attention as cheff_attn
+    import cheff.ldm.modules.diffusionmodules.openaimodel as cheff_openai
+
     cheff_util.checkpoint = robust_checkpoint_wrapper
-except ImportError:
-    print(">> WARNING: Could not apply monkey-patch. Dependencies might be missing.")
+    cheff_attn.checkpoint = robust_checkpoint_wrapper
+    if hasattr(cheff_openai, 'checkpoint'):
+        cheff_openai.checkpoint = robust_checkpoint_wrapper
+    print("   ✓ Monkey-patch applied successfully.")
+except ImportError as e:
+    print(f">> WARNING: Patching failed: {e}")
 
 from cheff.ldm.inference import CheffLDMT2I
 
@@ -150,7 +157,7 @@ class LoRABenchmarkerT2I:
                 dropout=conf_data['dropout']
             )
 
-            model_wrapper = apply_lora_peft(model_wrapper, lora_config_obj)
+            apply_lora_peft(model_wrapper.model, lora_config_obj)
             
             model = model_wrapper.model.model.diffusion_model
             model = model.to(self.device).train()
