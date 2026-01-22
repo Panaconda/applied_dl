@@ -12,18 +12,26 @@ from typing import Dict, List, Optional
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+import torch.utils.checkpoint
 from tqdm import tqdm
 
-# Add cheff to path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from cheff.ldm.inference import CheffLDM, CheffLDMT2I
+import cheff.ldm.modules.diffusionmodules.util as cheff_util
 
 try:
     from peft import LoraConfig, get_peft_model
 except ImportError:
     print("ERROR: peft library not installed. Run: pip install peft")
     sys.exit(1)
+
+
+def robust_checkpoint_wrapper(func, inputs, params, flag):
+    return torch.utils.checkpoint.checkpoint(func, *inputs, use_reentrant=False)
+
+print(">> Applying monkey-patch to gradient checkpointing...")
+cheff_util.checkpoint = robust_checkpoint_wrapper
 
 
 @dataclass
@@ -217,18 +225,11 @@ class LoRABenchmarker:
             
             if precision == 'fp16':
                 model = model.half()
-
-            def force_grad_hook(module, input, output):
-                output.requires_grad_(True)
-                return output
-
-            hook_handles = []
-            print("  → Attaching gradient hooks for checkpointing compatibility")
-            for name, module in model.named_modules():
+                
+            for name, param in model.named_parameters():
                 if "time_embed" in name:
-                    h = module.register_forward_hook(force_grad_hook)
-                    hook_handles.append(h)
-            
+                    param.requires_grad = True
+
             channels = scenario_config.get('input_channels', 4)
             optimizer = torch.optim.AdamW([p for p in model.parameters() if p.requires_grad], lr=1e-4)
             
@@ -272,7 +273,6 @@ class LoRABenchmarker:
                 status="SUCCESS"
             )
             
-            for h in hook_handles: h.remove()
             del model, optimizer, batch
             if self.device == 'cuda':
                 torch.cuda.empty_cache()
