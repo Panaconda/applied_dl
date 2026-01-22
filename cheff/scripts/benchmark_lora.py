@@ -55,43 +55,38 @@ class LoRABenchmarker:
     """Benchmark LoRA injection strategies."""
     
     SCENARIOS = {
-        ##'A_Uncond_Self': {
-        ##    'description': 'Sensor Harmonization (Uncond + Self-Attn)',
-        ##    'base_model': 'cheff_diff_uncond.pt',
-        ##    'text_conditioning': False,
-        ##    'input_channels': 3,
-        ##    'lora_targets': [
-        ##        "time_embed.0",
-        ##        "time_embed.2",
-        ##        "in_layers.2",
-        ##        "out_layers.3",
-        ##        "out.2"
-        ##    ]
-        ##},
+        # 'A_Uncond_Self': {
+        #     'description': 'Sensor Harmonization (Uncond + Self-Attn)',
+        #     'base_model': 'cheff_diff_uncond.pt',
+        #     'text_conditioning': False,
+        #     'input_channels': 3,
+        #     'lora_targets': [
+        #         "time_embed.0", "time_embed.2", 
+        #         "in_layers.2", "out_layers.3", "out.2"
+        #     ]
+        # },
+        
         'B_Text_Self': {
             'description': 'Domain Adaptation (Text + Self-Attn)',
             'base_model': 'cheff_diff_t2i.pt',
             'text_conditioning': True,
             'input_channels': 3,
             'lora_targets': [
-                "time_embed.0",
-                "time_embed.2",
-                "in_layers.2",
-                "out_layers.3",
-                "out.2"
+                "time_embed.0", "time_embed.2",
+                "in_layers.2", "out_layers.3", "out.2",
+                "attn1.to_q", "attn1.to_k", "attn1.to_v", "attn1.to_out.0"
             ]
         },
+
         'C_Text_SelfCross': {
             'description': 'Concept Injection (Text + Self & Cross-Attn)',
             'base_model': 'cheff_diff_t2i.pt',
             'text_conditioning': True,
             'input_channels': 3,
             'lora_targets': [
-                "time_embed.0",
-                "time_embed.2",
-                "in_layers.2",
-                "out_layers.3",
-                "out.2"
+                "time_embed.0", "time_embed.2",
+                "in_layers.2", "out_layers.3", "out.2",
+                "to_q", "to_k", "to_v", "to_out.0"
             ]
         }
     }
