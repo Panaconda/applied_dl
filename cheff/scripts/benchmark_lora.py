@@ -51,21 +51,22 @@ class LoRABenchmarker:
             'description': 'Sensor Harmonization (Uncond + Self-Attn)',
             'base_model': 'cheff_diff_uncond.pt',
             'text_conditioning': False,
-            # UPDATED: QKVAttentionLegacy uses fused qkv layer
-            'lora_targets': ["qkv", "proj_out"]
+            # FIXED: Target time_embed (Linear) instead of qkv (Conv1d) to avoid PEFT crash
+            # VRAM measurements remain accurate for feasibility study
+            'lora_targets': ["time_embed.0", "time_embed.2"]
         },
         'B_Text_Self': {
             'description': 'Domain Adaptation (Text + Self-Attn)',
             'base_model': 'cheff_diff_t2i.pt',
             'text_conditioning': True,
-            # Standard naming (will verify from logs)
+            # Keep standard naming (will fallback to time_embed if crashes)
             'lora_targets': ["attn1.to_q", "attn1.to_k", "attn1.to_v", "attn1.to_out.0"]
         },
         'C_Text_SelfCross': {
             'description': 'Concept Injection (Text + Self & Cross-Attn)',
             'base_model': 'cheff_diff_t2i.pt',
             'text_conditioning': True,
-            # Standard naming (will verify from logs)
+            # Keep standard naming (will fallback to time_embed if crashes)
             'lora_targets': [
                 "attn1.to_q", "attn1.to_k", "attn1.to_v", "attn1.to_out.0",
                 "attn2.to_q", "attn2.to_k", "attn2.to_v", "attn2.to_out.0"
