@@ -2,3 +2,7 @@
 trained_models/
 .venv/
 venv/
+physionet.org/
+*.dicom
+machex_dataset/
+pedicxr_test/
