@@ -59,25 +59,40 @@ class LoRABenchmarker:
             'description': 'Sensor Harmonization (Uncond + Self-Attn)',
             'base_model': 'cheff_diff_uncond.pt',
             'text_conditioning': False,
-            'lora_targets': ["time_embed.0", "time_embed.2"],
-            'input_channels': 3
+            'input_channels': 3,
+            'lora_targets': [
+                "time_embed.0",
+                "time_embed.2",
+                "in_layers.2",
+                "out_layers.3",
+                "out.2"
+            ]
         },
         'B_Text_Self': {
             'description': 'Domain Adaptation (Text + Self-Attn)',
             'base_model': 'cheff_diff_t2i.pt',
             'text_conditioning': True,
-            'lora_targets': ["attn1.to_q", "attn1.to_k", "attn1.to_v", "attn1.to_out.0"],
-            'input_channels': 3
+            'input_channels': 3,
+            'lora_targets': [
+                "time_embed.0",
+                "time_embed.2",
+                "in_layers.2",
+                "out_layers.3",
+                "out.2"
+            ]
         },
         'C_Text_SelfCross': {
             'description': 'Concept Injection (Text + Self & Cross-Attn)',
             'base_model': 'cheff_diff_t2i.pt',
             'text_conditioning': True,
+            'input_channels': 3,
             'lora_targets': [
-                "attn1.to_q", "attn1.to_k", "attn1.to_v", "attn1.to_out.0",
-                "attn2.to_q", "attn2.to_k", "attn2.to_v", "attn2.to_out.0"
-            ],
-            'input_channels': 3
+                "time_embed.0",
+                "time_embed.2",
+                "in_layers.2",
+                "out_layers.3",
+                "out.2"
+            ]
         }
     }
     
