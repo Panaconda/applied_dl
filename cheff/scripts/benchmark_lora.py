@@ -51,8 +51,6 @@ class LoRABenchmarker:
             'description': 'Sensor Harmonization (Uncond + Self-Attn)',
             'base_model': 'cheff_diff_uncond.pt',
             'text_conditioning': False,
-            # FIXED: Target time_embed (Linear) instead of qkv (Conv1d) to avoid PEFT crash
-            # VRAM measurements remain accurate for feasibility study
             'lora_targets': ["time_embed.0", "time_embed.2"],
             'input_channels': 3
         },
@@ -60,7 +58,6 @@ class LoRABenchmarker:
             'description': 'Domain Adaptation (Text + Self-Attn)',
             'base_model': 'cheff_diff_t2i.pt',
             'text_conditioning': True,
-            # Keep standard naming (will fallback to time_embed if crashes)
             'lora_targets': ["attn1.to_q", "attn1.to_k", "attn1.to_v", "attn1.to_out.0"],
             'input_channels': 3
         },
@@ -68,7 +65,6 @@ class LoRABenchmarker:
             'description': 'Concept Injection (Text + Self & Cross-Attn)',
             'base_model': 'cheff_diff_t2i.pt',
             'text_conditioning': True,
-            # Keep standard naming (will fallback to time_embed if crashes)
             'lora_targets': [
                 "attn1.to_q", "attn1.to_k", "attn1.to_v", "attn1.to_out.0",
                 "attn2.to_q", "attn2.to_k", "attn2.to_v", "attn2.to_out.0"
@@ -220,20 +216,22 @@ class LoRABenchmarker:
             
             model = self.load_base_model(scenario_config['base_model'], scenario_config['text_conditioning'])
             model = self.inject_lora(model, rank, scenario_config['lora_targets'], scenario_name=scenario_name)
-            model = model.to(self.device)
             
-            # Convert model to target precision
+            model = model.to(self.device)
+            model.train()
+            
+            print("  → Unfreezing time_embed for checkpointing compatibility")
+            for name, param in model.named_parameters():
+                if "time_embed" in name:
+                    param.requires_grad = True
+            
             if precision == 'fp16':
                 model = model.half()
             
-            # Get channel count from scenario config (default to 4 if missing)
             channels = scenario_config.get('input_channels', 4)
-            
-            # Optimizer is needed because it holds state (memory)
             optimizer = torch.optim.AdamW([p for p in model.parameters() if p.requires_grad], lr=1e-4)
             
-            # Warmup
-            print("  Warmup phase (3 steps)...")
+            print("  Warmup phase (3 steps)...)")
             for _ in range(3):
                 batch = self.generate_dummy_batch(batch_size, scenario_config['text_conditioning'], channels, dtype)
                 self._run_step(model, batch, scenario_config['text_conditioning'])
@@ -241,7 +239,6 @@ class LoRABenchmarker:
             if self.device == 'cuda': 
                 torch.cuda.synchronize()
             
-            # Measurement
             print("  Measurement phase (100 steps)...")
             start_time = time.time()
             steps = 100
