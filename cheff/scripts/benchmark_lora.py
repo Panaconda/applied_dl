@@ -96,7 +96,7 @@ class LoRABenchmarker:
         }
     }
     
-    LORA_RANKS = [8, 32, 128]
+    LORA_RANKS = [16, 32, 128]
     BATCH_SIZES = [1, 2, 4, 8, 16, 32, 64]
     PRECISIONS = ['fp32']
     
