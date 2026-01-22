@@ -51,18 +51,21 @@ class LoRABenchmarker:
             'description': 'Sensor Harmonization (Uncond + Self-Attn)',
             'base_model': 'cheff_diff_uncond.pt',
             'text_conditioning': False,
-            'lora_targets': ["attn1.to_q", "attn1.to_k", "attn1.to_v", "attn1.to_out.0"]
+            # UPDATED: QKVAttentionLegacy uses fused qkv layer
+            'lora_targets': ["qkv", "proj_out"]
         },
         'B_Text_Self': {
             'description': 'Domain Adaptation (Text + Self-Attn)',
             'base_model': 'cheff_diff_t2i.pt',
             'text_conditioning': True,
+            # Standard naming (will verify from logs)
             'lora_targets': ["attn1.to_q", "attn1.to_k", "attn1.to_v", "attn1.to_out.0"]
         },
         'C_Text_SelfCross': {
             'description': 'Concept Injection (Text + Self & Cross-Attn)',
             'base_model': 'cheff_diff_t2i.pt',
             'text_conditioning': True,
+            # Standard naming (will verify from logs)
             'lora_targets': [
                 "attn1.to_q", "attn1.to_k", "attn1.to_v", "attn1.to_out.0",
                 "attn2.to_q", "attn2.to_k", "attn2.to_v", "attn2.to_out.0"
@@ -133,6 +136,11 @@ class LoRABenchmarker:
         self._dump_model(model, f"{log_prefix}_before_lora.txt")
         
         print(f"  Injecting LoRA (Rank {rank}) into targets: {target_modules[:2]}...")
+        
+        # PEFT requires a config attribute - add a dummy one if missing
+        if not hasattr(model, 'config'):
+            from types import SimpleNamespace
+            model.config = SimpleNamespace(to_dict=lambda: {})
         
         lora_config = LoraConfig(
             r=rank,
