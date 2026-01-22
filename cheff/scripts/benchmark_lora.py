@@ -65,7 +65,9 @@ class LoRABenchmarker:
                 "time_embed.2",
                 "in_layers.2",
                 "out_layers.3",
-                "out.2"
+                "out.2",
+                "qkv",
+                "proj_out"
             ]
         },
         'B_Text_Self': {
@@ -78,7 +80,9 @@ class LoRABenchmarker:
                 "time_embed.2",
                 "in_layers.2",
                 "out_layers.3",
-                "out.2"
+                "out.2",
+                "qkv",
+                "proj_out"
             ]
         },
         'C_Text_SelfCross': {
@@ -91,7 +95,9 @@ class LoRABenchmarker:
                 "time_embed.2",
                 "in_layers.2",
                 "out_layers.3",
-                "out.2"
+                "out.2",
+                "qkv",
+                "proj_out"
             ]
         }
     }
@@ -252,9 +258,9 @@ class LoRABenchmarker:
             if self.device == 'cuda': 
                 torch.cuda.synchronize()
             
-            print("  Measurement phase (100 steps)...")
+            print("  Measurement phase (1000 steps)...")
             start_time = time.time()
-            steps = 100
+            steps = 1000
             
             with self.measure_memory():
                 for _ in tqdm(range(steps), desc="  Progress"):
