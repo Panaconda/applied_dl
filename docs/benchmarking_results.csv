@@ -1,0 +1,2 @@
+scenario,lora_rank,batch_size,precision,max_vram_gb,throughput_img_per_sec,trainable_params,total_params,trainable_percent,gradient_accum_feasible,status,error_message
+A_Uncond_Self,8,1,fp32,1.487375259399414,6.2573369006619215,2553624,276609787,0.9231864236242661,16x,SUCCESS,
