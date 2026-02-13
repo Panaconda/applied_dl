@@ -2,4 +2,7 @@
 trained_models/
 .venv/
 .venv_machex/
+.venv_eval/
 chestx-ray/
+
+*.pt
