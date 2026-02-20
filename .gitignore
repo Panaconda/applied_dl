@@ -6,3 +6,5 @@ physionet.org/
 *.dicom
 machex_dataset/
 pedicxr_test/
+
+data/
