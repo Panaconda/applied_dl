@@ -2,7 +2,6 @@
 from __future__ import annotations
 
 import argparse
-import os
 
 import torch
 import pytorch_lightning as pl
@@ -75,7 +74,7 @@ def main() -> None:
     )
 
     checkpoint_cb = ModelCheckpoint(
-        filename="best",
+        filename="best-epoch{epoch:02d}",
         monitor=bc.monitor_metric,
         mode="max",
         save_top_k=1,
