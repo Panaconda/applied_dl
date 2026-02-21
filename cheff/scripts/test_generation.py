@@ -148,8 +148,10 @@ def main():
         )
         model.model.model.diffusion_model = get_peft_model(unet, peft_config)
         # Load trained weights from PL checkpoint
-        ckpt = torch.load(args.lora_ckpt, map_location=device)
+        ckpt = torch.load(args.lora_ckpt, map_location="cpu")
         model.model.load_state_dict(ckpt["state_dict"], strict=False)
+        # Move LoRA layers (initialized on CPU) to the target device
+        model.model.to(device)
         model.model.eval()
         print("  LoRA checkpoint loaded.")
     
