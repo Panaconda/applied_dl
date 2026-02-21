@@ -100,5 +100,10 @@ data:
     mimic: true
 
 lightning:
+  logger:
+    target: pytorch_lightning.loggers.TensorBoardLogger
+    params:
+      save_dir: logs
+      name: cheff_lora_vindr
   trainer:
     max_epochs: 50
