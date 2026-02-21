@@ -6,7 +6,7 @@ CHEXRAY14_ROOT: null
 CHEXPERT_ROOT: null
 PADCHEST_ROOT: null
 MIMIC_ROOT: null
-VINDRCXR_ROOT: pedicxr_test
+VINDRCXR_ROOT: ../data/physionet.org/files/vindr-pcxr/1.0.0
 BRAX_ROOT: null
 RSNA_ROOT: null
 OPENI_ROOT: null
