@@ -125,8 +125,8 @@ def main() -> None:
     parser = argparse.ArgumentParser(
         description="Generate synthetic VinDr-PCXR images with CheFF T2I"
     )
-    parser.add_argument("--model-path", default="models/cheff_diff_t2i.pt")
-    parser.add_argument("--ae-path", default="models/cheff_autoencoder.pt")
+    parser.add_argument("--model-path", default="../models/cheff_diff_t2i.pt")
+    parser.add_argument("--ae-path", default="../models/cheff_autoencoder.pt")
     parser.add_argument(
         "--lora-ckpt", default=None,
         help="PL .ckpt from finetune_cheff training (recommended)"
