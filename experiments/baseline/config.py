@@ -38,7 +38,7 @@ class BaselineConfig(BaseSettings):
     # Hardware
     accelerator: str = "auto"
     devices: str = "auto"
-    precision: str = "16-mixed"
+    precision: str = "16"
 
 
 bc = BaselineConfig()
