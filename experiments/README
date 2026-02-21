@@ -59,7 +59,7 @@ labels = labels[VIABLE_CLASSES]  # drop rare cols
 
 ---
 
-## Baseline
+## Baseline (vindr-pcxr-mini)
 
 **Objective**: Train on original 7,728 training images only; no augmentation and no synthetic data. Baseline for all other conditions.
 
@@ -74,3 +74,19 @@ labels = labels[VIABLE_CLASSES]  # drop rare cols
 | Pneumonia        | 0.7366  | 0.2319 | 0.5393 | 0.7882 |
 | Other disease    | 0.5846  | 0.1320 | 0.4198 | 0.6960 |
 | **Mean**         | **0.6836** | **0.2944** | **0.5987** | **0.6597** |
+
+---
+
+## Standard Augmentation (vindr-pcxr-mini)
+
+**Objective**: Same as baseline but with standard computer vision augmentations applied to the training set only. Tests whether geometric and photometric augmentation alone improves generalisation without any additional data.
+
+**Augmentations (train only — val/test always use plain transform):**
+
+| Transform | Params | Rationale |
+|---|---|---|
+| `RandomRotation` | ±15° | Simulates patient tilt |
+| `RandomAffine` | translate=5%, scale=0.9–1.1 | Patient positioning variation |
+| `RandomHorizontalFlip` | p=0.5 | Common in CXR literature |
+| `ColorJitter` | brightness=0.2, contrast=0.2 | Scanner/exposure variation |
+| `GaussianNoise` | std=0.02 (in normalised space) | Sensor noise |
