@@ -1,7 +1,7 @@
 """Lightning Module for the VinDr-PCXR DenseNet121 baseline classifier."""
 from __future__ import annotations
 
-from typing import Any, Dict, List, Optional
+from typing import Any, List, Optional
 
 import pytorch_lightning as pl
 import torch
@@ -59,16 +59,9 @@ class VinDrClassifier(pl.LightningModule):
         self._test_probs: List[torch.Tensor] = []
         self._test_targets: List[torch.Tensor] = []
 
-    # ------------------------------------------------------------------
-    # Forward
-    # ------------------------------------------------------------------
-
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         return self.model(x)
 
-    # ------------------------------------------------------------------
-    # Training
-    # ------------------------------------------------------------------
 
     def training_step(self, batch: Any, batch_idx: int) -> torch.Tensor:
         imgs, labels = batch
@@ -76,9 +69,6 @@ class VinDrClassifier(pl.LightningModule):
         self.log("train/loss", loss, on_step=False, on_epoch=True, prog_bar=True)
         return loss
 
-    # ------------------------------------------------------------------
-    # Validation
-    # ------------------------------------------------------------------
 
     def validation_step(self, batch: Any, batch_idx: int) -> None:
         imgs, labels = batch
@@ -105,9 +95,6 @@ class VinDrClassifier(pl.LightningModule):
         self._val_probs.clear()
         self._val_targets.clear()
 
-    # ------------------------------------------------------------------
-    # Test
-    # ------------------------------------------------------------------
 
     def test_step(self, batch: Any, batch_idx: int) -> None:
         imgs, labels = batch
@@ -128,9 +115,6 @@ class VinDrClassifier(pl.LightningModule):
         self._test_probs.clear()
         self._test_targets.clear()
 
-    # ------------------------------------------------------------------
-    # Optimiser & two-phase schedule
-    # ------------------------------------------------------------------
 
     def configure_optimizers(self) -> torch.optim.Optimizer:
         # Backbone starts with lr=0 (phase 1); flipped to lr_backbone in

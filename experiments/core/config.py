@@ -7,12 +7,14 @@ from typing import List
 from pydantic import computed_field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
+_ENV_FILE = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), ".env")
+
 
 class CoreConfig(BaseSettings):
     """Experiment configuration."""
 
     model_config = SettingsConfigDict(
-        env_file=".env",
+        env_file=_ENV_FILE,
         env_file_encoding="utf-8",
         extra="ignore",
     )

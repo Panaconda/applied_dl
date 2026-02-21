@@ -1,10 +1,4 @@
-"""Training entry point for the baseline experiment.
-
-Typical usage (from the experiments/ directory):
-
-    python -m baseline.train
-    python -m baseline.train --run-name baseline_v2 --batch-size 64
-"""
+"""Training entry point for the baseline experiment."""
 from __future__ import annotations
 
 import argparse

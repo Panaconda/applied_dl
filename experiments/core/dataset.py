@@ -11,7 +11,6 @@ import torchxrayvision as xrv
 from PIL import Image
 from torch.utils.data import Dataset
 from torchvision.transforms.functional import resize as tv_resize
-from typing import Optional
 
 from core.config import cfg
 

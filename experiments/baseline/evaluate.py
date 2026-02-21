@@ -1,10 +1,4 @@
-"""Standalone evaluation of a saved checkpoint on the VinDr-PCXR test set.
-
-Usage (from the experiments/ directory):
-
-    python -m baseline.evaluate --checkpoint runs/baseline/best-*.ckpt
-    python -m baseline.evaluate --checkpoint <path> --output results.json
-"""
+"""Standalone evaluation of a saved checkpoint on the VinDr-PCXR test set."""
 from __future__ import annotations
 
 import argparse

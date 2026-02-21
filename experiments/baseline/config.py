@@ -1,12 +1,16 @@
 """Configuration for the baseline experiment."""
 from __future__ import annotations
 
+import os
+
 from pydantic_settings import BaseSettings, SettingsConfigDict
+
+_ENV_FILE = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), ".env")
 
 
 class BaselineConfig(BaseSettings):
     model_config = SettingsConfigDict(
-        env_file=".env",
+        env_file=_ENV_FILE,
         env_file_encoding="utf-8",
         extra="ignore",
     )
