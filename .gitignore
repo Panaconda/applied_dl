@@ -8,3 +8,5 @@ machex_dataset/
 pedicxr_test/
 
 data/
+download_missing_train_files.sh
+download_training_log.txt
