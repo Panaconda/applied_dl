@@ -110,18 +110,29 @@ class VinDrClassifier(pl.LightningModule):
         self._test_targets.clear()
 
 
-    def configure_optimizers(self) -> torch.optim.Optimizer:
+    def configure_optimizers(self) -> Any:
+        # Phase 1: backbone hard-frozen (no grad computation), head only.
+        # Phase 2: backbone unfrozen + optimiser rebuilt in on_train_epoch_start.
+        for p in self.model.features.parameters():
+            p.requires_grad = False
         return torch.optim.AdamW(
-            [
-                {"params": self.model.features.parameters(), "lr": 0.0},
-                {"params": self.model.classifier.parameters(), "lr": self.hparams.lr_head},
-            ]
+            self.model.classifier.parameters(),
+            lr=self.hparams.lr_head,
         )
 
     def on_train_epoch_start(self) -> None:
         if self.current_epoch == self.hparams.warmup_epochs:
-            # Only unfreeze backbone (param group 0); leave head LR untouched.
-            self.optimizers().param_groups[0]["lr"] = self.hparams.lr_backbone
+            # Hard-unfreeze backbone and rebuild optimiser with two param groups.
+            for p in self.model.features.parameters():
+                p.requires_grad = True
+            self.trainer.optimizers = [
+                torch.optim.AdamW(
+                    [
+                        {"params": self.model.features.parameters(), "lr": self.hparams.lr_backbone},
+                        {"params": self.model.classifier.parameters(), "lr": self.hparams.lr_head},
+                    ]
+                )
+            ]
             self.print(
                 f"\n[Phase 2] Epoch {self.current_epoch}: "
                 f"backbone unfrozen — lr → {self.hparams.lr_backbone}"

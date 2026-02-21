@@ -29,7 +29,7 @@ def parse_args() -> argparse.Namespace:
 def main() -> None:
     args = parse_args()
 
-    model = VinDrClassifier.load_from_checkpoint(args.checkpoint)
+    model = VinDrClassifier.load_from_checkpoint(args.checkpoint, strict=False)
     model.eval()
 
     # train_image_dir is unused when stage="test"; pass test dir as placeholder

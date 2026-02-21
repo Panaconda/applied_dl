@@ -4,8 +4,10 @@ from __future__ import annotations
 import argparse
 import os
 
+import torch
 import pytorch_lightning as pl
 from pytorch_lightning.callbacks import EarlyStopping, ModelCheckpoint
+from pytorch_lightning.loggers import CSVLogger
 
 from baseline.config import bc
 from baseline.model import VinDrClassifier
@@ -47,9 +49,11 @@ def parse_args() -> argparse.Namespace:
 
 
 def main() -> None:
+    torch.set_float32_matmul_precision("high")
     pl.seed_everything(42, workers=True)
     args = parse_args()
-    run_dir = os.path.join(cfg.runs_dir, args.run_name)
+
+    logger = CSVLogger(save_dir=cfg.runs_dir, name=args.run_name)
 
     dm = VinDrPCXRDataModule(
         train_image_dir=args.train_image_dir,
@@ -71,8 +75,7 @@ def main() -> None:
     )
 
     checkpoint_cb = ModelCheckpoint(
-        dirpath=run_dir,
-        filename="best-{epoch:02d}-{val/auroc:.4f}",
+        filename="best",
         monitor=bc.monitor_metric,
         mode="max",
         save_top_k=1,
@@ -91,12 +94,11 @@ def main() -> None:
         devices=args.devices,
         precision=args.precision,
         callbacks=[checkpoint_cb, early_stop_cb],
-        default_root_dir=run_dir,
+        logger=logger,
         log_every_n_steps=10,
     )
 
     trainer.fit(model, dm)
-    trainer.test(model, dm, ckpt_path="best")
 
 
 if __name__ == "__main__":
