@@ -1,7 +1,7 @@
 """Lightning DataModule for VinDr-PCXR — shared across all experiment conditions."""
 from __future__ import annotations
 
-from typing import List, Optional
+from typing import Dict, List, Optional
 
 import numpy as np
 import pandas as pd
@@ -34,11 +34,12 @@ class VinDrPCXRDataModule(pl.LightningDataModule):
                           Defaults to the plain ``XRVTransform``.
         eval_transform:   Transform applied to val and test images.
                           Defaults to the plain ``XRVTransform``.
-        extra_train_ids:  Optional list of additional image_ids (e.g. synthetic
-                          samples) appended to the training set after the split.
-                          Files must be present in ``train_image_dir``.
-        extra_labels:     Corresponding 6-column label DataFrame for
-                          ``extra_train_ids`` (same format as load_labels).
+        extra_train_ids:   Optional list of additional image_ids (e.g. synthetic
+                           samples) appended to the training set after the split.
+        extra_labels:      Corresponding 6-column label DataFrame for
+                           ``extra_train_ids`` (same format as load_labels).
+        extra_image_paths: Optional dict mapping image_id → absolute file path for
+                           synthetic images stored outside ``train_image_dir``.
     """
 
     def __init__(
@@ -54,6 +55,7 @@ class VinDrPCXRDataModule(pl.LightningDataModule):
         eval_transform=None,
         extra_train_ids: Optional[List[str]] = None,
         extra_labels: Optional[pd.DataFrame] = None,
+        extra_image_paths: Optional[Dict[str, str]] = None,
     ) -> None:
         super().__init__()
         self.train_image_dir = train_image_dir
@@ -67,6 +69,7 @@ class VinDrPCXRDataModule(pl.LightningDataModule):
         self.eval_transform = eval_transform or build_transform()
         self.extra_train_ids = extra_train_ids or []
         self.extra_labels = extra_labels
+        self.extra_image_paths = extra_image_paths or {}
 
         self._train_ds: Optional[VinDrPCXRDataset] = None
         self._val_ds: Optional[VinDrPCXRDataset] = None
@@ -109,6 +112,7 @@ class VinDrPCXRDataModule(pl.LightningDataModule):
             labels=all_train_labels,
             image_dir=self.train_image_dir,
             transform=self.train_transform,
+            image_path_overrides=self.extra_image_paths,
         )
         self._val_ds = VinDrPCXRDataset(
             image_ids=val_ids,

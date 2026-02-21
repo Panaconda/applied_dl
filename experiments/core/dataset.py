@@ -2,7 +2,7 @@
 from __future__ import annotations
 
 import os
-from typing import List, Tuple
+from typing import Dict, List, Optional, Tuple
 
 import numpy as np
 import pandas as pd
@@ -111,10 +111,14 @@ class VinDrPCXRDataset(Dataset):
     """VinDr-PCXR dataset backed by pre-256 PNG files.
 
     Args:
-        image_ids:  Ordered list of image_id strings to include.
-        labels:     DataFrame indexed by image_id, columns = VIABLE_CLASSES.
-        image_dir:  Directory containing ``<image_id>.png`` files.
-        transform:  Callable applied to a PIL Image; defaults to build_transform().
+        image_ids:           Ordered list of image_id strings to include.
+        labels:              DataFrame indexed by image_id, columns = VIABLE_CLASSES.
+        image_dir:           Directory containing ``<image_id>.png`` files.
+        transform:           Callable applied to a PIL Image; defaults to build_transform().
+        image_path_overrides: Optional dict mapping image_id → absolute file path.
+                              When present for a given id, the stored path is used
+                              instead of ``{image_dir}/{image_id}.png``.  Useful for
+                              synthetic images stored outside ``image_dir``.
     """
 
     def __init__(
@@ -123,18 +127,22 @@ class VinDrPCXRDataset(Dataset):
         labels: pd.DataFrame,
         image_dir: str,
         transform=None,
+        image_path_overrides: Optional[dict] = None,
     ) -> None:
         self.image_ids = image_ids
         self.labels = labels
         self.image_dir = image_dir
         self.transform = transform if transform is not None else build_transform()
+        self.image_path_overrides = image_path_overrides or {}
 
     def __len__(self) -> int:
         return len(self.image_ids)
 
     def __getitem__(self, idx: int) -> Tuple[torch.Tensor, torch.Tensor]:
         image_id = self.image_ids[idx]
-        img_path = os.path.join(self.image_dir, f"{image_id}.png")
+        img_path = self.image_path_overrides.get(
+            image_id, os.path.join(self.image_dir, f"{image_id}.png")
+        )
 
         img = Image.open(img_path)
         img = self.transform(img)
