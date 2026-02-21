@@ -85,6 +85,12 @@ def main():
         default=32,
         help='LoRA alpha used during fine-tuning (must match checkpoint)'
     )
+    parser.add_argument(
+        '--num-samples',
+        type=int,
+        default=1,
+        help='Number of images to generate (saved as output_001.png, output_002.png, …)'
+    )
     
     args = parser.parse_args()
     
@@ -162,60 +168,47 @@ def main():
         else:
             print("  LoRA checkpoint loaded successfully.")
     
-    print(f"\nGenerating 256×256 image from prompt:")
+    print(f"\nGenerating {args.num_samples} × 256×256 image(s) from prompt:")
     print(f"  '{args.prompt}'")
     print(f"  Diffusion steps: {args.steps}")
     print(f"  Eta: {args.eta}")
-    print("\nThis may take 20-60 seconds...")
-    
-    # Generate 256×256 image
-    image = model.sample(
-        sampling_steps=args.steps,
-        eta=args.eta,
-        decode=True,
-        conditioning=args.prompt
-    )
-    
-    # Post-process
-    image = image.clamp(-1, 1)
-    image = (image + 1) / 2  # Convert from [-1, 1] to [0, 1]
-    
-    # Super-resolution if requested
-    if args.full_res:
-        print(f"\nUpscaling to 1024×1024 with SR model...")
-        print(f"  SR model: {args.sr_path}")
-        print(f"  SR steps: {args.sr_steps}")
-        print("\nThis may take another 60-120 seconds...")
-        
-        # Convert RGB to grayscale for SR model (expects 1 channel)
-        from torchvision.transforms.functional import rgb_to_grayscale
-        image_gray = rgb_to_grayscale(image)
-        
-        sr_model = CheffSRModel(
-            model_path=args.sr_path,
-            device=device
+    print("\nThis may take 20-60 seconds per image...")
+
+    # Determine output path template
+    base, ext = os.path.splitext(args.output)
+    if not ext:
+        ext = ".png"
+
+    for i in range(1, args.num_samples + 1):
+        out_path = f"{base}_{i:03d}{ext}" if args.num_samples > 1 else args.output
+        print(f"\n  [{i}/{args.num_samples}] Sampling → {out_path}")
+
+        # Generate 256×256 image
+        image = model.sample(
+            sampling_steps=args.steps,
+            eta=args.eta,
+            decode=True,
+            conditioning=args.prompt
         )
-        
-        # SR expects grayscale image in [0, 1] range
-        image = sr_model.sample(
-            image_gray,
-            method='ddim',
-            sampling_steps=args.sr_steps,
-            eta=0.0
-        )
-        
-        resolution = "1024×1024"
-    else:
-        resolution = "256×256"
-    
-    save_image(image, args.output)
-    print(f"\n✓ Image saved to: {args.output}")
-    print(f"  Resolution: {resolution}")
-    
-    # Display image info
-    print(f"\nImage statistics:")
-    print(f"  Shape: {image.shape}")
-    print(f"  Min: {image.min().item():.3f}, Max: {image.max().item():.3f}, Mean: {image.mean().item():.3f}")
+
+        # Post-process
+        image = image.clamp(-1, 1)
+        image = (image + 1) / 2  # Convert from [-1, 1] to [0, 1]
+
+        # Super-resolution if requested
+        if args.full_res:
+            from torchvision.transforms.functional import rgb_to_grayscale
+            image_gray = rgb_to_grayscale(image)
+            sr_model = CheffSRModel(model_path=args.sr_path, device=device)
+            image = sr_model.sample(image_gray, method='ddim', sampling_steps=args.sr_steps, eta=0.0)
+            resolution = "1024×1024"
+        else:
+            resolution = "256×256"
+
+        save_image(image, out_path)
+        print(f"  ✓ Saved ({resolution})")
+
+    print(f"\nDone. {args.num_samples} image(s) saved.")
 
 if __name__ == '__main__':
     main()
