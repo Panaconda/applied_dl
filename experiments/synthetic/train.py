@@ -30,11 +30,21 @@ def parse_args() -> argparse.Namespace:
     p.add_argument(
         "--synthetic-dir",
         default="../samples/lora/pneumonia",
-        help="Directory with synthetic_labels.csv and synthetic_paths.json",
+        help="Directory containing the synthetic index files",
+    )
+    p.add_argument(
+        "--labels-csv", default=None,
+        help="Override labels CSV filename inside --synthetic-dir "
+             "(default: filtered_labels.csv, fallback: synthetic_labels.csv)",
+    )
+    p.add_argument(
+        "--paths-json", default=None,
+        help="Override paths JSON filename inside --synthetic-dir "
+             "(default: filtered_paths.json, fallback: synthetic_paths.json)",
     )
 
     # Run identity
-    p.add_argument("--run-name", default="synthetic_pneumonia")
+    p.add_argument("--run-name", default="synthetic_pneumonia_filtered")
 
     # Data
     p.add_argument("--val-fraction", type=float, default=bc.val_fraction)
@@ -56,25 +66,46 @@ def parse_args() -> argparse.Namespace:
     return p.parse_args()
 
 
-def load_synthetic_index(synthetic_dir: str):
-    """Load the pre-built labels CSV and paths JSON from *synthetic_dir*."""
-    synth_dir = os.path.abspath(synthetic_dir)
-    csv_path = os.path.join(synth_dir, "synthetic_labels.csv")
-    json_path = os.path.join(synth_dir, "synthetic_paths.json")
+def _resolve(synth_dir: str, override: str | None, *candidates: str) -> str:
+    """Return the first existing candidate path, or raise FileNotFoundError."""
+    names = [override] if override else list(candidates)
+    for name in names:
+        path = os.path.join(synth_dir, name)
+        if os.path.exists(path):
+            return path
+    tried = ", ".join(names)
+    raise FileNotFoundError(
+        f"None of [{tried}] found in {synth_dir}. "
+        "Run `python -m inference.build_synthetic_index` (and optionally "
+        "`python -m inference.filter_synthetic`) first."
+    )
 
-    for path in [csv_path, json_path]:
-        if not os.path.exists(path):
-            raise FileNotFoundError(
-                f"{path} not found.\n"
-                "Run `python -m inference.build_synthetic_index` first."
-            )
+
+def load_synthetic_index(
+    synthetic_dir: str,
+    labels_csv_override: str | None = None,
+    paths_json_override: str | None = None,
+):
+    """Load the pre-built labels CSV and paths JSON from *synthetic_dir*.
+
+    Prefers filtered_* files produced by filter_synthetic.py; falls back to
+    the raw synthetic_* files from build_synthetic_index.py.
+    """
+    synth_dir = os.path.abspath(synthetic_dir)
+
+    csv_path = _resolve(synth_dir, labels_csv_override,
+                        "filtered_labels.csv", "synthetic_labels.csv")
+    json_path = _resolve(synth_dir, paths_json_override,
+                         "filtered_paths.json", "synthetic_paths.json")
 
     labels = pd.read_csv(csv_path, index_col="image_id")
     with open(json_path) as f:
         paths = json.load(f)
 
     image_ids = list(labels.index)
-    print(f"Loaded {len(image_ids)} synthetic images from {synth_dir}")
+    print(f"Loaded {len(image_ids)} synthetic images")
+    print(f"  labels : {os.path.basename(csv_path)}")
+    print(f"  paths  : {os.path.basename(json_path)}")
     return image_ids, labels, paths
 
 
@@ -83,7 +114,11 @@ def main() -> None:
     pl.seed_everything(42, workers=True)
     args = parse_args()
 
-    extra_ids, extra_labels, extra_paths = load_synthetic_index(args.synthetic_dir)
+    extra_ids, extra_labels, extra_paths = load_synthetic_index(
+        args.synthetic_dir,
+        labels_csv_override=args.labels_csv,
+        paths_json_override=args.paths_json,
+    )
     print(f"  Pneumonia positives: {extra_labels['Pneumonia'].sum()}")
 
     logger = CSVLogger(save_dir=cfg.runs_dir, name=args.run_name)
