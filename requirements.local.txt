@@ -1,0 +1,23 @@
+# Config
+pydantic-settings>=2.0
+
+# Core deep learning
+torch>=2.1
+torchvision>=0.16
+pytorch-lightning>=2.1
+
+# TorchXRayVision
+torchxrayvision
+
+# Data / ML
+numpy>=1.24,<2.0
+pandas>=2.0
+scikit-learn>=1.3
+scikit-multilearn>=0.2.0
+Pillow>=10.0
+
+# Metrics / evaluation
+scipy==1.11.4
+
+# Utilities
+tqdm

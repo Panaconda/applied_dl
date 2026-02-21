@@ -6,7 +6,10 @@ physionet.org/
 *.dicom
 machex_dataset/
 pedicxr_test/
+*pyc
+.env
 
 data/
 download_missing_train_files.sh
 download_training_log.txt
+experiments/runs/
