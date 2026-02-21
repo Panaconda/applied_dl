@@ -14,11 +14,15 @@ from PIL import Image
 from omegaconf import OmegaConf
 from pytorch_lightning import seed_everything
 from pytorch_lightning.trainer import Trainer
-from pytorch_lightning.utilities import rank_zero_info
 from torch.utils.data import random_split, DataLoader, Dataset, ConcatDataset
 from pytorch_lightning.callbacks import Callback
-from pytorch_lightning.utilities.distributed import rank_zero_only
 from torchvision.transforms import Compose, ToTensor, Resize, Normalize
+
+try:  # PL < 2.0
+    from pytorch_lightning.utilities.distributed import rank_zero_only
+    from pytorch_lightning.utilities import rank_zero_info
+except ImportError:  # PL >= 2.0
+    from pytorch_lightning.utilities.rank_zero import rank_zero_only, rank_zero_info
 
 from cheff.ldm import instantiate_from_config
 from cheff.machex import MaCheXDataset, MimicT2IDataset
