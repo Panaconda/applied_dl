@@ -85,8 +85,51 @@ labels = labels[VIABLE_CLASSES]  # drop rare cols
 
 | Transform | Params | Rationale |
 |---|---|---|
-| `RandomRotation` | ±15° | Simulates patient tilt |
-| `RandomAffine` | translate=5%, scale=0.9–1.1 | Patient positioning variation |
-| `RandomHorizontalFlip` | p=0.5 | Common in CXR literature |
-| `ColorJitter` | brightness=0.2, contrast=0.2 | Scanner/exposure variation |
-| `GaussianNoise` | std=0.02 (in normalised space) | Sensor noise |
+| `RandomRotation` | ±10° | Simulates patient tilt |
+| `RandomAffine` | translate=3%, scale=0.95–1.05 | Patient positioning variation (tighter than typical CV) |
+
+**Results**:
+
+| Class            | AUC-ROC | F1     | Sens   | Spec   |
+|------------------|--------:|-------:|-------:|-------:|
+| No finding       | 0.6828  | 0.7375 | 0.7387 | 0.5102 |
+| Bronchitis       | 0.6717  | 0.2829 | 0.5000 | 0.7105 |
+| Brocho-pneumonia | 0.7538  | 0.2035 | 0.6310 | 0.7075 |
+| Bronchiolitis    | 0.6899  | 0.1860 | 0.7667 | 0.5539 |
+| Pneumonia        | 0.7311  | 0.2414 | 0.5506 | 0.7951 |
+| Other disease    | 0.5870  | 0.1303 | 0.4198 | 0.6907 |
+| **Mean**         | **0.6861** | **0.2969** | **0.6011** | **0.6613** |
+
+---
+
+## CheFF LoRA Fine-Tuning (VinDr-PCXR → T2I)
+
+**Objective**: Fine-tune the pre-trained CheFF Text-to-Image diffusion model on VinDr-PCXR using LoRA, so it can generate realistic *pediatric* chest X-rays conditioned on radiology report text. The resulting adapter is used by later conditions (C, D, E) to generate synthetic training data.
+
+**Data preparation (temporary solution for testing)** (`python -m finetune_cheff.prepare_data`):
+1. Read the 7,728 training PNGs from `Pre-256/Train/` (the mini dataset).
+2. Join with `image_labels_train.csv` (disease labels) and `annotations_train.csv` (finding annotations).
+3. Collapse the 9 rare classes into "Other disease" (same as downstream experiments).
+4. **Discard images whose only active label is "Other disease"** — they contribute nothing to the 5 target pathologies.
+5. Convert each kept PNG to RGB JPG and generate a templated report:
+   > *"Findings: Frontal radiograph of a child. Evaluation reveals {annotations}. Impressions: {pathologies}."*
+6. Write a MaCheX-formatted `index.json` consumed by CheFF's `MimicT2IDataset`.
+
+**LoRA configuration**:
+
+| Parameter | Value | Rationale |
+|---|---|---|
+| Rank | 16 | 1.7 M trainable params; fits A10 24 GB (feasibility study) |
+| Alpha | 32 | Standard 2× rank |
+| Dropout | 0.0 | Small dataset — regularise via early stopping instead |
+| Scope | `attn` (self + cross) | All QKV + output projections in every attention layer |
+| BERT encoder | **Frozen** | LoRA targets UNet only; BERT is already well-trained |
+
+**Training** (`python -m finetune_cheff.train`):
+- Launches `cheff/scripts/01_train_ldm.py` with the LoRA config YAML.
+- Requires pre-trained CheFF T2I and autoencoder checkpoints (paths set via `.env`).
+- Exports LoRA adapter weights to `runs/finetune_cheff/lora_adapter/`.
+
+**Results**:
+
+
