@@ -134,6 +134,13 @@ def main() -> None:
     model = apply_lora(model)
     freeze_non_lora(model)
 
+    # Disable EMA — it was built before LoRA and lacks adapter keys.
+    # Not needed for adapter fine-tuning anyway.
+    model.use_ema = False
+
+    # Don't include BERT params in the optimizer (we freeze them).
+    model.cond_stage_trainable = False
+
     # Set learning rate (used by LatentDiffusion.configure_optimizers)
     model.learning_rate = ftcfg.cheff_learning_rate
 
