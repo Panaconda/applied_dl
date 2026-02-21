@@ -19,8 +19,8 @@ python3.9 -m venv venv
 source venv/bin/activate
 
 # Downgrade pip for compatibility with pytorch-lightning==1.6
-echo "Installing pip<24.1..."
-pip install -q "pip<24.1"
+# echo "Installing pip<24.1..."
+# pip install -q "pip<24.1"
 
 # Install PyTorch 2.x for H100 support (CUDA 12.1)
 echo "Installing PyTorch 2.x with H100 support..."
