@@ -47,6 +47,7 @@ def parse_args() -> argparse.Namespace:
 
 
 def main() -> None:
+    pl.seed_everything(42, workers=True)
     args = parse_args()
     run_dir = os.path.join(cfg.runs_dir, args.run_name)
 

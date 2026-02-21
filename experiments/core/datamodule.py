@@ -93,6 +93,8 @@ class VinDrPCXRDataModule(pl.LightningDataModule):
         # Append any extra training samples (synthetic data, augmentations…)
         all_train_labels = train_labels
         if self.extra_train_ids:
+            if self.extra_labels is None:
+                raise ValueError("extra_labels must be provided when extra_train_ids is set")
             all_train_labels = pd.concat([train_labels, self.extra_labels])
             train_ids = train_ids + self.extra_train_ids
 
@@ -117,6 +119,7 @@ class VinDrPCXRDataModule(pl.LightningDataModule):
             shuffle=True,
             num_workers=self.num_workers,
             pin_memory=True,
+            persistent_workers=self.num_workers > 0,
         )
 
     def val_dataloader(self) -> DataLoader:
@@ -126,6 +129,7 @@ class VinDrPCXRDataModule(pl.LightningDataModule):
             shuffle=False,
             num_workers=self.num_workers,
             pin_memory=True,
+            persistent_workers=self.num_workers > 0,
         )
 
     def test_dataloader(self) -> DataLoader:
@@ -135,4 +139,5 @@ class VinDrPCXRDataModule(pl.LightningDataModule):
             shuffle=False,
             num_workers=self.num_workers,
             pin_memory=True,
+            persistent_workers=self.num_workers > 0,
         )

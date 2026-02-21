@@ -19,11 +19,11 @@ class CoreConfig(BaseSettings):
         extra="ignore",
     )
 
-    # Mandatory — no defaults; must be supplied via .env or env vars
-    train_image_dir: str
-    test_image_dir: str
-    train_labels_csv: str
-    test_labels_csv: str
+    # Paths — set via .env or env vars; empty defaults allow safe imports.
+    train_image_dir: str = ""
+    test_image_dir: str = ""
+    train_labels_csv: str = ""
+    test_labels_csv: str = ""
 
     image_size: int = 224
 

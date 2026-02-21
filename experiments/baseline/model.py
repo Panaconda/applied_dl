@@ -8,7 +8,6 @@ import torch
 import torch.nn as nn
 import torchxrayvision as xrv
 
-import torch
 from core.config import cfg
 from core.metrics import compute_metrics, format_metrics_table, mean_auroc
 
@@ -39,16 +38,11 @@ class VinDrClassifier(pl.LightningModule):
         self.save_hyperparameters(ignore=["pos_weights"])
         self.class_names = class_names or cfg.viable_classes
 
-        # ---- model ---------------------------------------------------
         self.model = xrv.models.DenseNet(weights="densenet121-res224-all")
         in_features = self.model.classifier.in_features
         self.model.classifier = nn.Linear(in_features, num_classes)
         self.model.op_threshs = None
 
-        # ---- loss ----------------------------------------------------
-        # pos_weights must be supplied by the caller (computed from the
-        # actual training labels via compute_pos_weights); defaults to
-        # uniform weighting if omitted.
         self.criterion = nn.BCEWithLogitsLoss(
             pos_weight=pos_weights.clone() if pos_weights is not None else None
         )
@@ -117,8 +111,6 @@ class VinDrClassifier(pl.LightningModule):
 
 
     def configure_optimizers(self) -> torch.optim.Optimizer:
-        # Backbone starts with lr=0 (phase 1); flipped to lr_backbone in
-        # on_train_epoch_start without swapping the optimiser.
         return torch.optim.AdamW(
             [
                 {"params": self.model.features.parameters(), "lr": 0.0},
@@ -128,8 +120,8 @@ class VinDrClassifier(pl.LightningModule):
 
     def on_train_epoch_start(self) -> None:
         if self.current_epoch == self.hparams.warmup_epochs:
-            for group in self.optimizers().param_groups:
-                group["lr"] = self.hparams.lr_backbone
+            # Only unfreeze backbone (param group 0); leave head LR untouched.
+            self.optimizers().param_groups[0]["lr"] = self.hparams.lr_backbone
             self.print(
                 f"\n[Phase 2] Epoch {self.current_epoch}: "
                 f"backbone unfrozen — lr → {self.hparams.lr_backbone}"
