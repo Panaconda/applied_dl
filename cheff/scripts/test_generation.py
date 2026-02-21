@@ -10,6 +10,7 @@ from cheff import CheffLDMT2I, CheffSRModel
 from torchvision.utils import save_image
 import os
 from pathlib import Path
+from peft import LoraConfig, get_peft_model, PeftModel
 
 def main():
     parser = argparse.ArgumentParser(description='Generate chest X-ray from text prompt')
@@ -66,6 +67,24 @@ def main():
         default=1.0,
         help='Stochasticity parameter (0=deterministic, 1=stochastic)'
     )
+    parser.add_argument(
+        '--lora-ckpt',
+        type=str,
+        default=None,
+        help='Path to a PL .ckpt file from LoRA fine-tuning'
+    )
+    parser.add_argument(
+        '--lora-rank',
+        type=int,
+        default=16,
+        help='LoRA rank used during fine-tuning (must match checkpoint)'
+    )
+    parser.add_argument(
+        '--lora-alpha',
+        type=int,
+        default=32,
+        help='LoRA alpha used during fine-tuning (must match checkpoint)'
+    )
     
     args = parser.parse_args()
     
@@ -110,6 +129,29 @@ def main():
         ae_path=args.ae_path,
         device=device
     )
+    
+    # Load LoRA fine-tuned checkpoint if provided
+    if args.lora_ckpt:
+        print(f"  LoRA checkpoint: {args.lora_ckpt}")
+        # Re-create LoRA architecture on the UNet
+        unet = model.model.model.diffusion_model
+        if not hasattr(unet, "config"):
+            class _MockConfig:
+                def to_dict(self): return {}
+            unet.config = _MockConfig()
+        peft_config = LoraConfig(
+            r=args.lora_rank,
+            lora_alpha=args.lora_alpha,
+            target_modules=".*attn.*(to_q|to_k|to_v|to_out.0)",
+            lora_dropout=0.0,
+            bias="none",
+        )
+        model.model.model.diffusion_model = get_peft_model(unet, peft_config)
+        # Load trained weights from PL checkpoint
+        ckpt = torch.load(args.lora_ckpt, map_location=device)
+        model.model.load_state_dict(ckpt["state_dict"], strict=False)
+        model.model.eval()
+        print("  LoRA checkpoint loaded.")
     
     print(f"\nGenerating 256×256 image from prompt:")
     print(f"  '{args.prompt}'")
