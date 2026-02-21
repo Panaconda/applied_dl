@@ -149,11 +149,18 @@ def main():
         model.model.model.diffusion_model = get_peft_model(unet, peft_config)
         # Load trained weights from PL checkpoint
         ckpt = torch.load(args.lora_ckpt, map_location="cpu")
-        model.model.load_state_dict(ckpt["state_dict"], strict=False)
+        missing, unexpected = model.model.load_state_dict(ckpt["state_dict"], strict=False)
         # Move LoRA layers (initialized on CPU) to the target device
         model.model.to(device)
         model.model.eval()
-        print("  LoRA checkpoint loaded.")
+        lora_keys_in_ckpt = [k for k in ckpt["state_dict"] if "lora_" in k]
+        lora_keys_missing = [k for k in missing if "lora_" in k]
+        print(f"  LoRA keys in checkpoint : {len(lora_keys_in_ckpt)}")
+        print(f"  LoRA keys not loaded    : {len(lora_keys_missing)}")
+        if lora_keys_missing:
+            print(f"  WARNING: some LoRA keys were not loaded: {lora_keys_missing[:5]}")
+        else:
+            print("  LoRA checkpoint loaded successfully.")
     
     print(f"\nGenerating 256×256 image from prompt:")
     print(f"  '{args.prompt}'")
