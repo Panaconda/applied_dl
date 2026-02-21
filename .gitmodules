@@ -1,0 +1,3 @@
+[submodule "machex"]
+	path = machex
+	url = https://github.com/Panaconda/machex.git
