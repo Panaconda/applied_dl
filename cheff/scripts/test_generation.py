@@ -178,6 +178,7 @@ def main():
     base, ext = os.path.splitext(args.output)
     if not ext:
         ext = ".png"
+    os.makedirs(os.path.dirname(os.path.abspath(args.output)), exist_ok=True)
 
     for i in range(1, args.num_samples + 1):
         out_path = f"{base}_{i:03d}{ext}" if args.num_samples > 1 else args.output
