@@ -30,6 +30,10 @@ class VinDrPCXRDataModule(pl.LightningDataModule):
         val_fraction:     Fraction of training data held out for validation.
         batch_size:       DataLoader batch size.
         num_workers:      DataLoader worker processes.
+        train_transform:  Transform applied to training images only.
+                          Defaults to the plain ``XRVTransform``.
+        eval_transform:   Transform applied to val and test images.
+                          Defaults to the plain ``XRVTransform``.
         extra_train_ids:  Optional list of additional image_ids (e.g. synthetic
                           samples) appended to the training set after the split.
                           Files must be present in ``train_image_dir``.
@@ -46,6 +50,8 @@ class VinDrPCXRDataModule(pl.LightningDataModule):
         val_fraction: float = 0.10,
         batch_size: int = 32,
         num_workers: int = 4,
+        train_transform=None,
+        eval_transform=None,
         extra_train_ids: Optional[List[str]] = None,
         extra_labels: Optional[pd.DataFrame] = None,
     ) -> None:
@@ -57,6 +63,8 @@ class VinDrPCXRDataModule(pl.LightningDataModule):
         self.val_fraction = val_fraction
         self.batch_size = batch_size
         self.num_workers = num_workers
+        self.train_transform = train_transform or build_transform()
+        self.eval_transform = eval_transform or build_transform()
         self.extra_train_ids = extra_train_ids or []
         self.extra_labels = extra_labels
 
@@ -66,14 +74,12 @@ class VinDrPCXRDataModule(pl.LightningDataModule):
 
 
     def setup(self, stage: Optional[str] = None) -> None:
-        transform = build_transform()
-
         test_labels = load_labels(self.test_labels_csv)
         self._test_ds = VinDrPCXRDataset(
             image_ids=list(test_labels.index),
             labels=test_labels,
             image_dir=self.test_image_dir,
-            transform=transform,
+            transform=self.eval_transform,
         )
 
         if stage == "test":
@@ -102,13 +108,13 @@ class VinDrPCXRDataModule(pl.LightningDataModule):
             image_ids=train_ids,
             labels=all_train_labels,
             image_dir=self.train_image_dir,
-            transform=transform,
+            transform=self.train_transform,
         )
         self._val_ds = VinDrPCXRDataset(
             image_ids=val_ids,
             labels=train_labels,
             image_dir=self.train_image_dir,
-            transform=transform,
+            transform=self.eval_transform,
         )
 
 

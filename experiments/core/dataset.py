@@ -10,6 +10,7 @@ import torch
 import torchxrayvision as xrv
 from PIL import Image
 from torch.utils.data import Dataset
+from torchvision import transforms as tv_transforms
 from torchvision.transforms.functional import resize as tv_resize
 
 from core.config import cfg
@@ -79,6 +80,39 @@ class XRVTransform:
 def build_transform(size: int = cfg.image_size) -> XRVTransform:
     """Return a picklable XRVTransform for the given output size."""
     return XRVTransform(size)
+
+
+class AugmentedXRVTransform:
+    """Picklable augmented transform for training only.
+
+    Applies geometric + photometric PIL augmentations before the standard
+    TXRV normalisation pipeline, then adds Gaussian noise in tensor space.
+    Val/test splits should always use the plain XRVTransform.
+    """
+
+    def __init__(self, size: int = cfg.image_size, noise_std: float = 20.0) -> None:
+        self.size = size
+        self.noise_std = noise_std  # absolute std in [-1024, 1024] space (~1% of range)
+        self.pil_aug = tv_transforms.Compose([
+            tv_transforms.RandomHorizontalFlip(p=0.5),
+            tv_transforms.RandomRotation(degrees=15),
+            tv_transforms.RandomAffine(degrees=0, translate=(0.05, 0.05), scale=(0.9, 1.1)),
+            tv_transforms.ColorJitter(brightness=0.2, contrast=0.2),
+        ])
+
+    def __call__(self, img: Image.Image) -> torch.Tensor:
+        img = self.pil_aug(img)
+        arr = np.array(img.convert("L")).astype(np.float32)           # [H, W]
+        arr = xrv.datasets.normalize(arr, maxval=255)                  # [-1024, 1024]
+        tensor = torch.from_numpy(arr).unsqueeze(0)                    # [1, H, W]
+        tensor = tv_resize(tensor, [self.size, self.size], antialias=True)
+        tensor = tensor + torch.randn_like(tensor) * self.noise_std    # Gaussian noise
+        return tensor
+
+
+def build_augmented_transform(size: int = cfg.image_size) -> AugmentedXRVTransform:
+    """Return a picklable AugmentedXRVTransform for training."""
+    return AugmentedXRVTransform(size)
 
 
 class VinDrPCXRDataset(Dataset):

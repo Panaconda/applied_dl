@@ -27,10 +27,10 @@ class VinDrClassifier(pl.LightningModule):
 
     def __init__(
         self,
-        num_classes: int = 6,
-        warmup_epochs: int = 3,
-        lr_head: float = 1e-4,
-        lr_backbone: float = 1e-5,
+        warmup_epochs: int,
+        lr_head: float,
+        lr_backbone: float,
+        num_classes: int = cfg.num_classes,
         class_names: Optional[List[str]] = None,
         pos_weights: Optional[torch.Tensor] = None,
     ) -> None:
