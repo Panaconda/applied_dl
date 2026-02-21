@@ -101,8 +101,10 @@ def main() -> None:
         extra_image_paths=extra_paths,
     )
 
-    # Pos-weights from real labels only (synthetic not representative of marginals)
-    pos_weights = compute_pos_weights(load_labels(args.train_labels_csv))
+    # Recalculate pos-weights over the combined real + synthetic training labels
+    real_labels = load_labels(args.train_labels_csv)
+    combined_labels = pd.concat([real_labels, extra_labels])
+    pos_weights = compute_pos_weights(combined_labels)
 
     model = VinDrClassifier(
         warmup_epochs=args.warmup_epochs,
