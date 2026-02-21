@@ -141,6 +141,12 @@ def main() -> None:
     # Don't include BERT params in the optimizer (we freeze them).
     model.cond_stage_trainable = False
 
+    # PL 1.9.5 does not pass dataloader_idx for single-dataloader setups,
+    # but LatentDiffusion.on_train_batch_start requires it.  Make it optional.
+    _orig_otbs = model.on_train_batch_start.__func__
+    model.on_train_batch_start = lambda batch, batch_idx, dataloader_idx=0: \
+        _orig_otbs(model, batch, batch_idx, dataloader_idx)
+
     # Set learning rate (used by LatentDiffusion.configure_optimizers)
     model.learning_rate = ftcfg.cheff_learning_rate
 
