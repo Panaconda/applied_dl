@@ -69,10 +69,29 @@ model.classifier = torch.nn.Linear(model.classifier.in_features, 6)
 | Setting         | Value                                              |
 |-----------------|----------------------------------------------------|
 | Loss            | `BCEWithLogitsLoss(pos_weight=pos_weight_tensor)` — weights: [0.50, 8.18, 13.18, 14.55, 18.71, 15.69] |
-| Optimizer       | AdamW, lr = 1e-4                                   |
-| Validation      | Stratified 10 % hold-out from train (≈ 700 images) |
+| Optimizer       | AdamW — see two-phase schedule below               |
+| Validation      | 10 % iterative stratified hold-out (≈ 700 images) via `skmultilearn.model_selection.IterativeStratification` — required for multilabel arrays; standard `stratify=` will fail |
 | Early stopping  | Monitor val AUC-ROC, patience = 5 epochs           |
-| Input           | 224 × 224, TXRV normalisation (mean 0, range ±1)   |
+| Input           | 224 × 224 grayscale; scale pixel values from [0, 255] to **[-1024, 1024]** via `xrv.datasets.normalize(img, maxval=255)` — TXRV pre-trained weights expect this range |
+
+#### Two-phase fine-tuning
+
+The new 6-class head is randomly initialised; training it end-to-end from epoch 0 risks large gradients destroying the pre-trained backbone features (catastrophic forgetting).
+
+| Phase | Backbone | Head | Optimizer | Duration |
+|-------|----------|------|-----------|----------|
+| 1 — warm-up | **Frozen** (`model.features.requires_grad_(False)`) | Trained | AdamW lr = 1e-4 | 3 epochs |
+| 2 — full fine-tune | **Unfrozen** | Trained | AdamW lr = 1e-5 | until early stop |
+
+```python
+# Phase 1
+model.features.requires_grad_(False)
+optimizer = torch.optim.AdamW(model.classifier.parameters(), lr=1e-4)
+
+# Phase 2  (after 3 epochs)
+model.features.requires_grad_(True)
+optimizer = torch.optim.AdamW(model.parameters(), lr=1e-5)
+```
 
 ### Evaluation
 
