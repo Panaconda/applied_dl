@@ -31,7 +31,7 @@ class AugmentedConfig(BaseSettings):
 
     accelerator: str = "auto"
     devices: str = "auto"
-    precision: str = "16-mixed"
+    precision: str = "16"
 
 
 ac = AugmentedConfig()

@@ -60,8 +60,32 @@ python -m baseline.train
 
 ```shell
 python -m baseline.evaluate \
-  --checkpoint runs/baseline/version_0/checkpoints/best.ckpt
+  --checkpoint runs/baseline/{version_*}/checkpoints/best.ckpt
 ```
 
 ### Result
 
+| Class               | AUC-ROC | F1     | Sens   | Spec   |
+|---------------------|---------|--------|--------|--------|
+| No finding          | 0.7031  | 0.7161 | 0.6604 | 0.6592 |
+| Bronchitis          | 0.6884  | 0.3193 | 0.6322 | 0.6688 |
+| Brocho-pneumonia    | 0.7531  | 0.1933 | 0.7262 | 0.6299 |
+| Bronchiolitis       | 0.7024  | 0.2028 | 0.7222 | 0.6282 |
+| Pneumonia           | 0.7640  | 0.2414 | 0.6292 | 0.7561 |
+| Other disease       | 0.5924  | 0.1181 | 0.3580 | 0.7105 |
+| **Mean**            | **0.7005** | **0.2985** | **0.6214** | **0.6754** |---
+
+## Classifier – Standard Data Augmentation
+
+```shell
+python -m augmented.train
+```
+
+```shell
+python -m augmented.evaluate \
+  --checkpoint runs/augmented/{version_*}/checkpoints/best.ckpt
+```
+
+### Result
+
+---
