@@ -117,7 +117,7 @@ class AugmentedXRVTransform:
                 degrees=5,
                 translate=(0.02, 0.02),
                 scale=(0.97, 1.03),
-                fill=128,
+                fill=0,
             ),
         ])
 

@@ -88,7 +88,7 @@ python -m baseline.evaluate \
 
 ### Result
 python -m baseline.evaluate \
-  --checkpoint runs/augmented/version_2/checkpoints/best.ckpt
+  --checkpoint runs/augmented/version_3/checkpoints/best.ckpt
 
 
 ---
