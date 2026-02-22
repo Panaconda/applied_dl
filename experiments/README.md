@@ -54,3 +54,14 @@ for the old Pre-256 PNG dataset).
 
 ## Classifier – Baseline
 
+```shell
+python -m baseline.train
+```
+
+```shell
+python -m baseline.evaluate \
+  --checkpoint runs/baseline/version_0/checkpoints/best.ckpt
+```
+
+### Result
+

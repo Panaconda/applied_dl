@@ -20,6 +20,7 @@ def parse_args() -> argparse.Namespace:
     p.add_argument("--test-image-dir", default=cfg.test_image_dir)
     p.add_argument("--train-labels-csv", default=cfg.train_labels_csv)
     p.add_argument("--test-labels-csv", default=cfg.test_labels_csv)
+    p.add_argument("--test-index-json", default=cfg.vindr_pcxr_test_index)
     p.add_argument("--batch-size", type=int, default=bc.batch_size)
     p.add_argument("--num-workers", type=int, default=bc.num_workers)
     p.add_argument("--output", default=None, help="Optional path to save metrics as JSON")
@@ -38,6 +39,7 @@ def main() -> None:
         test_image_dir=args.test_image_dir,
         train_labels_csv=args.train_labels_csv,
         test_labels_csv=args.test_labels_csv,
+        test_index_json=args.test_index_json,
         batch_size=args.batch_size,
         num_workers=args.num_workers,
     )
