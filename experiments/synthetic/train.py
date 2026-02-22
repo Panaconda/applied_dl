@@ -1,4 +1,21 @@
-"""Training entry point for Condition C: real data + synthetic Pneumonia."""
+"""Training entry point: real data + multi-class synthetic data.
+
+Supports one or many --synthetic-dirs (one per pathology class).
+Auto-prefers filtered_* index files; falls back to synthetic_* files.
+
+Examples
+--------
+# All 4 classes unfiltered:
+python -m synthetic.train \\
+    --synthetic-dirs ../samples/lora/Pneumonia \\
+                     ../samples/lora/Bronchitis \\
+                     ../samples/lora/Bronchiolitis \\
+                     "../samples/lora/Brocho-pneumonia" \\
+    --run-name synthetic_all
+
+# Single class:
+python -m synthetic.train --synthetic-dirs ../samples/lora/Pneumonia
+"""
 from __future__ import annotations
 
 import argparse
@@ -20,7 +37,7 @@ from core.dataset import compute_pos_weights, load_labels
 
 def parse_args() -> argparse.Namespace:
     p = argparse.ArgumentParser(
-        description="Train VinDr-PCXR classifier with real + synthetic Pneumonia data"
+        description="Train VinDr-PCXR classifier with real + synthetic data"
     )
     # Paths
     p.add_argument("--train-image-dir", default=cfg.train_image_dir)
@@ -28,23 +45,15 @@ def parse_args() -> argparse.Namespace:
     p.add_argument("--train-labels-csv", default=cfg.train_labels_csv)
     p.add_argument("--test-labels-csv", default=cfg.test_labels_csv)
     p.add_argument(
-        "--synthetic-dir",
-        default="../samples/lora/pneumonia",
-        help="Directory containing the synthetic index files",
-    )
-    p.add_argument(
-        "--labels-csv", default=None,
-        help="Override labels CSV filename inside --synthetic-dir "
-             "(default: filtered_labels.csv, fallback: synthetic_labels.csv)",
-    )
-    p.add_argument(
-        "--paths-json", default=None,
-        help="Override paths JSON filename inside --synthetic-dir "
-             "(default: filtered_paths.json, fallback: synthetic_paths.json)",
+        "--synthetic-dirs",
+        nargs="+",
+        default=["../samples/lora/Pneumonia"],
+        metavar="DIR",
+        help="One or more per-class synthetic directories containing index files",
     )
 
     # Run identity
-    p.add_argument("--run-name", default="synthetic_pneumonia_filtered")
+    p.add_argument("--run-name", default="synthetic_all")
 
     # Data
     p.add_argument("--val-fraction", type=float, default=bc.val_fraction)
@@ -114,12 +123,24 @@ def main() -> None:
     pl.seed_everything(42, workers=True)
     args = parse_args()
 
-    extra_ids, extra_labels, extra_paths = load_synthetic_index(
-        args.synthetic_dir,
-        labels_csv_override=args.labels_csv,
-        paths_json_override=args.paths_json,
-    )
-    print(f"  Pneumonia positives: {extra_labels['Pneumonia'].sum()}")
+    # Load and merge all synthetic dirs
+    all_ids: list[str] = []
+    all_labels_parts: list[pd.DataFrame] = []
+    all_paths: dict[str, str] = {}
+
+    for synth_dir in args.synthetic_dirs:
+        ids, labels, paths = load_synthetic_index(synth_dir)
+        all_ids.extend(ids)
+        all_labels_parts.append(labels)
+        all_paths.update(paths)
+
+    extra_labels = pd.concat(all_labels_parts)
+
+    print(f"\nTotal synthetic images: {len(all_ids)}")
+    for cls in cfg.viable_classes:
+        n = int(extra_labels[cls].sum())
+        if n:
+            print(f"  {cls}: {n}")
 
     logger = CSVLogger(save_dir=cfg.runs_dir, name=args.run_name)
 
@@ -131,9 +152,9 @@ def main() -> None:
         val_fraction=args.val_fraction,
         batch_size=args.batch_size,
         num_workers=args.num_workers,
-        extra_train_ids=extra_ids,
+        extra_train_ids=all_ids,
         extra_labels=extra_labels,
-        extra_image_paths=extra_paths,
+        extra_image_paths=all_paths,
     )
 
     # Recalculate pos-weights over the combined real + synthetic training labels

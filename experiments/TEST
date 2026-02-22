@@ -138,9 +138,39 @@ Same setup as for the Latent Space Evaluation, but we compute the FDD between th
 
 We use the template report from the previous condition, but now we explicitly manipulate the `{pathologies}` slot to generate synthetic images with specific diseases. For each of the $4$ target pathologies (`Bronchitis`, `Brocho-pneumonia`, `Bronchiolitis`, `Pneumonia`, excl. `No finding`), we generate $2000$ synthetic images conditioned on a report that mentions only that pathology from the fine-tuned CheFF model.
 
+```shell
+python -m inference.generate_synthetic \
+    --lora-ckpt runs/finetune_cheff/logs/version_3/checkpoints/last.ckpt \
+    --output-dir ../samples/lora \
+    --n 2000
+```
+
 ## Classifier – Original + CheFF Synthetic Data
 
 We augment the original training set with the $8000$ synthetic images generated in the previous step (2,000 per pathology) and train the same XRV classifier on this combined dataset.
+
+Build the synthetic index files consumed by the classifier training script:
+```shell
+for cls in Pneumonia Bronchitis Bronchiolitis Brocho-pneumonia; do
+    python -m inference.build_synthetic_index --synthetic-dir ../samples/lora/$cls
+done
+```
+
+Run the training:
+```shell
+python -m synthetic.train \
+    --synthetic-dirs ../samples/lora/Pneumonia \
+                     ../samples/lora/Bronchitis \
+                     ../samples/lora/Bronchiolitis \
+                     "../samples/lora/Brocho-pneumonia" \
+    --run-name synthetic_all_unfiltered
+```
+
+Evaluate:
+```shell
+python -m baseline.evaluate \
+    --checkpoint runs/synthetic_all_unfiltered/version_0/checkpoints/best-epoch*.ckpt
+```
 
 ## Synthetic Data Filtering with Baseline Oracle
 
