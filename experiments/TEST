@@ -172,9 +172,56 @@ python -m baseline.evaluate \
     --checkpoint runs/synthetic_all_unfiltered/version_0/checkpoints/best-epoch*.ckpt
 ```
 
+### Results
+
+| Class            | AUC-ROC | F1     | Sens   | Spec   |
+|------------------|--------:|-------:|-------:|-------:|
+| No finding       | 0.6673  | 0.7939 | 0.9515 | 0.1755 |
+| Bronchitis       | 0.6603  | 0.2268 | 0.1897 | 0.9313 |
+| Brocho-pneumonia | 0.7658  | 0.2094 | 0.2381 | 0.9337 |
+| Bronchiolitis    | 0.6280  | 0.0360 | 0.0222 | 0.9855 |
+| Pneumonia        | 0.7167  | 0.1750 | 0.1573 | 0.9564 |
+| Other disease    | 0.5964  | 0.1244 | 0.7654 | 0.3511 |
+| **Mean**         | **0.6724** | **0.2609** | **0.3874** | **0.7222** |
+
 ## Synthetic Data Filtering with Baseline Oracle
 
 Since the fine-tuned CheFF model is not perfect, we expect some of the generated images to be of low quality or incorrectly labelled. To get an upper bound on the potential of synthetic data, we use our baseline classifier from the first step as an **oracle** to filter the generated images. We set a filter threshold at $0.7$ (probability of the target pathology) and only keep synthetic images that exceed this threshold.
+
+```shell
+for cls in Pneumonia Bronchitis Bronchiolitis Brocho-pneumonia; do
+    python -m inference.filter_synthetic \
+        --ckpt     runs/baseline/version_0/checkpoints/best-epoch*.ckpt \
+        --index    ../samples/lora/$cls/synthetic_paths.json \
+        --target   $cls \
+        --threshold 0.70 \
+        --output-dir ../samples/lora/$cls
+done
+```
+
+```shell
+python -m synthetic.train \
+    --synthetic-dirs ../samples/lora/Pneumonia \
+                     ../samples/lora/Bronchitis \
+                     ../samples/lora/Bronchiolitis \
+                     "../samples/lora/Brocho-pneumonia" \
+    --run-name synthetic_all_filtered
+```
+
+```shell
+python -m baseline.evaluate \
+    --checkpoint runs/synthetic_all_filtered/version_0/checkpoints/best-epochepoch=29.ckpt
+```
+
+### Oracle Filter Results (threshold = 0.70)
+
+| Class            | Generated | Accepted | Discarded | Yield | Score mean / median |
+|------------------|----------:|---------:|----------:|------:|--------------------:|
+| Pneumonia        | 2,000     | 253      | 1,747     | 12.7% | 0.398 / 0.391       |
+| Bronchitis       | 2,000     | 27       | 1,973     |  1.4% | 0.401 / 0.393       |
+| Bronchiolitis    | 2,000     | 146      | 1,854     |  7.3% | 0.413 / 0.427       |
+| Brocho-pneumonia | 2,000     | 285      | 1,715     | 14.2% | 0.458 / 0.474       |
+| **Total**        | **8,000** | **711**  | **7,289** | **8.9%** |                  |
 
 ## Classifier – Original + Filtered CheFF Synthetic Data
 
@@ -187,5 +234,42 @@ We do 5 independent runs:
 - Original + Filtered Bronchiolitis Synthetic
 - Original + All Filtered Synthetic
 
+### Results
+
+#### Original + All Filtered Synthetic
+
+| Class            | AUC-ROC | F1     | Sens   | Spec   |
+|------------------|--------:|-------:|-------:|-------:|
+| No finding       | 0.7074  | 0.7555 | 0.7563 | 0.5449 |
+| Bronchitis       | 0.6826  | 0.3013 | 0.6034 | 0.6582 |
+| Brocho-pneumonia | 0.7783  | 0.2571 | 0.5952 | 0.8058 |
+| Bronchiolitis    | 0.7004  | 0.1905 | 0.5556 | 0.7054 |
+| Pneumonia        | 0.7731  | 0.2662 | 0.4607 | 0.8639 |
+| Other disease    | 0.6009  | 0.1366 | 0.4444 | 0.6884 |
+| **Mean**         | **0.7071** | **0.3179** | **0.5693** | **0.7111** |
+
 ## Conclusion
 
+**AUC-ROC**
+
+| Class            | Baseline | +Augmentation | +Synthetic | +Filtered Synthetic |
+|------------------|--------:|-------------:|-----------:|--------------------:|
+| No finding       | 0.6773  | 0.6828        | 0.6673     | 0.7074              |
+| Bronchitis       | 0.6749  | 0.6717        | 0.6603     | 0.6826              |
+| Brocho-pneumonia | 0.7508  | 0.7538        | 0.7658     | 0.7783              |
+| Bronchiolitis    | 0.6775  | 0.6899        | 0.6280     | 0.7004              |
+| Pneumonia        | 0.7366  | 0.7311        | 0.7167     | 0.7731              |
+| Other disease    | 0.5846  | 0.5870        | 0.5964     | 0.6009              |
+| **Mean**         | **0.6836** | **0.6861** | **0.6724** | **0.7071**          |
+
+**F1**
+
+| Class            | Baseline | +Augmentation | +Synthetic | +Filtered Synthetic |
+|------------------|--------:|-------------:|-----------:|--------------------:|
+| No finding       | 0.7374  | 0.7375        | 0.7939     | 0.7555              |
+| Bronchitis       | 0.2944  | 0.2829        | 0.2268     | 0.3013              |
+| Brocho-pneumonia | 0.1959  | 0.2035        | 0.2094     | 0.2571              |
+| Bronchiolitis    | 0.1747  | 0.1860        | 0.0360     | 0.1905              |
+| Pneumonia        | 0.2319  | 0.2414        | 0.1750     | 0.2662              |
+| Other disease    | 0.1320  | 0.1303        | 0.1244     | 0.1366              |
+| **Mean**         | **0.2944** | **0.2969** | **0.2609** | **0.3179**          |
