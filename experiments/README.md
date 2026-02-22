@@ -77,6 +77,14 @@ python -m baseline.evaluate \
 
 ## Classifier – Standard Data Augmentation
 
+**Objective**: Same as baseline but with standard computer vision augmentations applied to the training set only. Tests whether geometric and photometric augmentation alone improves generalisation without any additional data.
+
+**Augmentations (train only — val/test always use plain transform):**
+
+| Transform | Params | Rationale |
+|---|---|---|
+| `RandomAffine` | degrees=±5°, translate=2%, scale=0.97–1.03, fill=0 | Mild rotation, shift, and zoom; fill=0 maps to ~−1 after xrv normalisation (black border) |
+
 ```shell
 python -m augmented.train
 ```
