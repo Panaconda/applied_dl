@@ -19,5 +19,9 @@ Pillow>=10.0
 # Metrics / evaluation
 scipy==1.11.4
 
+# Visualization / UMAP
+umap-learn>=0.5
+matplotlib>=3.7
+
 # Utilities
 tqdm
