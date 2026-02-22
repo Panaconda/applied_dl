@@ -78,10 +78,13 @@ def load_model(model_path: str, ae_path: str, lora_adapter: str | None,
             unet.config = _MockConfig()
 
         unet = PeftModel.from_pretrained(unet, lora_adapter)
-        unet.merge_and_unload()          # fold LoRA deltas into base weights
+        # merge_and_unload folds LoRA deltas into base weights (peft ≥0.6);
+        # older versions lack it — the wrapped PeftModel still works for inference.
+        if hasattr(unet, "merge_and_unload"):
+            unet = unet.merge_and_unload()
         wrapper.model.model.diffusion_model = unet
         wrapper.model.to(device)
-        print("  LoRA adapter merged.")
+        print("  LoRA adapter loaded.")
 
     wrapper.model.eval()
     return wrapper
