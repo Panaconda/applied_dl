@@ -31,7 +31,7 @@ class FinetuneCheffConfig(CoreConfig):
     cheff_learning_rate: float = 5e-5
     cheff_num_workers: int = 4
     cheff_test_size: int = 500
-    cheff_max_epochs: int = 10
+    cheff_max_epochs: int = 15
     seed: int = 42
 
     run_name: str = "finetune_cheff"
