@@ -113,17 +113,20 @@ class AugmentedXRVTransform:
     def __init__(self, size: int = 224) -> None:
         self.size = size
         self.pil_aug = tv_transforms.Compose([
-            tv_transforms.RandomRotation(degrees=10),
-            tv_transforms.RandomAffine(degrees=0, translate=(0.03, 0.03), scale=(0.95, 1.05)),
+            tv_transforms.RandomAffine(
+                degrees=5,
+                translate=(0.02, 0.02),
+                scale=(0.97, 1.03),
+                fill=128,
+            ),
         ])
 
     def __call__(self, img: Image.Image) -> torch.Tensor:
         img = self.pil_aug(img)
-        arr = np.array(img.convert("L")).astype(np.float32)           
-        arr = xrv.datasets.normalize(arr, maxval=255)                  
-        tensor = torch.from_numpy(arr).unsqueeze(0)                    
+        arr = np.array(img.convert("L")).astype(np.float32)
+        arr = xrv.datasets.normalize(arr, maxval=255)
+        tensor = torch.from_numpy(arr).unsqueeze(0)
         tensor = tv_transforms.functional.resize(tensor, [self.size, self.size], antialias=True)
-        
         return tensor
 
 

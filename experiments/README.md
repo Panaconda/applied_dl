@@ -82,10 +82,13 @@ python -m augmented.train
 ```
 
 ```shell
-python -m augmented.evaluate \
+python -m baseline.evaluate \
   --checkpoint runs/augmented/{version_*}/checkpoints/best.ckpt
 ```
 
 ### Result
+python -m baseline.evaluate \
+  --checkpoint runs/augmented/version_2/checkpoints/best.ckpt
+
 
 ---
