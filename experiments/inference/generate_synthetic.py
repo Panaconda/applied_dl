@@ -8,7 +8,6 @@ from pathlib import Path
 from typing import Dict
 
 import torch
-from peft import LoraConfig, get_peft_model
 from torchvision.utils import save_image
 from tqdm import tqdm
 
@@ -59,42 +58,30 @@ def _patch_gradient_checkpointing() -> None:
 # ---------------------------------------------------------------------------
 # Model loading
 # ---------------------------------------------------------------------------
-def load_model(model_path: str, ae_path: str, lora_ckpt: str | None,
-               lora_rank: int, lora_alpha: int, device: str):
-    """Load CheFF T2I, optionally patching in LoRA weights from a PL checkpoint."""
+def load_model(model_path: str, ae_path: str, lora_adapter: str | None,
+               device: str):
+    """Load CheFF T2I, optionally merging a PEFT adapter saved with save_pretrained."""
     _patch_gradient_checkpointing()
 
     from cheff.ldm.inference import CheffLDMT2I  # noqa: E402
+    from peft import PeftModel                   # noqa: E402
 
     print(f"Loading CheFF T2I …  ({device})")
     wrapper = CheffLDMT2I(model_path=model_path, ae_path=ae_path, device=device)
 
-    if lora_ckpt:
-        print(f"Applying LoRA from {lora_ckpt} …")
+    if lora_adapter:
+        print(f"Loading LoRA adapter from {lora_adapter} …")
         unet = wrapper.model.model.diffusion_model
         if not hasattr(unet, "config"):
             class _MockConfig:
                 def to_dict(self): return {}
             unet.config = _MockConfig()
 
-        peft_config = LoraConfig(
-            r=lora_rank,
-            lora_alpha=lora_alpha,
-            target_modules=".*attn.*(to_q|to_k|to_v|to_out.0)",
-            lora_dropout=0.0,
-            bias="none",
-        )
-        wrapper.model.model.diffusion_model = get_peft_model(unet, peft_config)
-
-        ckpt = torch.load(lora_ckpt, map_location="cpu")
-        missing, _ = wrapper.model.load_state_dict(ckpt["state_dict"], strict=False)
-        lora_missing = [k for k in missing if "lora_" in k]
-        if lora_missing:
-            print(f"  WARNING: {len(lora_missing)} LoRA keys not loaded — check rank/ckpt")
-        else:
-            print(f"  LoRA loaded ({sum('lora_' in k for k in ckpt['state_dict'])} keys)")
-
+        unet = PeftModel.from_pretrained(unet, lora_adapter)
+        unet.merge_and_unload()          # fold LoRA deltas into base weights
+        wrapper.model.model.diffusion_model = unet
         wrapper.model.to(device)
+        print("  LoRA adapter merged.")
 
     wrapper.model.eval()
     return wrapper
@@ -128,11 +115,10 @@ def main() -> None:
     parser.add_argument("--model-path", default="../models/cheff_diff_t2i.pt")
     parser.add_argument("--ae-path", default="../models/cheff_autoencoder.pt")
     parser.add_argument(
-        "--lora-ckpt", default=None,
-        help="PL .ckpt from finetune_cheff training (recommended)"
+        "--lora-adapter", default=None,
+        help="Path to PEFT adapter directory saved by finetune_cheff.train "
+             "(contains adapter_config.json).  Omit to use the base model."
     )
-    parser.add_argument("--lora-rank", type=int, default=16)
-    parser.add_argument("--lora-alpha", type=int, default=32)
     parser.add_argument(
         "--output-dir", default="../data/synthetic",
         help="Root directory for generated images"
@@ -164,9 +150,7 @@ def main() -> None:
     wrapper = load_model(
         model_path=args.model_path,
         ae_path=args.ae_path,
-        lora_ckpt=args.lora_ckpt,
-        lora_rank=args.lora_rank,
-        lora_alpha=args.lora_alpha,
+        lora_adapter=args.lora_adapter,
         device=args.device,
     )
 
@@ -178,7 +162,7 @@ def main() -> None:
     print(f"  Per class:  {args.n}")
     print(f"  Total:      {total}")
     print(f"  Steps/eta:  {args.steps} / {args.eta}")
-    print(f"  LoRA:       {args.lora_ckpt or 'none (base model)'}")
+    print(f"  LoRA:       {args.lora_adapter or 'none (base model)'}")
     print(f"  Output:     {args.output_dir}")
     print(f"{'='*60}\n")
 

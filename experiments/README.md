@@ -106,3 +106,25 @@ python -m baseline.evaluate \
 | Other disease       | 0.6038  | 0.1181 | 0.3951 | 0.6740 |
 | **Mean**            | **0.7047** | **0.2983** | **0.6086** | **0.6786** |
 
+## Finetune Cheff on VinDr-PCXR
+
+**Objective**: Finetune the Cheff self-supervised model on VinDr-PCXR and evaluate its performance on the classification task. Tests whether pretraining on a large corpus of chest X‑rays (MIMIC-CXR) improves performance on the smaller VinDr-PCXR dataset.
+
+```shell
+python -m finetune_cheff.prepare_data
+```
+
+```shell
+python -m finetune_cheff.train
+```
+
+### Sampling
+
+To visualise the quality of the synthetic images, run:
+
+```shell
+python -m inference.generate_synthetic \
+  --lora-adapter runs/finetune_cheff/lora_adapter \
+  --classes Pneumonia \
+  --n 1
+```
