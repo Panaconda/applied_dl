@@ -87,8 +87,14 @@ python -m baseline.evaluate \
 ```
 
 ### Result
-python -m baseline.evaluate \
-  --checkpoint runs/augmented/version_3/checkpoints/best.ckpt
 
+| Class               | AUC-ROC | F1     | Sens   | Spec   |
+|---------------------|---------|--------|--------|--------|
+| No finding          | 0.7117  | 0.7133 | 0.6637 | 0.6347 |
+| Bronchitis          | 0.6856  | 0.3058 | 0.5632 | 0.6983 |
+| Brocho-pneumonia    | 0.7501  | 0.2000 | 0.6667 | 0.6801 |
+| Bronchiolitis       | 0.6927  | 0.1935 | 0.7000 | 0.6190 |
+| Pneumonia           | 0.7846  | 0.2593 | 0.6629 | 0.7653 |
+| Other disease       | 0.6038  | 0.1181 | 0.3951 | 0.6740 |
+| **Mean**            | **0.7047** | **0.2983** | **0.6086** | **0.6786** |
 
----
