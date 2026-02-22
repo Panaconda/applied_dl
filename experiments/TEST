@@ -199,20 +199,6 @@ for cls in Pneumonia Bronchitis Bronchiolitis Brocho-pneumonia; do
 done
 ```
 
-```shell
-python -m synthetic.train \
-    --synthetic-dirs ../samples/lora/Pneumonia \
-                     ../samples/lora/Bronchitis \
-                     ../samples/lora/Bronchiolitis \
-                     "../samples/lora/Brocho-pneumonia" \
-    --run-name synthetic_all_filtered
-```
-
-```shell
-python -m baseline.evaluate \
-    --checkpoint runs/synthetic_all_filtered/version_0/checkpoints/best-epochepoch=29.ckpt
-```
-
 ### Oracle Filter Results (threshold = 0.70)
 
 | Class            | Generated | Accepted | Discarded | Yield | Score mean / median |
@@ -227,12 +213,19 @@ python -m baseline.evaluate \
 
 We train the same XRV classifier on the original training set augmented with the **filtered** synthetic images from the previous step, and compare its performance to the unfiltered version and the baseline.
 
-We do 5 independent runs:
-- Original + Filtered Pneumonia Synthetic 
-- Original + Filtered Bronchitis Synthetic
-- Original + Filtered Brocho-pneumonia Synthetic
-- Original + Filtered Bronchiolitis Synthetic
-- Original + All Filtered Synthetic
+```shell
+python -m synthetic.train \
+    --synthetic-dirs ../samples/lora/Pneumonia \
+                     ../samples/lora/Bronchitis \
+                     ../samples/lora/Bronchiolitis \
+                     "../samples/lora/Brocho-pneumonia" \
+    --run-name synthetic_all_filtered
+```
+
+```shell
+python -m baseline.evaluate \
+    --checkpoint runs/synthetic_all_filtered/version_0/checkpoints/best-epochepoch=29.ckpt
+```
 
 ### Results
 
