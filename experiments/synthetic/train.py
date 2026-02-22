@@ -32,7 +32,7 @@ from baseline.config import bc
 from baseline.model import VinDrClassifier
 from core.config import cfg
 from core.datamodule import VinDrPCXRDataModule
-from core.dataset import compute_pos_weights, load_labels
+from core.dataset import build_augmented_transform, compute_pos_weights, load_labels
 
 
 def parse_args() -> argparse.Namespace:
@@ -71,6 +71,12 @@ def parse_args() -> argparse.Namespace:
     p.add_argument("--accelerator", default=bc.accelerator)
     p.add_argument("--devices", default=bc.devices)
     p.add_argument("--precision", default=bc.precision)
+
+    # Augmentation
+    p.add_argument(
+        "--augment", action="store_true", default=False,
+        help="Apply AugmentedXRVTransform to real training images (RandomRotation + RandomAffine)",
+    )
 
     return p.parse_args()
 
@@ -141,7 +147,9 @@ def main() -> None:
         n = int(extra_labels[cls].sum())
         if n:
             print(f"  {cls}: {n}")
+    print(f"  Augmentation: {'on' if args.augment else 'off'}")
 
+    train_transform = build_augmented_transform() if args.augment else None
     logger = CSVLogger(save_dir=cfg.runs_dir, name=args.run_name)
 
     dm = VinDrPCXRDataModule(
@@ -152,6 +160,7 @@ def main() -> None:
         val_fraction=args.val_fraction,
         batch_size=args.batch_size,
         num_workers=args.num_workers,
+        train_transform=train_transform,
         extra_train_ids=all_ids,
         extra_labels=extra_labels,
         extra_image_paths=all_paths,

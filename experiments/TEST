@@ -241,6 +241,43 @@ python -m baseline.evaluate \
 | Other disease    | 0.6009  | 0.1366 | 0.4444 | 0.6884 |
 | **Mean**         | **0.7071** | **0.3179** | **0.5693** | **0.7111** |
 
+
+#### Original + Pneumonia Filtered Synthetic
+
+
+#### Original + Bronchitis Filtered Synthetic
+
+
+#### Original + Bronchiolitis Filtered Synthetic
+
+
+#### Original + Brocho-pneumonia Filtered Synthetic
+
+
+## Classifier – Original + Filtered CheFF Synthetic Data + Augmentation
+
+Finally, we train the same XRV classifier on the original training set augmented with the **filtered** synthetic images from the previous step, **plus** standard augmentations applied to the real training images. This tests whether the combination of synthetic data and augmentation can further improve generalisation.
+
+```shell
+python -m synthetic.train \
+    --synthetic-dirs ../samples/lora/Pneumonia \
+                     ../samples/lora/Bronchitis \
+                     ../samples/lora/Bronchiolitis \
+                     "../samples/lora/Brocho-pneumonia" \
+    --augment \
+    --run-name synthetic_all_filtered_aug
+```
+
+```shell
+python -m baseline.evaluate \
+    --checkpoint runs/synthetic_all_filtered_aug/version_0/checkpoints/best-epoch*.ckpt
+```
+
+### Results
+
+
+
+
 ## Conclusion
 
 **AUC-ROC**
