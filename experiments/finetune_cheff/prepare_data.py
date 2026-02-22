@@ -23,22 +23,31 @@ def main() -> None:
 
     print(f"Loaded {len(src_index):,} entries from {src_path}")
 
+    img_dir = ftcfg.train_image_dir
+    if not img_dir or not os.path.isdir(img_dir):
+        print(
+            f"Error: TRAIN_IMAGE_DIR not set or directory not found: {img_dir!r}\n"
+            "Check experiments/.env."
+        )
+        return
+
     # --------------------------------------------------------------- convert
     target_index: dict = {}
     skipped = 0
 
     for key, meta in src_index.items():
-        path: str = meta.get("path", "")
         report: str = meta.get("report", "")
 
-        if not path or not os.path.exists(path):
+        # Resolve path from the local Train directory, not from the stored absolute path.
+        img_path = os.path.join(img_dir, f"{key}.jpg")
+        if not os.path.exists(img_path):
             skipped += 1
             continue
         if not report:
             skipped += 1
             continue
 
-        target_index[key] = {"path": path, "report": report}
+        target_index[key] = {"path": img_path, "report": report}
 
     print(f"  Kept:    {len(target_index):,}")
     print(f"  Skipped: {skipped}  (missing path or empty report)")
