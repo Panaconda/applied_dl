@@ -13,17 +13,7 @@ from core.metrics import compute_metrics, format_metrics_table, mean_auroc
 
 
 class VinDrClassifier(pl.LightningModule):
-    """DenseNet121 fine-tuned for 6-class multilabel VinDr-PCXR classification.
-
-    Two-phase training schedule:
-      Phase 1 (epochs 0 … warmup_epochs-1): backbone frozen (lr = 0.0),
-        only the new 6-class head is trained at ``lr_head``.
-      Phase 2 (epoch warmup_epochs onward): full network at ``lr_backbone``.
-        Early stopping begins counting from here.
-
-    Loss: BCEWithLogitsLoss with per-class ``pos_weight`` to counteract the
-    severe class imbalance in VinDr-PCXR.
-    """
+    """DenseNet121 fine-tuned for 6-class multilabel VinDr-PCXR classification."""
 
     def __init__(
         self,
@@ -47,11 +37,11 @@ class VinDrClassifier(pl.LightningModule):
             pos_weight=pos_weights.clone() if pos_weights is not None else None
         )
 
-        # ---- epoch-level buffers for metric aggregation --------------
         self._val_probs: List[torch.Tensor] = []
         self._val_targets: List[torch.Tensor] = []
         self._test_probs: List[torch.Tensor] = []
         self._test_targets: List[torch.Tensor] = []
+
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         return self.model(x)

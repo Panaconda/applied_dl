@@ -2,7 +2,7 @@
 from __future__ import annotations
 
 import os
-from typing import Dict, List, Optional, Tuple
+from typing import List, Optional, Tuple
 
 import numpy as np
 import pandas as pd
@@ -88,8 +88,8 @@ class AugmentedXRVTransform:
     def __init__(self, size: int = 224) -> None:
         self.size = size
         self.pil_aug = tv_transforms.Compose([
-            tv_transforms.RandomRotation(degrees=10), # Reduced from 15
-            tv_transforms.RandomAffine(degrees=0, translate=(0.03, 0.03), scale=(0.95, 1.05)), # Tighter boundaries
+            tv_transforms.RandomRotation(degrees=10),
+            tv_transforms.RandomAffine(degrees=0, translate=(0.03, 0.03), scale=(0.95, 1.05)),
         ])
 
     def __call__(self, img: Image.Image) -> torch.Tensor:

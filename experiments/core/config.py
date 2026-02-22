@@ -19,7 +19,6 @@ class CoreConfig(BaseSettings):
         extra="ignore",
     )
 
-    # Paths — set via .env or env vars; empty defaults allow safe imports.
     train_image_dir: str = ""
     test_image_dir: str = ""
     train_labels_csv: str = ""

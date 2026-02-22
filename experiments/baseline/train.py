@@ -17,33 +17,22 @@ from core.dataset import compute_pos_weights, load_labels
 
 def parse_args() -> argparse.Namespace:
     p = argparse.ArgumentParser(description="Train the VinDr-PCXR baseline classifier")
-
-    # Paths — default to .env values; override via CLI
     p.add_argument("--train-image-dir", default=cfg.train_image_dir)
     p.add_argument("--test-image-dir", default=cfg.test_image_dir)
     p.add_argument("--train-labels-csv", default=cfg.train_labels_csv)
     p.add_argument("--test-labels-csv", default=cfg.test_labels_csv)
-
-    # Run
     p.add_argument("--run-name", default=bc.run_name)
-
-    # Data
     p.add_argument("--val-fraction", type=float, default=bc.val_fraction)
     p.add_argument("--batch-size", type=int, default=bc.batch_size)
     p.add_argument("--num-workers", type=int, default=bc.num_workers)
-
-    # Training schedule
     p.add_argument("--max-epochs", type=int, default=bc.max_epochs)
     p.add_argument("--warmup-epochs", type=int, default=bc.warmup_epochs)
     p.add_argument("--lr-head", type=float, default=bc.lr_head)
     p.add_argument("--lr-backbone", type=float, default=bc.lr_backbone)
     p.add_argument("--patience", type=int, default=bc.patience)
-
-    # Hardware
     p.add_argument("--accelerator", default=bc.accelerator)
     p.add_argument("--devices", default=bc.devices)
     p.add_argument("--precision", default=bc.precision)
-
     return p.parse_args()
 
 
