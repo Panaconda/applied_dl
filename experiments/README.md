@@ -49,3 +49,8 @@ Key variables:
 The two index vars are optional: when empty, the dataset falls back to
 looking for <image_id>.png files directly in image_dir (legacy behaviour
 for the old Pre-256 PNG dataset).
+
+# Experiments
+
+## Classifier – Baseline
+

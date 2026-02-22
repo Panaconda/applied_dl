@@ -75,11 +75,10 @@ def main() -> None:
     )
 
     checkpoint_cb = ModelCheckpoint(
-        filename="best-epoch{epoch:02d}",
+        filename="best",
         monitor=ac.monitor_metric,
         mode="max",
         save_top_k=1,
-        verbose=True,
     )
     early_stop_cb = EarlyStopping(
         monitor=ac.monitor_metric,

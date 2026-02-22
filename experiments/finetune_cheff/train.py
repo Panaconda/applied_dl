@@ -189,9 +189,9 @@ def main() -> None:
     checkpoint_cb = ModelCheckpoint(
         monitor="val/loss_simple_ema",
         mode="min",
-        save_top_k=2,
-        save_last=True,
-        filename="best-epoch{epoch:02d}",
+        save_top_k=1,
+        save_last=False,
+        filename="best",
     )
 
     trainer = pl.Trainer(
