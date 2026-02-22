@@ -1,21 +1,4 @@
-"""Training entry point: real data + multi-class synthetic data.
-
-Supports one or many --synthetic-dirs (one per pathology class).
-Auto-prefers filtered_* index files; falls back to synthetic_* files.
-
-Examples
---------
-# All 4 classes unfiltered:
-python -m synthetic.train \\
-    --synthetic-dirs ../samples/lora/Pneumonia \\
-                     ../samples/lora/Bronchitis \\
-                     ../samples/lora/Bronchiolitis \\
-                     "../samples/lora/Brocho-pneumonia" \\
-    --run-name synthetic_all
-
-# Single class:
-python -m synthetic.train --synthetic-dirs ../samples/lora/Pneumonia
-"""
+"""Training entry point: real data + multi-class synthetic data."""
 from __future__ import annotations
 
 import argparse
@@ -44,6 +27,8 @@ def parse_args() -> argparse.Namespace:
     p.add_argument("--test-image-dir", default=cfg.test_image_dir)
     p.add_argument("--train-labels-csv", default=cfg.train_labels_csv)
     p.add_argument("--test-labels-csv", default=cfg.test_labels_csv)
+    p.add_argument("--train-index-json", default=cfg.vindr_pcxr_train_index)
+    p.add_argument("--test-index-json", default=cfg.vindr_pcxr_test_index)
     p.add_argument(
         "--synthetic-dirs",
         nargs="+",
@@ -157,6 +142,8 @@ def main() -> None:
         test_image_dir=args.test_image_dir,
         train_labels_csv=args.train_labels_csv,
         test_labels_csv=args.test_labels_csv,
+        train_index_json=args.train_index_json,
+        test_index_json=args.test_index_json,
         val_fraction=args.val_fraction,
         batch_size=args.batch_size,
         num_workers=args.num_workers,

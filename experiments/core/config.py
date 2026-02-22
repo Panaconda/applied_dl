@@ -24,6 +24,12 @@ class CoreConfig(BaseSettings):
     train_labels_csv: str = ""
     test_labels_csv: str = ""
 
+    # Optional: MaCheX index files mapping sequential JPG filenames to image_ids.
+    # When set, the datamodule will resolve image paths via the index instead of
+    # looking for <image_id>.png files directly in image_dir.
+    vindr_pcxr_train_index: str = ""
+    vindr_pcxr_test_index: str = ""
+
     image_size: int = 224
 
     @computed_field

@@ -1,8 +1,9 @@
 """VinDr-PCXR dataset: label loading, image transform, and Dataset class."""
 from __future__ import annotations
 
+import json
 import os
-from typing import List, Optional, Tuple
+from typing import Dict, List, Optional, Tuple
 
 import numpy as np
 import pandas as pd
@@ -32,6 +33,30 @@ def compute_pos_weights(labels: pd.DataFrame) -> torch.Tensor:
     pos = labels.sum(axis=0).clip(lower=1)  # avoid division by zero
     weights = (N - pos) / pos
     return torch.tensor(weights.values, dtype=torch.float32)
+
+
+def load_image_id_map(index_json_path: str, image_dir: str) -> Dict[str, str]:
+    """Build an {image_id: abs_path} mapping from a MaCheX index.json.
+
+    MaCheX assigns sequential zero-padded filenames (e.g. ``000000.jpg``) and
+    stores the original ``<image_id>.dicom`` name in the ``key`` field of each
+    index entry.  This function inverts that mapping so the rest of the pipeline
+    can look up images by their original ``image_id``.
+
+    Args:
+        index_json_path: Path to the MaCheX ``index.json`` file.
+        image_dir:       Directory where the sequential ``.jpg`` files live.
+
+    Returns:
+        Dict mapping ``image_id`` (hex string, no extension) to the absolute
+        path of the corresponding ``.jpg`` file inside ``image_dir``.
+    """
+    with open(index_json_path) as f:
+        index = json.load(f)
+    return {
+        entry["key"].replace(".dicom", ""): os.path.join(image_dir, f"{seq_key}.jpg")
+        for seq_key, entry in index.items()
+    }
 
 
 def load_labels(csv_path: str) -> pd.DataFrame:

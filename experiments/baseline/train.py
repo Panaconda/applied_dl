@@ -21,6 +21,8 @@ def parse_args() -> argparse.Namespace:
     p.add_argument("--test-image-dir", default=cfg.test_image_dir)
     p.add_argument("--train-labels-csv", default=cfg.train_labels_csv)
     p.add_argument("--test-labels-csv", default=cfg.test_labels_csv)
+    p.add_argument("--train-index-json", default=cfg.vindr_pcxr_train_index)
+    p.add_argument("--test-index-json", default=cfg.vindr_pcxr_test_index)
     p.add_argument("--run-name", default=bc.run_name)
     p.add_argument("--val-fraction", type=float, default=bc.val_fraction)
     p.add_argument("--batch-size", type=int, default=bc.batch_size)
@@ -48,6 +50,8 @@ def main() -> None:
         test_image_dir=args.test_image_dir,
         train_labels_csv=args.train_labels_csv,
         test_labels_csv=args.test_labels_csv,
+        train_index_json=args.train_index_json,
+        test_index_json=args.test_index_json,
         val_fraction=args.val_fraction,
         batch_size=args.batch_size,
         num_workers=args.num_workers,

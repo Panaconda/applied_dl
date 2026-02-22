@@ -9,7 +9,7 @@ import pytorch_lightning as pl
 from skmultilearn.model_selection import iterative_train_test_split
 from torch.utils.data import DataLoader
 
-from core.dataset import VinDrPCXRDataset, build_transform, load_labels
+from core.dataset import VinDrPCXRDataset, build_transform, load_image_id_map, load_labels
 
 
 class VinDrPCXRDataModule(pl.LightningDataModule):
@@ -23,10 +23,18 @@ class VinDrPCXRDataModule(pl.LightningDataModule):
     per-class ratios across minority classes.
 
     Args:
-        train_image_dir:  Directory with ``<image_id>.png`` training images.
-        test_image_dir:   Directory with ``<image_id>.png`` test images.
+        train_image_dir:  Directory with training images.  For the legacy
+                          dataset these are ``<image_id>.png`` files; for the
+                          MaCheX dataset they are sequential ``000000.jpg``
+                          files whose paths are resolved via ``train_index_json``.
+        test_image_dir:   Corresponding directory for test images.
         train_labels_csv: Path to ``image_labels_train.csv``.
         test_labels_csv:  Path to ``image_labels_test.csv``.
+        train_index_json: Path to the MaCheX ``index.json`` for the train split.
+                          When provided, image paths are resolved via
+                          :func:`~core.dataset.load_image_id_map` instead of
+                          ``{image_dir}/{image_id}.png``.
+        test_index_json:  Path to the MaCheX ``index.json`` for the test split.
         val_fraction:     Fraction of training data held out for validation.
         batch_size:       DataLoader batch size.
         num_workers:      DataLoader worker processes.
@@ -48,6 +56,8 @@ class VinDrPCXRDataModule(pl.LightningDataModule):
         test_image_dir: str,
         train_labels_csv: str,
         test_labels_csv: str,
+        train_index_json: str = "",
+        test_index_json: str = "",
         val_fraction: float = 0.10,
         batch_size: int = 32,
         num_workers: int = 4,
@@ -62,6 +72,8 @@ class VinDrPCXRDataModule(pl.LightningDataModule):
         self.test_image_dir = test_image_dir
         self.train_labels_csv = train_labels_csv
         self.test_labels_csv = test_labels_csv
+        self.train_index_json = train_index_json
+        self.test_index_json = test_index_json
         self.val_fraction = val_fraction
         self.batch_size = batch_size
         self.num_workers = num_workers
@@ -77,12 +89,25 @@ class VinDrPCXRDataModule(pl.LightningDataModule):
 
 
     def setup(self, stage: Optional[str] = None) -> None:
+        # Build image-path overrides from MaCheX index files when provided.
+        train_overrides = (
+            load_image_id_map(self.train_index_json, self.train_image_dir)
+            if self.train_index_json
+            else {}
+        )
+        test_overrides = (
+            load_image_id_map(self.test_index_json, self.test_image_dir)
+            if self.test_index_json
+            else {}
+        )
+
         test_labels = load_labels(self.test_labels_csv)
         self._test_ds = VinDrPCXRDataset(
             image_ids=list(test_labels.index),
             labels=test_labels,
             image_dir=self.test_image_dir,
             transform=self.eval_transform,
+            image_path_overrides=test_overrides,
         )
 
         if stage == "test":
@@ -107,18 +132,22 @@ class VinDrPCXRDataModule(pl.LightningDataModule):
             all_train_labels = pd.concat([train_labels, self.extra_labels])
             train_ids = train_ids + self.extra_train_ids
 
+        # Merge base image overrides with any extra synthetic-image paths.
+        train_path_overrides = {**train_overrides, **self.extra_image_paths}
+
         self._train_ds = VinDrPCXRDataset(
             image_ids=train_ids,
             labels=all_train_labels,
             image_dir=self.train_image_dir,
             transform=self.train_transform,
-            image_path_overrides=self.extra_image_paths,
+            image_path_overrides=train_path_overrides,
         )
         self._val_ds = VinDrPCXRDataset(
             image_ids=val_ids,
             labels=train_labels,
             image_dir=self.train_image_dir,
             transform=self.eval_transform,
+            image_path_overrides=train_overrides,
         )
 
 
