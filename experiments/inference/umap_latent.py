@@ -33,7 +33,7 @@ from PIL import Image
 from tqdm import tqdm
 
 from core.config import cfg
-from core.dataset import build_transform, load_labels
+from core.dataset import build_transform, load_image_id_map, load_labels
 
 # Reuse class prompts & model loader from generation script
 from inference.generate_synthetic import CLASS_PROMPTS, load_model
@@ -57,16 +57,19 @@ def sample_real_paths(n_train: int = 100, n_test: int = 100, seed: int = 42) -> 
     per_cls_test = n_test // len(PATHOLOGY_CLASSES)    # 25
     paths: list[str] = []
 
-    for image_dir, csv_path, per_cls in [
-        (cfg.train_image_dir, cfg.train_labels_csv, per_cls_train),
-        (cfg.test_image_dir, cfg.test_labels_csv, per_cls_test),
+    for image_dir, csv_path, index_json, per_cls in [
+        (cfg.train_image_dir, cfg.train_labels_csv, cfg.vindr_pcxr_train_index, per_cls_train),
+        (cfg.test_image_dir, cfg.test_labels_csv, cfg.vindr_pcxr_test_index, per_cls_test),
     ]:
         labels = load_labels(csv_path)
+        # Build image_id → file path mapping (handles sequential JPG names)
+        id_map = load_image_id_map(index_json, image_dir) if index_json else {}
         for cls in PATHOLOGY_CLASSES:
             positive_ids = labels[labels[cls] == 1].index.tolist()
             sampled = rng.sample(positive_ids, min(per_cls, len(positive_ids)))
             for img_id in sampled:
-                paths.append(os.path.join(image_dir, f"{img_id}.png"))
+                path = id_map.get(img_id, os.path.join(image_dir, f"{img_id}.png"))
+                paths.append(path)
 
     return paths
 
@@ -253,9 +256,7 @@ def main() -> None:
     wrapper = load_model(
         model_path=args.model_path,
         ae_path=args.ae_path,
-        lora_ckpt=None,
-        lora_rank=16,
-        lora_alpha=32,
+        lora_adapter=None,
         device=args.device,
     )
     base_pils = generate_base_images(wrapper, per_class=50, steps=args.steps, eta=args.eta)

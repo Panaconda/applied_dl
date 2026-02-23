@@ -128,3 +128,8 @@ python -m inference.generate_synthetic \
   --classes Pneumonia \
   --n 1
 ```
+
+python -m inference.generate_synthetic \
+  --lora-adapter runs/finetune_cheff/lora_adapter \
+  --n 1000 \
+  --output-dir ../samples/lora
