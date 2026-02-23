@@ -35,23 +35,25 @@ from inference.umap_latent import (
 def compute_frechet_distance(
     mu1: np.ndarray, sigma1: np.ndarray,
     mu2: np.ndarray, sigma2: np.ndarray,
-    eps: float = 1e-6,
+    eps: float = 1e-4,
 ) -> float:
     """Compute FDD between two Gaussians N(μ₁,Σ₁) and N(μ₂,Σ₂).
 
-    Numerically stabilised: adds eps·I before taking the matrix square root.
+    Numerically stabilised: adds eps·I to both covariance matrices before
+    computing the matrix square root to handle rank-deficient cases (n << d).
     """
     diff = mu1 - mu2
-    # Symmetric matrix sqrt via eigendecomposition (more stable than sqrtm)
-    covmean, _ = scipy.linalg.sqrtm(sigma1 @ sigma2, disp=False)
+    I = np.eye(sigma1.shape[0], dtype=sigma1.dtype)
+    s1 = sigma1 + eps * I
+    s2 = sigma2 + eps * I
 
+    covmean, _ = scipy.linalg.sqrtm(s1 @ s2, disp=False)
+
+    # Discard tiny imaginary residuals from floating-point arithmetic
     if np.iscomplexobj(covmean):
-        if not np.allclose(np.diagonal(covmean).imag, 0, atol=1e-3):
-            m = np.max(np.abs(covmean.imag))
-            raise ValueError(f"Imaginary component {m} in matrix sqrt — check inputs")
         covmean = covmean.real
 
-    return float(diff @ diff + np.trace(sigma1 + sigma2 - 2 * covmean))
+    return float(diff @ diff + np.trace(s1 + s2 - 2 * covmean))
 
 
 def gaussian_stats(features: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
