@@ -9,3 +9,4 @@ pyyaml
 pylibjpeg
 pylibjpeg-libjpeg
 pylibjpeg-openjpeg
+matplotlib

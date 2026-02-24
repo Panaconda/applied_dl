@@ -1,0 +1,19 @@
+# Core Deep Learning
+torch>=2.0.0
+torchvision>=0.15.0
+
+# Medical Imaging & Pre-trained Models
+torchxrayvision>=1.0.0
+
+# Fine-Tuning (LoRA/PEFT)
+peft>=0.4.0
+
+# Data Manipulation
+numpy>=1.21.0
+
+pydicom
+GDCM
+pylibjpeg 
+pylibjpeg-libjpeg
+scikit-learn
+matplotlib
