@@ -6,3 +6,9 @@ trained_models/
 chestx-ray/
 
 *.pt
+evaluation/notebooks/best_model_full_5.pth
+evaluation/notebooks/best_model_head_only_5.pth
+evaluation/notebooks/best_model_head_only.pth
+evaluation/utils/__pycache__/class_peft_utils.cpython-39.pyc
+evaluation/utils/__pycache__/eval_parsing.cpython-39.pyc
+evaluation/utils/__pycache__/eval_utils.cpython-39.pyc
