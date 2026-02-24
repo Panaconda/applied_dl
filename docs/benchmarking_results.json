@@ -1,0 +1,16 @@
+[
+  {
+    "scenario": "A_Uncond_Self",
+    "lora_rank": 8,
+    "batch_size": 1,
+    "precision": "fp32",
+    "max_vram_gb": 1.487375259399414,
+    "throughput_img_per_sec": 6.2573369006619215,
+    "trainable_params": 2553624,
+    "total_params": 276609787,
+    "trainable_percent": 0.9231864236242661,
+    "gradient_accum_feasible": "16x",
+    "status": "SUCCESS",
+    "error_message": null
+  }
+]
