@@ -13,3 +13,6 @@ data/
 download_missing_train_files.sh
 download_training_log.txt
 experiments/runs/
+.venv_eval/
+.venv/
+.venv_machex/
