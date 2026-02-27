@@ -102,6 +102,10 @@ class VinDrPCXRDataModule(pl.LightningDataModule):
         )
 
         test_labels = load_labels(self.test_labels_csv)
+        if test_overrides:
+            test_ids = [i for i in list(test_labels.index) if i in test_overrides]
+            test_labels = test_labels.loc[test_ids]
+
         self._test_ds = VinDrPCXRDataset(
             image_ids=list(test_labels.index),
             labels=test_labels,
@@ -115,6 +119,12 @@ class VinDrPCXRDataModule(pl.LightningDataModule):
 
         train_labels = load_labels(self.train_labels_csv)
         all_ids = list(train_labels.index)
+
+        # If using MaCheX index, filter IDs to those present in the index.
+        if train_overrides:
+            all_ids = [i for i in all_ids if i in train_overrides]
+            train_labels = train_labels.loc[all_ids]
+
         ids_arr = np.array(all_ids).reshape(-1, 1)  # [N, 1] used as X
         y = train_labels.values.astype(int)          # [N, 6]
 

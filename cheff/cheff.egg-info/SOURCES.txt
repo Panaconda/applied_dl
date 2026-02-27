@@ -38,6 +38,8 @@ cheff/ldm/modules/image_degradation/utils_image.py
 cheff/ldm/modules/losses/__init__.py
 cheff/ldm/modules/losses/contperceptual.py
 cheff/ldm/modules/losses/vqperceptual.py
+cheff/peft_modules/__init__.py
+cheff/peft_modules/inject_lora.py
 cheff/sr/__init__.py
 cheff/sr/diffusor.py
 cheff/sr/model.py

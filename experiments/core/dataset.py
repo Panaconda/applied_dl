@@ -54,7 +54,9 @@ def load_image_id_map(index_json_path: str, image_dir: str) -> Dict[str, str]:
     with open(index_json_path) as f:
         index = json.load(f)
     return {
-        entry["key"].replace(".dicom", ""): os.path.join(image_dir, f"{seq_key}.jpg")
+        entry["key"].replace(".dicom", ""): os.path.join(
+            image_dir, seq_key[:2], f"{seq_key}.jpg"
+        )
         for seq_key, entry in index.items()
     }
 
