@@ -1,9 +1,0 @@
-
-# data folders
-
-machex_dataset/
-machex_dataset_legacy/
-chestx-ray/
-
-# files 
-.pyc

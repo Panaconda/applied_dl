@@ -280,8 +280,8 @@ class MachexCompositor:
 
         if self.vindrpcxr_root is not None:
             p = VinDrPCXRParser(
-                root=self.vindrpcxr_root,
-                target_root=os.path.join(self.target_root, 'vindr-pcxr', 'train'),
+                root=os.path.join( '..' , self.vindrpcxr_root),
+                target_root=os.path.join( '..' ,self.target_root, 'vindr-pcxr', 'train'),
                 transforms=self.transforms,
                 num_workers=self.num_workers,
                 frontal_only=self.frontal_only,
@@ -290,8 +290,8 @@ class MachexCompositor:
             ps.append(p)
 
             p = VinDrPCXRParser(
-                root=self.vindrpcxr_root,
-                target_root=os.path.join(self.target_root, 'vindr-pcxr', 'test'),
+                root=os.path.join( '..' , self.vindrpcxr_root),
+                target_root=os.path.join( '..' ,self.target_root, 'vindr-pcxr', 'test'),
                 transforms=self.transforms,
                 num_workers=self.num_workers,
                 frontal_only=self.frontal_only,
