@@ -1,0 +1,8 @@
+MACHEX_PATH: machex_dataset/vindrcxr
+NUM_WORKERS: 4
+FRONTAL_ONLY: True
+
+VINDR_PCXR_ROOT: chestx-ray/VinDr-PCXR
+
+PHYSIO_USERNAME: kallepalle
+PHYSIO_PASSWORD: Appl1edD33p
