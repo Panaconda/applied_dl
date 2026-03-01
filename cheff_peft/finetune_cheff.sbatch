@@ -27,9 +27,9 @@ export RUN_NAME="finetune_cheff_slurm_${SLURM_JOB_ID}"
 
 # Data & Model Paths (Adjust these to your actual paths on the cluster)
 export MCML_ROOT="/dss/mcmlscratch/04/ra58cib2"
-export DATASET_BASE="${MCML_ROOT}/machex_dataset/vindr-pcxr"
+export DATASET_BASE="${MCML_ROOT}/data/machex_dataset/vindr-pcxr"
 export MODEL_BASE="${MCML_ROOT}/pretrained_models"
-export MACHEX_OUT="${MCML_ROOT}/machex_dataset/vindr-pcxr/train/"
+export MACHEX_OUT="${MCML_ROOT}/data/machex_dataset/vindr-pcxr/train/"
 
 # Pydantic Config Overrides
 export VINDR_PCXR_TRAIN_INDEX="${DATASET_BASE}/train/index.json"
