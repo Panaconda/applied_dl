@@ -4,8 +4,8 @@
 #SBATCH -p mcml-dgx-a100-40x8
 #SBATCH --qos=mcml
 #SBATCH --job-name=baseline_classifier
-#SBATCH --output=classifier/runs/slurm_%j.out
-#SBATCH --error=classifier/runs/slurm_%j.err
+#SBATCH --output=runs/slurm_%j.out
+#SBATCH --error=runs/slurm_%j.err
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=8
 #SBATCH --mem=64G
@@ -21,7 +21,7 @@ source ~/miniforge3/bin/activate adl_cheff
 
 # --- 2. Data Paths ---
 MCML_ROOT="/dss/mcmlscratch/04/ra58cib2"
-DATASET_BASE="${MCML_ROOT}/machex_dataset/vindr-pcxr"
+DATASET_BASE="${MCML_ROOT}/data/machex_dataset/vindr-pcxr"
 TRAIN_DIR="${DATASET_BASE}/train"
 TEST_DIR="${DATASET_BASE}/test"
 
