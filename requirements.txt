@@ -1,34 +1,47 @@
+# --- 1. Core Deep Learning & Lightning ---
+torch>=2.1
+torchvision>=0.16
 pytorch-lightning>=2.1
-opencv-python-headless
-numba
-numpy==1.26.4
-albumentations
-pudb
-imageio
-imageio-ffmpeg
-omegaconf
-test-tube
-streamlit
-einops
-torch-fidelity
-transformers==4.26.1
-wandb
+torchxrayvision
+peft==0.2.0
 kornia
-Pillow>=10.0
-tqdm
+einops
+transformers==4.26.1
+torch-fidelity
+
+# --- 2. Data Science & Metrics ---
+numpy==1.26.4
 pandas>=2.0
 scipy==1.11.4
 scikit-learn>=1.3
 scikit-multilearn>=0.2.0
-torchxrayvision
+numba
+umap-learn>=0.5
+
+# --- 3. Image Processing (Dataset Gen & Training) ---
+Pillow>=10.0
+opencv-python-headless
+albumentations
+imageio
+imageio-ffmpeg
+pydicom
+pylibjpeg
+pylibjpeg-libjpeg
+pylibjpeg-openjpeg
+
+# --- 4. Configuration & Utilities ---
 pydantic-settings>=2.0
+omegaconf
+pyyaml
+tqdm
+wandb
+pudb
 
-# Added dependencies for LoRA project
-peft==0.2.0
+# --- 5. Visualization & Interface ---
+matplotlib>=3.7
+streamlit
 
-# Local packages
+# --- 6. Local Packages & Remote Repos ---
 -e ./cheff
-
-# External repositories
--e "git+https://github.com/CompVis/taming-transformers.git@master#egg=taming-transformers"
--e "git+https://github.com/openai/CLIP.git@main#egg=clip"
+-e git+https://github.com/CompVis/taming-transformers.git@master#egg=taming-transformers
+-e git+https://github.com/openai/CLIP.git@main#egg=clip
