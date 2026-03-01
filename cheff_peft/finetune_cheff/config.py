@@ -1,16 +1,30 @@
-"""Configuration for CheFF LoRA fine-tuning on VinDr-PCXR."""
 from __future__ import annotations
 
-from core.config import CoreConfig
+import os
+from typing import List
+from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
-class FinetuneCheffConfig(CoreConfig):
-    """Extends CoreConfig with CheFF fine-tuning paths and LoRA hyper-parameters.
+_ENV_FILE = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))), ".env")
+
+
+class FinetuneCheffConfig(BaseSettings):
+    """Configuration for CheFF fine-tuning, independent of the classifier core.
 
     All fields can be set via the shared ``.env`` file or environment variables.
     """
+    model_config = SettingsConfigDict(
+        env_file=_ENV_FILE,
+        env_file_encoding="utf-8",
+        extra="ignore",
+    )
 
-    # --- extra input path ------------------------------------------------
+    # --- Shared VinDr-PCXR paths (from .env) -----------------------------
+    train_image_dir: str = ""
+    train_labels_csv: str = ""
+    vindr_pcxr_train_index: str = ""  # MaCheX index for training
+
+    # --- CheFF-specific input paths --------------------------------------
     train_annotations_csv: str = ""   # annotations_train.csv (finding bboxes)
 
     # --- MaCheX output ---------------------------------------------------
@@ -35,6 +49,14 @@ class FinetuneCheffConfig(CoreConfig):
     seed: int = 42
 
     run_name: str = "finetune_cheff"
+
+    @property
+    def runs_dir(self) -> str:
+        """Save runs into the cheff_peft/runs directory."""
+        base = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        d = os.path.join(base, "runs")
+        os.makedirs(d, exist_ok=True)
+        return d
 
 
 ftcfg = FinetuneCheffConfig()
