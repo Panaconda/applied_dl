@@ -4,8 +4,8 @@
 #SBATCH -p mcml-dgx-a100-40x8
 #SBATCH --qos=mcml
 #SBATCH --job-name=synthetic_filtered_classifier
-#SBATCH --output=runs/slurm_%j.out
-#SBATCH --error=runs/slurm_%j.err
+#SBATCH --output=classifier/runs/slurm_%j.out
+#SBATCH --error=classifier/runs/slurm_%j.err
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=8
 #SBATCH --mem=64G
