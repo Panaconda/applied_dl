@@ -4,9 +4,7 @@ import os
 from typing import List
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
-
-_ENV_FILE = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))), ".env")
-
+_ENV_FILE = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), ".env")
 
 class FinetuneCheffConfig(BaseSettings):
     """Configuration for CheFF fine-tuning, independent of the classifier core.

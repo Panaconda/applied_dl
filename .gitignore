@@ -1,29 +1,16 @@
-
-trained_models/
+# venv
 .venv/
-.venv_machex/
-.venv_eval/
-chestx-ray/
 
-*.pt
-evaluation/notebooks/best_model_full_5.pth
-evaluation/notebooks/best_model_head_only_5.pth
-evaluation/notebooks/best_model_head_only.pth
-evaluation/utils/__pycache__/class_peft_utils.cpython-39.pyc
-evaluation/utils/__pycache__/eval_parsing.cpython-39.pyc
-evaluation/utils/__pycache__/eval_utils.cpython-39.pyc
-venv/
-physionet.org/
-*.dicom
-machex_dataset/
-pedicxr_test/
-*pyc
-.env
-
+# data 
 data/
-download_missing_train_files.sh
-download_training_log.txt
-experiments/runs/
-.venv_eval/
-.venv/
-.venv_machex/
+machex/machex_dataset/
+machex/machex_dataset_legacy/
+machex/chestx-ray/
+
+# runs
+classifier/runs
+
+# files
+.pyc
+.env
+.pt

@@ -5,7 +5,7 @@ the prepared MaCheX index.json, and trains with a minimal PL Trainer.
 No dependency on the legacy 01_train_ldm.py script.
 
 Usage:
-    cd experiments
+    cd cheff_peft
     python -m finetune_cheff.train
 """
 from __future__ import annotations

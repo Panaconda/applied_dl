@@ -5,7 +5,7 @@ import json
 import os
 from pathlib import Path
 
-from finetune_cheff.config import ftcfg
+from config import ftcfg
 
 
 def main() -> None:
@@ -14,7 +14,7 @@ def main() -> None:
     if not src_path or not os.path.exists(src_path):
         print(
             f"Error: VINDR_PCXR_TRAIN_INDEX not set or file not found: {src_path!r}\n"
-            "Check experiments/.env."
+            "Check cheff_peft/.env."
         )
         return
 
@@ -27,7 +27,7 @@ def main() -> None:
     if not img_dir or not os.path.isdir(img_dir):
         print(
             f"Error: TRAIN_IMAGE_DIR not set or directory not found: {img_dir!r}\n"
-            "Check experiments/.env."
+            "Check cheff_peft/.env."
         )
         return
 
@@ -57,7 +57,7 @@ def main() -> None:
     if not machex_output_dir:
         print(
             "Error: MACHEX_OUTPUT_DIR not set.\n"
-            "Check experiments/.env."
+            "Check cheff_peft/.env."
         )
         return
 
