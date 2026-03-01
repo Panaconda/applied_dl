@@ -1,11 +1,11 @@
 #!/bin/bash
-# Run from the project root
+# Run from ./classifier
 
 #SBATCH -p mcml-dgx-a100-40x8
 #SBATCH --qos=mcml
 #SBATCH --job-name=synthetic_classifier
-#SBATCH --output=classifier/runs/slurm_%j.out
-#SBATCH --error=classifier/runs/slurm_%j.err
+#SBATCH --output=runs/slurm_%j.out
+#SBATCH --error=runs/slurm_%j.err
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=8
 #SBATCH --mem=64G
@@ -35,11 +35,9 @@ echo "Starting Synthetic Training Job: ${SLURM_JOB_NAME} (ID: ${SLURM_JOB_ID})"
 echo "Run Name: ${RUN_NAME}"
 
 # Ensure we are in the 'classifier' folder
-if [ -d "classifier" ]; then
-    echo "Changing directory to classifier/"
-    cd classifier
-elif [[ "$PWD" != *"/classifier" ]]; then
-    echo "Warning: Not in 'classifier' folder and 'classifier' subfolder not found. Imports might fail."
+if [[ "$PWD" != *"/classifier" ]]; then
+    echo "Error: Must be run from the 'classifier' directory. Current directory is $PWD" >&2
+    exit 1
 fi
 
 # Launch training with real + synthetic data
