@@ -1,4 +1,4 @@
-"""Training entry point for the augmented experiment."""
+"""Training entry point for the baseline experiment."""
 from __future__ import annotations
 
 import argparse
@@ -8,39 +8,34 @@ import pytorch_lightning as pl
 from pytorch_lightning.callbacks import EarlyStopping, ModelCheckpoint
 from pytorch_lightning.loggers import CSVLogger
 
-from augmented.config import ac
+from baseline.config import bc
 from baseline.model import VinDrClassifier
 from core.config import cfg
 from core.datamodule import VinDrPCXRDataModule
-from core.dataset import build_augmented_transform, compute_pos_weights, load_labels
+from core.dataset import compute_pos_weights, load_labels
 
 
 def parse_args() -> argparse.Namespace:
-    p = argparse.ArgumentParser(description="Train the VinDr-PCXR augmented classifier")
-
+    p = argparse.ArgumentParser(description="Train the VinDr-PCXR baseline classifier")
     p.add_argument("--train-image-dir", default=cfg.train_image_dir)
     p.add_argument("--test-image-dir", default=cfg.test_image_dir)
     p.add_argument("--train-labels-csv", default=cfg.train_labels_csv)
     p.add_argument("--test-labels-csv", default=cfg.test_labels_csv)
     p.add_argument("--train-index-json", default=cfg.vindr_pcxr_train_index)
     p.add_argument("--test-index-json", default=cfg.vindr_pcxr_test_index)
-
-    p.add_argument("--run-name", default=ac.run_name)
-
-    p.add_argument("--val-fraction", type=float, default=ac.val_fraction)
-    p.add_argument("--batch-size", type=int, default=ac.batch_size)
-    p.add_argument("--num-workers", type=int, default=ac.num_workers)
-
-    p.add_argument("--max-epochs", type=int, default=ac.max_epochs)
-    p.add_argument("--warmup-epochs", type=int, default=ac.warmup_epochs)
-    p.add_argument("--lr-head", type=float, default=ac.lr_head)
-    p.add_argument("--lr-backbone", type=float, default=ac.lr_backbone)
-    p.add_argument("--patience", type=int, default=ac.patience)
-
-    p.add_argument("--accelerator", default=ac.accelerator)
-    p.add_argument("--devices", default=ac.devices)
-    p.add_argument("--precision", default=ac.precision)
-
+    p.add_argument("--pretrain-setup", default=cfg.pretrain_setup)
+    p.add_argument("--run-name", default=bc.run_name)
+    p.add_argument("--val-fraction", type=float, default=bc.val_fraction)
+    p.add_argument("--batch-size", type=int, default=bc.batch_size)
+    p.add_argument("--num-workers", type=int, default=bc.num_workers)
+    p.add_argument("--max-epochs", type=int, default=bc.max_epochs)
+    p.add_argument("--warmup-epochs", type=int, default=bc.warmup_epochs)
+    p.add_argument("--lr-head", type=float, default=bc.lr_head)
+    p.add_argument("--lr-backbone", type=float, default=bc.lr_backbone)
+    p.add_argument("--patience", type=int, default=bc.patience)
+    p.add_argument("--accelerator", default=bc.accelerator)
+    p.add_argument("--devices", default=bc.devices)
+    p.add_argument("--precision", default=bc.precision)
     return p.parse_args()
 
 
@@ -49,7 +44,7 @@ def main() -> None:
     pl.seed_everything(42, workers=True)
     args = parse_args()
 
-    logger = CSVLogger(save_dir=cfg.runs_dir, name=args.run_name)
+    logger = CSVLogger(save_dir=cfg.runs_dir, name=args.run_name, version="")
 
     dm = VinDrPCXRDataModule(
         train_image_dir=args.train_image_dir,
@@ -61,8 +56,6 @@ def main() -> None:
         val_fraction=args.val_fraction,
         batch_size=args.batch_size,
         num_workers=args.num_workers,
-        train_transform=build_augmented_transform(),
-        # eval_transform defaults to plain XRVTransform
     )
 
     pos_weights = compute_pos_weights(load_labels(args.train_labels_csv))
@@ -72,16 +65,17 @@ def main() -> None:
         lr_head=args.lr_head,
         lr_backbone=args.lr_backbone,
         pos_weights=pos_weights,
+        pretrain_setup=args.pretrain_setup,
     )
 
     checkpoint_cb = ModelCheckpoint(
         filename="best",
-        monitor=ac.monitor_metric,
+        monitor=bc.monitor_metric,
         mode="max",
         save_top_k=1,
     )
     early_stop_cb = EarlyStopping(
-        monitor=ac.monitor_metric,
+        monitor=bc.monitor_metric,
         mode="max",
         patience=args.patience,
         verbose=True,

@@ -30,9 +30,18 @@ def parse_args() -> argparse.Namespace:
     p.add_argument("--train-index-json", default=cfg.vindr_pcxr_train_index)
     p.add_argument("--test-index-json", default=cfg.vindr_pcxr_test_index)
     p.add_argument(
+        "--filtered", 
+        action="store_true"
+    )
+    p.add_argument(
         "--synthetic-dirs",
         nargs="+",
-        default=["../samples/lora/Pneumonia"],
+        default=[
+            os.path.join(cfg.synthetic_data_dir, "Pneumonia"),
+            os.path.join(cfg.synthetic_data_dir, "Bronchiolitis"),
+            os.path.join(cfg.synthetic_data_dir, "Bronchitis"),
+            os.path.join(cfg.synthetic_data_dir, "Brocho-pneumonia"),
+        ] if cfg.synthetic_data_dir else ["../samples/lora/Pneumonia"],
         metavar="DIR",
         help="One or more per-class synthetic directories containing index files",
     )
@@ -120,7 +129,14 @@ def main() -> None:
     all_paths: dict[str, str] = {}
 
     for synth_dir in args.synthetic_dirs:
-        ids, labels, paths = load_synthetic_index(synth_dir)
+        labels_file = "filtered_labels.csv" if args.filtered else "synthetic_labels.csv"
+        paths_file = "filtered_paths.json" if args.filtered else "synthetic_paths.json"
+        
+        ids, labels, paths = load_synthetic_index(
+            synth_dir, 
+            labels_csv_override=labels_file, 
+            paths_json_override=paths_file
+        )
         all_ids.extend(ids)
         all_labels_parts.append(labels)
         all_paths.update(paths)

@@ -23,6 +23,8 @@ class CoreConfig(BaseSettings):
     test_image_dir: str = ""
     train_labels_csv: str = ""
     test_labels_csv: str = ""
+    synthetic_data_dir: str = ""
+    pretrain_setup: str = "densenet121-res224-chex"
 
     # Optional: MaCheX index files mapping sequential JPG filenames to image_ids.
     # When set, the datamodule will resolve image paths via the index instead of
