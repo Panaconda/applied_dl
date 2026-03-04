@@ -12,9 +12,9 @@ import torchxrayvision as xrv
 from PIL import Image
 from tqdm import tqdm
 
-from baseline.model import VinDrClassifier
-from core.config import cfg
-from core.dataset import build_transform
+from classifier.baseline.model import VinDrClassifier
+from classifier.core.config import cfg
+from classifier.core.dataset import build_transform
 
 
 def parse_args() -> argparse.Namespace:

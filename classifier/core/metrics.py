@@ -6,7 +6,7 @@ from typing import Dict, List
 import numpy as np
 from sklearn.metrics import confusion_matrix, f1_score, roc_auc_score
 
-from core.config import cfg
+from classifier.core.config import cfg
 
 
 def compute_metrics(

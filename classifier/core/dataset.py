@@ -14,7 +14,7 @@ from torch.utils.data import Dataset
 from torchvision import transforms as tv_transforms
 from torchvision.transforms.functional import resize as tv_resize
 
-from core.config import cfg
+from classifier.core.config import cfg
 
 
 def compute_pos_weights(labels: pd.DataFrame) -> torch.Tensor:
@@ -55,7 +55,7 @@ def load_image_id_map(index_json_path: str, image_dir: str) -> Dict[str, str]:
         index = json.load(f)
     return {
         entry["key"].replace(".dicom", ""): os.path.join(
-            image_dir, seq_key[:2], f"{seq_key}.jpg"
+            image_dir, f"{seq_key}.jpg"
         )
         for seq_key, entry in index.items()
     }

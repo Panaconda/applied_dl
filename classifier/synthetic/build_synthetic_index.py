@@ -21,7 +21,7 @@ import os
 
 import pandas as pd
 
-from core.config import cfg
+from classifier.core.config import cfg
 
 
 def main() -> None:

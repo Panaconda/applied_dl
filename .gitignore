@@ -3,12 +3,16 @@
 
 # data 
 data/
-machex/machex_dataset/
-machex/machex_dataset_legacy/
-machex/chestx-ray/
+touch data/.gitkeep
+
+# model checkpoints
+cheff_peft/checkpoints
+touch cheff_peft/checkpoints/.gitkeep
+cheff_peft/finetune_cheff/
 
 # runs
 classifier/runs
+touch classifier/runs/.gitkeep
 
 # files
 .pyc

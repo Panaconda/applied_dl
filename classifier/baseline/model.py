@@ -8,8 +8,8 @@ import torch
 import torch.nn as nn
 import torchxrayvision as xrv
 
-from core.config import cfg
-from core.metrics import compute_metrics, format_metrics_table, mean_auroc
+from classifier.core.config import cfg
+from classifier.core.metrics import compute_metrics, format_metrics_table, mean_auroc
 
 
 class VinDrClassifier(pl.LightningModule):
@@ -103,28 +103,22 @@ class VinDrClassifier(pl.LightningModule):
 
 
     def configure_optimizers(self) -> Any:
-        # Phase 1: backbone hard-frozen (no grad computation), head only.
-        # Phase 2: backbone unfrozen + optimiser rebuilt in on_train_epoch_start.
+        # Phase 1: backbone hard-frozen if warmup_epochs > 0
+        should_freeze = self.hparams.warmup_epochs > 0
         for p in self.model.features.parameters():
-            p.requires_grad = False
-        return torch.optim.AdamW(
-            self.model.classifier.parameters(),
-            lr=self.hparams.lr_head,
-        )
+            p.requires_grad = not should_freeze
+
+        # Initialize with two param groups from the start
+        return torch.optim.AdamW([
+            {"params": self.model.features.parameters(), "lr": self.hparams.lr_backbone},
+            {"params": self.model.classifier.parameters(), "lr": self.hparams.lr_head},
+        ])
 
     def on_train_epoch_start(self) -> None:
-        if self.current_epoch == self.hparams.warmup_epochs:
-            # Hard-unfreeze backbone and rebuild optimiser with two param groups.
+        if self.current_epoch == self.hparams.warmup_epochs and self.hparams.warmup_epochs > 0:
+            # Simply toggle grad on; the optimizer group already exists
             for p in self.model.features.parameters():
                 p.requires_grad = True
-            self.trainer.optimizers = [
-                torch.optim.AdamW(
-                    [
-                        {"params": self.model.features.parameters(), "lr": self.hparams.lr_backbone},
-                        {"params": self.model.classifier.parameters(), "lr": self.hparams.lr_head},
-                    ]
-                )
-            ]
             self.print(
                 f"\n[Phase 2] Epoch {self.current_epoch}: "
                 f"backbone unfrozen — lr → {self.hparams.lr_backbone}"

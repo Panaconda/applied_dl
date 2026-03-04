@@ -8,11 +8,11 @@ import pytorch_lightning as pl
 from pytorch_lightning.callbacks import EarlyStopping, ModelCheckpoint
 from pytorch_lightning.loggers import CSVLogger
 
-from baseline.config import bc
-from baseline.model import VinDrClassifier
-from core.config import cfg
-from core.datamodule import VinDrPCXRDataModule
-from core.dataset import compute_pos_weights, load_labels
+from classifier.baseline.config import bcfg
+from classifier.baseline.model import VinDrClassifier
+from classifier.core.config import cfg
+from classifier.core.datamodule import VinDrPCXRDataModule
+from classifier.core.dataset import compute_pos_weights, load_labels
 
 
 def parse_args() -> argparse.Namespace:
@@ -21,21 +21,21 @@ def parse_args() -> argparse.Namespace:
     p.add_argument("--test-image-dir", default=cfg.test_image_dir)
     p.add_argument("--train-labels-csv", default=cfg.train_labels_csv)
     p.add_argument("--test-labels-csv", default=cfg.test_labels_csv)
-    p.add_argument("--train-index-json", default=cfg.vindr_pcxr_train_index)
-    p.add_argument("--test-index-json", default=cfg.vindr_pcxr_test_index)
+    p.add_argument("--train-index-json", default=cfg.train_index)
+    p.add_argument("--test-index-json", default=cfg.test_index)
     p.add_argument("--pretrain-setup", default=cfg.pretrain_setup)
-    p.add_argument("--run-name", default=bc.run_name)
-    p.add_argument("--val-fraction", type=float, default=bc.val_fraction)
-    p.add_argument("--batch-size", type=int, default=bc.batch_size)
-    p.add_argument("--num-workers", type=int, default=bc.num_workers)
-    p.add_argument("--max-epochs", type=int, default=bc.max_epochs)
-    p.add_argument("--warmup-epochs", type=int, default=bc.warmup_epochs)
-    p.add_argument("--lr-head", type=float, default=bc.lr_head)
-    p.add_argument("--lr-backbone", type=float, default=bc.lr_backbone)
-    p.add_argument("--patience", type=int, default=bc.patience)
-    p.add_argument("--accelerator", default=bc.accelerator)
-    p.add_argument("--devices", default=bc.devices)
-    p.add_argument("--precision", default=bc.precision)
+    p.add_argument("--run-name", default=bcfg.run_name)
+    p.add_argument("--val-fraction", type=float, default=bcfg.val_fraction)
+    p.add_argument("--batch-size", type=int, default=bcfg.batch_size)
+    p.add_argument("--num-workers", type=int, default=bcfg.num_workers)
+    p.add_argument("--max-epochs", type=int, default=bcfg.max_epochs)
+    p.add_argument("--warmup-epochs", type=int, default=bcfg.warmup_epochs)
+    p.add_argument("--lr-head", type=float, default=bcfg.lr_head)
+    p.add_argument("--lr-backbone", type=float, default=bcfg.lr_backbone)
+    p.add_argument("--patience", type=int, default=bcfg.patience)
+    p.add_argument("--accelerator", default=bcfg.accelerator)
+    p.add_argument("--devices", default=bcfg.devices)
+    p.add_argument("--precision", default=bcfg.precision)
     return p.parse_args()
 
 
@@ -58,7 +58,15 @@ def main() -> None:
         num_workers=args.num_workers,
     )
 
-    pos_weights = compute_pos_weights(load_labels(args.train_labels_csv))
+    pos_labels = load_labels(args.train_labels_csv)
+    if args.train_index_json:
+        import json
+        with open(args.train_index_json) as f:
+            index = json.load(f)
+        present_ids = {entry["key"].replace(".dicom", "") for entry in index.values()}
+        pos_labels = pos_labels[pos_labels.index.isin(present_ids)]
+
+    pos_weights = compute_pos_weights(pos_labels)
 
     model = VinDrClassifier(
         warmup_epochs=args.warmup_epochs,
@@ -70,12 +78,12 @@ def main() -> None:
 
     checkpoint_cb = ModelCheckpoint(
         filename="best",
-        monitor=bc.monitor_metric,
+        monitor=bcfg.monitor_metric,
         mode="max",
         save_top_k=1,
     )
     early_stop_cb = EarlyStopping(
-        monitor=bc.monitor_metric,
+        monitor=bcfg.monitor_metric,
         mode="max",
         patience=args.patience,
         verbose=True,

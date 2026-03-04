@@ -9,7 +9,7 @@ import pytorch_lightning as pl
 from skmultilearn.model_selection import iterative_train_test_split
 from torch.utils.data import DataLoader
 
-from core.dataset import VinDrPCXRDataset, build_transform, load_image_id_map, load_labels
+from classifier.core.dataset import VinDrPCXRDataset, build_transform, load_image_id_map, load_labels
 
 
 class VinDrPCXRDataModule(pl.LightningDataModule):

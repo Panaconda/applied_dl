@@ -7,11 +7,11 @@ import os
 
 import torch
 
-from baseline.config import bc
-from baseline.model import VinDrClassifier
-from core.config import cfg
-from core.datamodule import VinDrPCXRDataModule
-from core.metrics import compute_metrics, format_metrics_table, mean_auroc
+from classifier.baseline.config import bcfg
+from classifier.baseline.model import VinDrClassifier
+from classifier.core.config import cfg
+from classifier.core.datamodule import VinDrPCXRDataModule
+from classifier.core.metrics import compute_metrics, format_metrics_table, mean_auroc
 
 
 def parse_args() -> argparse.Namespace:
@@ -20,9 +20,9 @@ def parse_args() -> argparse.Namespace:
     p.add_argument("--test-image-dir", default=cfg.test_image_dir)
     p.add_argument("--train-labels-csv", default=cfg.train_labels_csv)
     p.add_argument("--test-labels-csv", default=cfg.test_labels_csv)
-    p.add_argument("--test-index-json", default=cfg.vindr_pcxr_test_index)
-    p.add_argument("--batch-size", type=int, default=bc.batch_size)
-    p.add_argument("--num-workers", type=int, default=bc.num_workers)
+    p.add_argument("--test-index-json", default=cfg.test_index)
+    p.add_argument("--batch-size", type=int, default=bcfg.batch_size)
+    p.add_argument("--num-workers", type=int, default=bcfg.num_workers)
     p.add_argument("--output", default=None, help="Optional path to save metrics as JSON")
     return p.parse_args()
 

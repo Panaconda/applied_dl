@@ -2,11 +2,11 @@
 from __future__ import annotations
 
 import os
-
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
-_ENV_FILE = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), ".env")
-
+_SCRIPT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+_PROJECT_ROOT = os.path.dirname(_SCRIPT_DIR)
+_ENV_FILE = os.path.join(_PROJECT_ROOT, ".env")
 
 class BaselineConfig(BaseSettings):
     model_config = SettingsConfigDict(
@@ -40,5 +40,4 @@ class BaselineConfig(BaseSettings):
     devices: str = "auto"
     precision: str = "16"
 
-
-bc = BaselineConfig()
+bcfg = BaselineConfig()

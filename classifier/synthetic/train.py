@@ -11,11 +11,11 @@ import torch
 from pytorch_lightning.callbacks import EarlyStopping, ModelCheckpoint
 from pytorch_lightning.loggers import CSVLogger
 
-from baseline.config import bc
-from baseline.model import VinDrClassifier
-from core.config import cfg
-from core.datamodule import VinDrPCXRDataModule
-from core.dataset import build_augmented_transform, compute_pos_weights, load_labels
+from classifier.baseline.config import bcfg
+from classifier.baseline.model import VinDrClassifier
+from classifier.core.config import cfg
+from classifier.core.datamodule import VinDrPCXRDataModule
+from classifier.core.dataset import build_augmented_transform, compute_pos_weights, load_labels
 
 
 def parse_args() -> argparse.Namespace:
@@ -27,8 +27,8 @@ def parse_args() -> argparse.Namespace:
     p.add_argument("--test-image-dir", default=cfg.test_image_dir)
     p.add_argument("--train-labels-csv", default=cfg.train_labels_csv)
     p.add_argument("--test-labels-csv", default=cfg.test_labels_csv)
-    p.add_argument("--train-index-json", default=cfg.vindr_pcxr_train_index)
-    p.add_argument("--test-index-json", default=cfg.vindr_pcxr_test_index)
+    p.add_argument("--train-index-json", default=cfg.train_index)
+    p.add_argument("--test-index-json", default=cfg.test_index)
     p.add_argument(
         "--filtered", 
         action="store_true"
@@ -50,21 +50,21 @@ def parse_args() -> argparse.Namespace:
     p.add_argument("--run-name", default="synthetic_all")
 
     # Data
-    p.add_argument("--val-fraction", type=float, default=bc.val_fraction)
-    p.add_argument("--batch-size", type=int, default=bc.batch_size)
-    p.add_argument("--num-workers", type=int, default=bc.num_workers)
+    p.add_argument("--val-fraction", type=float, default=bcfg.val_fraction)
+    p.add_argument("--batch-size", type=int, default=bcfg.batch_size)
+    p.add_argument("--num-workers", type=int, default=bcfg.num_workers)
 
     # Training schedule
-    p.add_argument("--max-epochs", type=int, default=bc.max_epochs)
-    p.add_argument("--warmup-epochs", type=int, default=bc.warmup_epochs)
-    p.add_argument("--lr-head", type=float, default=bc.lr_head)
-    p.add_argument("--lr-backbone", type=float, default=bc.lr_backbone)
-    p.add_argument("--patience", type=int, default=bc.patience)
+    p.add_argument("--max-epochs", type=int, default=bcfg.max_epochs)
+    p.add_argument("--warmup-epochs", type=int, default=bcfg.warmup_epochs)
+    p.add_argument("--lr-head", type=float, default=bcfg.lr_head)
+    p.add_argument("--lr-backbone", type=float, default=bcfg.lr_backbone)
+    p.add_argument("--patience", type=int, default=bcfg.patience)
 
     # Hardware
-    p.add_argument("--accelerator", default=bc.accelerator)
-    p.add_argument("--devices", default=bc.devices)
-    p.add_argument("--precision", default=bc.precision)
+    p.add_argument("--accelerator", default=bcfg.accelerator)
+    p.add_argument("--devices", default=bcfg.devices)
+    p.add_argument("--precision", default=bcfg.precision)
 
     # Augmentation
     p.add_argument(
@@ -85,8 +85,8 @@ def _resolve(synth_dir: str, override: str | None, *candidates: str) -> str:
     tried = ", ".join(names)
     raise FileNotFoundError(
         f"None of [{tried}] found in {synth_dir}. "
-        "Run `python -m inference.build_synthetic_index` (and optionally "
-        "`python -m inference.filter_synthetic`) first."
+        "Run `python -m classifier.synthetic.build_synthetic_index` (and optionally "
+        "`python -m classifier.synthetic.filter_synthetic`) first."
     )
 
 
@@ -171,6 +171,13 @@ def main() -> None:
 
     # Recalculate pos-weights over the combined real + synthetic training labels
     real_labels = load_labels(args.train_labels_csv)
+    if args.train_index_json:
+        with open(args.train_index_json) as f:
+            index = json.load(f)
+        present_ids = {entry["key"].replace(".dicom", "") for entry in index.values()}
+        real_labels = real_labels[real_labels.index.isin(present_ids)]
+        print(f"Filtered real labels to {len(real_labels)} images using {args.train_index_json}")
+
     combined_labels = pd.concat([real_labels, extra_labels])
     pos_weights = compute_pos_weights(combined_labels)
 
@@ -183,12 +190,12 @@ def main() -> None:
 
     checkpoint_cb = ModelCheckpoint(
         filename="best",
-        monitor=bc.monitor_metric,
+        monitor=bcfg.monitor_metric,
         mode="max",
         save_top_k=1,
     )
     early_stop_cb = EarlyStopping(
-        monitor=bc.monitor_metric,
+        monitor=bcfg.monitor_metric,
         mode="max",
         patience=args.patience,
         verbose=True,

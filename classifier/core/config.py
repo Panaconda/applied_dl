@@ -7,8 +7,10 @@ from typing import List
 from pydantic import computed_field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
-_ENV_FILE = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), ".env")
-
+_CLASSIFIER_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+_PROJECT_ROOT = os.path.dirname(_CLASSIFIER_DIR)
+_RUNS_DIR = os.path.join(_CLASSIFIER_DIR, "runs")
+_ENV_FILE = os.path.join(_PROJECT_ROOT, ".env")
 
 class CoreConfig(BaseSettings):
     """Experiment configuration."""
@@ -19,35 +21,31 @@ class CoreConfig(BaseSettings):
         extra="ignore",
     )
 
-    train_image_dir: str = ""
-    test_image_dir: str = ""
-    train_labels_csv: str = ""
-    test_labels_csv: str = ""
-    synthetic_data_dir: str = ""
+    train_image_dir: str = os.path.join(_PROJECT_ROOT, "data", "pcxr_png", "train")
+    test_image_dir: str = os.path.join(_PROJECT_ROOT, "data", "pcxr_png", "test")
+    train_labels_csv: str = os.path.join(_PROJECT_ROOT, "data", "pcxr_png", "train", "image_labels_train.csv")
+    test_labels_csv: str = os.path.join(_PROJECT_ROOT, "data", "pcxr_png", "test", "image_labels_test.csv")
+    train_index: str = os.path.join(_PROJECT_ROOT, "data", "pcxr_png", "train", "index.json")
+    test_index: str = os.path.join(_PROJECT_ROOT, "data", "pcxr_png", "test", "index.json")
+    synthetic_data_dir: str = os.path.join(_PROJECT_ROOT, "data", "synthetic")
     pretrain_setup: str = "densenet121-res224-chex"
-
-    # Optional: MaCheX index files mapping sequential JPG filenames to image_ids.
-    # When set, the datamodule will resolve image paths via the index instead of
-    # looking for <image_id>.png files directly in image_dir.
-    vindr_pcxr_train_index: str = ""
-    vindr_pcxr_test_index: str = ""
 
     image_size: int = 224
 
     @computed_field
     @property
-    def experiments_dir(self) -> str:
-        return os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    def classifier_dir(self) -> str:
+        return _CLASSIFIER_DIR
 
     @computed_field
     @property
     def project_root(self) -> str:
-        return os.path.dirname(self.experiments_dir)
+        return _PROJECT_ROOT
 
     @computed_field
     @property
     def runs_dir(self) -> str:
-        return os.path.join(self.experiments_dir, "runs")
+        return _RUNS_DIR
 
     @computed_field
     @property
@@ -65,6 +63,5 @@ class CoreConfig(BaseSettings):
     @property
     def num_classes(self) -> int:
         return len(self.viable_classes)
-
 
 cfg = CoreConfig()
