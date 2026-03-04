@@ -1,8 +1,0 @@
-MACHEX_PATH: data/machex_dataset/
-NUM_WORKERS: 4
-FRONTAL_ONLY: True
-
-VINDR_PCXR_ROOT: data/chestx-ray/VinDr-PCXR
-
-PHYSIO_USERNAME: null
-PHYSIO_PASSWORD: null

@@ -1,4 +1,3 @@
-"""Tool for creating the massive chest x-ray dataset MaCheX."""
 from abc import ABC, abstractmethod
 import argparse
 import json
@@ -8,6 +7,7 @@ from multiprocessing import Pool
 import os
 from pathlib import Path
 import re
+import shutil
 from typing import List, Final, Optional, Dict, Any
 import warnings
 
@@ -18,9 +18,9 @@ from PIL import ImageFile
 from pydicom import dcmread
 from torchvision.transforms import Resize, Compose, CenterCrop
 from tqdm import tqdm
-import yaml
 
 import time
+from config import cfg
 
 ImageFile.LOAD_TRUNCATED_IMAGES = True
 
@@ -108,8 +108,7 @@ class BaseParser(ABC):
         # For example the image with corresponding to index 54321
         # will be placed in "{self.target_root}/05/'054321.jpg".
         file_id = str(idx).zfill(6)
-        file_dir = file_id[:2]
-        file_path = os.path.join(self.target_root, file_dir, file_id + '.jpg')
+        file_path = os.path.join(self.target_root, file_id + '.jpg')
 
         img = self._get_image(key)
         if img is None:
@@ -127,10 +126,6 @@ class BaseParser(ABC):
 
         # Create all necessary directories.
         os.makedirs(self.target_root, exist_ok=True)
-        max_dir = int(str(len(self)).zfill(6)[:2])
-        for i in range(max_dir + 1):
-            cur_dir = os.path.join(self.target_root, str(i).zfill(2))
-            os.makedirs(cur_dir, exist_ok=True)
 
         # # Iterate over every entry in multiprocessing fashion.
         with Pool(processes=self.num_workers) as p:
@@ -144,13 +139,13 @@ class BaseParser(ABC):
         save_as_json(index_dict, target=os.path.join(self.target_root, 'index.json'))
 
 
-# VinDr-PCXR - Pediatric Chest X-Ray
+# pcxr_png - Pediatric Chest X-Ray
 # --------------------------------------------------------------------------------------
-class VinDrPCXRParser(BaseParser):
-    """Parser object for VinDr-PCXR."""
+class PCXRParser(BaseParser):
+    """Parser object for pcxr_png."""
 
     def __init__(self, *args, **kwargs) -> None:
-        """Initialize VinDr-CXR parser."""
+        """Initialize pcxr_png parser."""
         super().__init__(*args, **kwargs)
         
         self.img_dir = os.path.join(self.root, 'train' if self.is_train else 'test')
@@ -211,6 +206,25 @@ class VinDrPCXRParser(BaseParser):
             for _, row in df.iterrows() 
         }
 
+    def parse(self, chunk_size: int = 64) -> None:
+        """Parse the dataset and copy labels."""
+        os.makedirs(self.target_root, exist_ok=True)
+        
+        # Copy CSV files
+        csv_files = [
+            'annotations_train.csv' if self.is_train else 'annotations_test.csv',
+            'image_labels_train.csv' if self.is_train else 'image_labels_test.csv'
+        ]
+        
+        for csv_file in csv_files:
+            src = os.path.join(self.img_dir, csv_file)
+            dst = os.path.join(self.target_root, csv_file)
+            if os.path.exists(src):
+                print(f"Copying {csv_file} to {self.target_root}")
+                shutil.copy(src, dst)
+        
+        super().parse(chunk_size)
+
     @property
     def keys(self) -> List[str]:
         """Identifier for image files."""
@@ -219,7 +233,7 @@ class VinDrPCXRParser(BaseParser):
     @property
     def name(self) -> str:
         """Name of the dataset."""
-        return 'VinDr-PCXR'
+        return 'PCXR'
 
     def _get_path(self, key: str) -> str:
         """Return file path for a given key."""
@@ -254,21 +268,21 @@ class VinDrPCXRParser(BaseParser):
         img = TRANSFORMS(img)
         return img
 
-# MACHEX
+# pcxr_png
 # --------------------------------------------------------------------------------------
-class MachexCompositor:
-    """Class for composing MaCheX."""
+class ParseCompositor:
+    """Class for composing pcxr_png."""
 
     def __init__(
         self,
         target_root: str,
-        vindrpcxr_root: Optional[str] = None,
+        pcxr_dicom_root: Optional[str] = None,
         transforms: Optional[Compose] = None,
         num_workers: int = 16,
         frontal_only: bool = True,
     ) -> None:
-        """Initialize MaCheX constructor."""
-        self.vindrpcxr_root = vindrpcxr_root
+        """Initialize pcxr_png constructor."""
+        self.pcxr_dicom_root = pcxr_dicom_root
         self.target_root = target_root
         self.transforms = transforms
         self.num_workers = num_workers
@@ -278,10 +292,10 @@ class MachexCompositor:
         """Instantiate parser objects."""
         ps = []
 
-        if self.vindrpcxr_root is not None:
-            p = VinDrPCXRParser(
-                root=os.path.join( '..' , self.vindrpcxr_root),
-                target_root=os.path.join( '..' ,self.target_root, 'vindr-pcxr', 'train'),
+        if self.pcxr_dicom_root is not None:
+            p = PCXRParser(
+                root=self.pcxr_dicom_root,
+                target_root=os.path.join(self.target_root, 'train'),
                 transforms=self.transforms,
                 num_workers=self.num_workers,
                 frontal_only=self.frontal_only,
@@ -289,9 +303,9 @@ class MachexCompositor:
             )
             ps.append(p)
 
-            p = VinDrPCXRParser(
-                root=os.path.join( '..' , self.vindrpcxr_root),
-                target_root=os.path.join( '..' ,self.target_root, 'vindr-pcxr', 'test'),
+            p = PCXRParser(
+                root=self.pcxr_dicom_root,
+                target_root=os.path.join(self.target_root, 'test'),
                 transforms=self.transforms,
                 num_workers=self.num_workers,
                 frontal_only=self.frontal_only,
@@ -311,8 +325,7 @@ class MachexCompositor:
         return ps
 
     def run(self) -> None:
-        """Compose the MaCheX dataset."""
-        print('---------> Starting composition of MaCheX <---------')
+        print('---------> Starting composition of pcxr_png <---------')
         ps = self._get_parser_objs()
 
         print('Target directory: {}'.format(self.target_root))
@@ -331,23 +344,13 @@ class MachexCompositor:
 
             print('----------------------------------------------------')
 
-def read_yml(filepath: str) -> Dict:
-    """Load a yml file to memory as dict."""
-    with open(filepath, 'r') as ymlfile:
-        return dict(yaml.load(ymlfile, Loader=yaml.FullLoader))
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser()
-    parser.add_argument('--config', '-c', type=str, default='config.yml')
-    args = parser.parse_args()
-
-    cfg = read_yml(args.config)
-
-    machex = MachexCompositor(
-        target_root=cfg['MACHEX_PATH'],
-        vindrpcxr_root=cfg['VINDR_PCXR_ROOT'],
+    pcxr_png = ParseCompositor(
+        target_root=cfg.pcxr_png_root,
+        pcxr_dicom_root=cfg.pcxr_dicom_root,
         transforms=TRANSFORMS,
-        num_workers=cfg['NUM_WORKERS'],
-        frontal_only=cfg['FRONTAL_ONLY'],
+        num_workers=cfg.num_workers,
+        frontal_only=cfg.frontal_only,
     )
-    machex.run()
+    pcxr_png.run()
