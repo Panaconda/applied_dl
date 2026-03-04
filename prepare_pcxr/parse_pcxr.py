@@ -20,7 +20,7 @@ from torchvision.transforms import Resize, Compose, CenterCrop
 from tqdm import tqdm
 
 import time
-from config import cfg
+from prepare_pcxr.config import cfg
 
 ImageFile.LOAD_TRUNCATED_IMAGES = True
 

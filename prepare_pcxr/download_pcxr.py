@@ -6,7 +6,7 @@ from tqdm.auto import tqdm
 from pathlib import Path
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from requests.adapters import HTTPAdapter
-from config import cfg
+from prepare_pcxr.config import cfg
 
 def physionet_login(session, username, password):
     print(f"Logging in to PhysioNet as {username}...")
@@ -122,7 +122,7 @@ if __name__ == "__main__":
     parser.add_argument('--username', type=str, default=cfg.physio_username)
     parser.add_argument('--password', type=str, default=cfg.physio_password)
     parser.add_argument('--split', type=str, choices=['train', 'test'], default='test')
-    parser.add_argument('--data_dir', type=str, default=cfg.pcxr_dicom)
+    parser.add_argument('--data_dir', type=str, default=cfg.pcxr_dicom_root)
     parser.add_argument('--workers', type=int, default=cfg.num_workers)
 
     args = parser.parse_args()
