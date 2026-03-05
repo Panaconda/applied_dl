@@ -135,7 +135,7 @@ def main(args):
             for future in as_completed(futures):
                 try:
                     if not future.result():
-                        pass 
+                        print(img_id)
                 except Exception as e:
                     print(f"\n[!] Error processing {img_id}: {type(e).__name__} - {e}")
 
