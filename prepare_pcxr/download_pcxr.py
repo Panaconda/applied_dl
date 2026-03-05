@@ -70,7 +70,7 @@ def download_metadata(session, split_dir, split):
             print(f"  ✖ Failed to download {filename} (Status {res.status_code})")
 
 def download_image(session, url, dest):
-    if dest.exists() and dest.stat().st_size > 0:
+    if dest.exists():
         return True
     
     try:
