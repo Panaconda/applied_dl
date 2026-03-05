@@ -13,7 +13,7 @@ def physionet_login(session, username, password):
     login_url = "https://physionet.org/login/"
     
     try:
-        session.get(login_url, timeout=10)
+        session.get(login_url, timeout=30)
         csrftoken = session.cookies.get('csrftoken')
         
         login_data = {
@@ -42,7 +42,7 @@ def download_checksum(session, dicom_dir):
     
     print("Downloading checksum file...")
     try:
-        res = session.get(checksum_url, timeout=20)
+        res = session.get(checksum_url, timeout=30)
         if res.status_code == 200:
             dest.write_bytes(res.content)
             print("Checksum file downloaded successfully.")
@@ -63,7 +63,7 @@ def download_metadata(session, split_dir, split):
             continue
         
         print(f"  Downloading {filename}...")
-        res = session.get(f"{base_url}{filename}", timeout=60)
+        res = session.get(f"{base_url}{filename}", timeout=30)
         if res.status_code == 200:
             dest.write_bytes(res.content)
         else:
@@ -74,7 +74,7 @@ def download_image(session, url, dest):
         return True
     
     try:
-        response = session.get(url, stream=True, timeout=60)
+        response = session.get(url, stream=True, timeout=30)
         if response.status_code == 200:
             with open(dest, 'wb') as f:
                 for chunk in response.iter_content(chunk_size=1024*1024):
