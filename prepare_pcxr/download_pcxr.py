@@ -111,7 +111,7 @@ def main(args):
     print("Checking which images already exist...")
     for img_id in tqdm(image_ids, desc="Verifying local files"):
         dest = split_dir / f"{img_id}.dicom"
-        if not (dest.exists() and dest.stat().st_size > 0):
+        if not dest.exists():
             to_download.append(img_id)
 
     print(f"Found {len(image_ids) - len(to_download)} existing images.")
