@@ -106,10 +106,21 @@ def main(args):
 
     df = pd.read_csv(label_csv)
     image_ids = df['image_id'].unique()
-    print(f"Found {len(image_ids)} images to download.")
 
-    print(f"Downloading images using {args.workers} workers...")
-    
+    to_download = []
+    print("Checking which images already exist...")
+    for img_id in tqdm(image_ids, desc="Verifying local files"):
+        dest = split_dir / f"{img_id}.dicom"
+        if not (dest.exists() and dest.stat().st_size > 0):
+            to_download.append(img_id)
+
+    print(f"Found {len(image_ids) - len(to_download)} existing images.")
+    print(f"Actual images to download: {len(to_download)}")
+
+    if not to_download:
+        print("All images already present. Skipping download phase.")
+        return
+
     with ThreadPoolExecutor(max_workers=args.workers) as executor:
         futures = {
             executor.submit(
@@ -117,7 +128,7 @@ def main(args):
                 session, 
                 f"{base_url}{img_id}.dicom", 
                 split_dir / f"{img_id}.dicom"
-            ): img_id for img_id in image_ids
+            ): img_id for img_id in to_download
         }
         
         with tqdm(total=len(futures), desc=f"Downloading {args.split}") as pbar:
