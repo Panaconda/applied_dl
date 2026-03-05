@@ -32,6 +32,25 @@ def physionet_login(session, username, password):
         print(f"Login failed: {e}")
     return session
 
+def download_checksum(session, base_dir):
+    checksum_url = "https://physionet.org/files/vindr-pcxr/1.0.0/SHA256SUMS.txt"
+    dest = Path(base_dir) / "SHA256SUMS.txt"
+    
+    if dest.exists():
+        print("Checksum file already exists, skipping download.")
+        return
+    
+    print("Downloading checksum file...")
+    try:
+        res = session.get(checksum_url, timeout=20)
+        if res.status_code == 200:
+            dest.write_bytes(res.content)
+            print("Checksum file downloaded successfully.")
+        else:
+            print(f"Failed to download checksum file (Status {res.status_code})")
+    except Exception as e:
+        print(f"Error downloading checksum file: {e}")
+
 def download_metadata(session, split_dir, split):
     targets = [f"image_labels_{split}.csv", f"annotations_{split}.csv"]
     base_url = "https://physionet.org/files/vindr-pcxr/1.0.0/"
@@ -66,7 +85,6 @@ def download_image(session, url, dest):
         return False
 
 def main(args):
-    # Run from /parse_pcxr
     script_dir = Path(__file__).parent
     base_path = (script_dir / args.data_dir).resolve()
     split_dir = base_path / args.split
@@ -114,6 +132,9 @@ def main(args):
                 except Exception:
                     pass
                 pbar.update(1)
+
+    # Step 4: Download Checksum File
+    download_checksum(session, base_path)
 
     print("\nProcess complete!")
 

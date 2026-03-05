@@ -1,5 +1,5 @@
 .env
-.venv
+adl_env/
 commands_dgx
 .idea
 *.egg-info
