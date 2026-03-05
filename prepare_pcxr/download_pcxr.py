@@ -136,8 +136,9 @@ def main(args):
                 try:
                     if not future.result():
                         pass 
-                except Exception:
-                    pass
+                except Exception as e:
+                    print(f"\n[!] Error processing {img_id}: {type(e).__name__} - {e}")
+
                 pbar.update(1)
 
     download_checksum(session, pcxr_dicom_root)
