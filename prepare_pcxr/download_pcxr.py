@@ -32,9 +32,9 @@ def physionet_login(session, username, password):
         print(f"Login failed: {e}")
     return session
 
-def download_checksum(session, base_dir):
+def download_checksum(session, dicom_dir):
     checksum_url = "https://physionet.org/files/vindr-pcxr/1.0.0/SHA256SUMS.txt"
-    dest = Path(base_dir) / "SHA256SUMS.txt"
+    dest = Path(dicom_dir) / "SHA256SUMS.txt"
     
     if dest.exists():
         print("Checksum file already exists, skipping download.")
@@ -63,7 +63,7 @@ def download_metadata(session, split_dir, split):
             continue
         
         print(f"  Downloading {filename}...")
-        res = session.get(f"{base_url}{filename}", timeout=20)
+        res = session.get(f"{base_url}{filename}", timeout=60)
         if res.status_code == 200:
             dest.write_bytes(res.content)
         else:
@@ -74,7 +74,7 @@ def download_image(session, url, dest):
         return True
     
     try:
-        response = session.get(url, stream=True, timeout=30)
+        response = session.get(url, stream=True, timeout=60)
         if response.status_code == 200:
             with open(dest, 'wb') as f:
                 for chunk in response.iter_content(chunk_size=1024*1024):
@@ -85,8 +85,8 @@ def download_image(session, url, dest):
         return False
 
 def main(args):
-    dicom_dir = Path(args.dicom_dir)
-    split_dir = dicom_dir / args.split
+    pcxr_dicom_root = Path(args.pcxr_dicom_root)
+    split_dir = pcxr_dicom_root / args.split
     label_csv = split_dir / f"image_labels_{args.split}.csv"
     base_url = f"https://physionet.org/files/vindr-pcxr/1.0.0/{args.split}/"
 
@@ -129,7 +129,7 @@ def main(args):
                     pass
                 pbar.update(1)
 
-    download_checksum(session, dicom_dir)
+    download_checksum(session, pcxr_dicom_root)
 
     print("\nProcess complete!")
 
@@ -138,7 +138,7 @@ if __name__ == "__main__":
     parser.add_argument('--username', type=str, default=cfg.physio_username)
     parser.add_argument('--password', type=str, default=cfg.physio_password)
     parser.add_argument('--split', type=str, choices=['train', 'test'], default='test')
-    parser.add_argument('--dicom_dir', type=str, default=cfg.pcxr_dicom_root)
+    parser.add_argument('--pcxr_dicom_root', type=str, default=cfg.pcxr_dicom_root)
     parser.add_argument('--workers', type=int, default=cfg.num_workers)
 
     args = parser.parse_args()

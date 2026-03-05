@@ -47,7 +47,7 @@ class BaseParser(ABC):
     def __init__(
         self,
         root: str,
-        target_root: str,
+        pcxr_png_root: str,
         is_train: bool = True,
         transforms: Optional[Compose] = None,
         num_workers: int = 16,
@@ -57,7 +57,7 @@ class BaseParser(ABC):
     ) -> None:
         """Initialize base parser."""
         self.root = root
-        self.target_root = target_root
+        self.pcxr_png_root = pcxr_png_root
         self.is_train = is_train
         self.transforms = transforms
         self.num_workers = num_workers
@@ -106,9 +106,9 @@ class BaseParser(ABC):
         # Define new file name and folder structure over 6-digit identifier.
         # Images are grouped in directories with 10k images each.
         # For example the image with corresponding to index 54321
-        # will be placed in "{self.target_root}/05/'054321.jpg".
+        # will be placed in "{self.pcxr_png_root}/05/'054321.jpg".
         file_id = str(idx).zfill(6)
-        file_path = os.path.join(self.target_root, file_id + '.jpg')
+        file_path = os.path.join(self.pcxr_png_root, file_id + '.jpg')
 
         img = self._get_image(key)
         if img is None:
@@ -125,7 +125,7 @@ class BaseParser(ABC):
         index_dict = {}
 
         # Create all necessary directories.
-        os.makedirs(self.target_root, exist_ok=True)
+        os.makedirs(self.pcxr_png_root, exist_ok=True)
 
         # # Iterate over every entry in multiprocessing fashion.
         with Pool(processes=self.num_workers) as p:
@@ -136,7 +136,7 @@ class BaseParser(ABC):
                     index_dict.update(entry)
                     pbar.update()
 
-        save_as_json(index_dict, target=os.path.join(self.target_root, 'index.json'))
+        save_as_json(index_dict, target=os.path.join(self.pcxr_png_root, 'index.json'))
 
 
 # pcxr_png - Pediatric Chest X-Ray
@@ -208,7 +208,7 @@ class PCXRParser(BaseParser):
 
     def parse(self, chunk_size: int = 64) -> None:
         """Parse the dataset and copy labels."""
-        os.makedirs(self.target_root, exist_ok=True)
+        os.makedirs(self.pcxr_png_root, exist_ok=True)
         
         # Copy CSV files
         csv_files = [
@@ -218,9 +218,9 @@ class PCXRParser(BaseParser):
         
         for csv_file in csv_files:
             src = os.path.join(self.img_dir, csv_file)
-            dst = os.path.join(self.target_root, csv_file)
+            dst = os.path.join(self.pcxr_png_root, csv_file)
             if os.path.exists(src):
-                print(f"Copying {csv_file} to {self.target_root}")
+                print(f"Copying {csv_file} to {self.pcxr_png_root}")
                 shutil.copy(src, dst)
         
         super().parse(chunk_size)
@@ -275,7 +275,7 @@ class ParseCompositor:
 
     def __init__(
         self,
-        target_root: str,
+        pcxr_png_root: str,
         pcxr_dicom_root: Optional[str] = None,
         transforms: Optional[Compose] = None,
         num_workers: int = 16,
@@ -283,7 +283,7 @@ class ParseCompositor:
     ) -> None:
         """Initialize pcxr_png constructor."""
         self.pcxr_dicom_root = pcxr_dicom_root
-        self.target_root = target_root
+        self.pcxr_png_root = pcxr_png_root
         self.transforms = transforms
         self.num_workers = num_workers
         self.frontal_only = frontal_only
@@ -295,7 +295,7 @@ class ParseCompositor:
         if self.pcxr_dicom_root is not None:
             p = PCXRParser(
                 root=self.pcxr_dicom_root,
-                target_root=os.path.join(self.target_root, 'train'),
+                pcxr_png_root=os.path.join(self.pcxr_png_root, 'train'),
                 transforms=self.transforms,
                 num_workers=self.num_workers,
                 frontal_only=self.frontal_only,
@@ -305,7 +305,7 @@ class ParseCompositor:
 
             p = PCXRParser(
                 root=self.pcxr_dicom_root,
-                target_root=os.path.join(self.target_root, 'test'),
+                pcxr_png_root=os.path.join(self.pcxr_png_root, 'test'),
                 transforms=self.transforms,
                 num_workers=self.num_workers,
                 frontal_only=self.frontal_only,
@@ -328,9 +328,9 @@ class ParseCompositor:
         print('---------> Starting composition of pcxr_png <---------')
         ps = self._get_parser_objs()
 
-        print('Target directory: {}'.format(self.target_root))
+        print('Target directory: {}'.format(self.pcxr_png_root))
         print('{} workers are spawned.'.format(self.num_workers))
-        os.makedirs(self.target_root, exist_ok=True)
+        os.makedirs(self.pcxr_png_root, exist_ok=True)
 
         if self.frontal_only:
             print('The parser will only consider frontal scans.')
@@ -347,7 +347,7 @@ class ParseCompositor:
 
 if __name__ == '__main__':
     pcxr_png = ParseCompositor(
-        target_root=cfg.pcxr_png_root,
+        pcxr_png_root=cfg.pcxr_png_root,
         pcxr_dicom_root=cfg.pcxr_dicom_root,
         transforms=TRANSFORMS,
         num_workers=cfg.num_workers,
