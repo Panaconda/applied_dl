@@ -1,15 +1,4 @@
-# --- 1. Core Deep Learning & Lightning ---
-torch>=2.1
-torchvision>=0.16
-pytorch-lightning>=2.1
-torchxrayvision
-peft==0.2.0
-kornia
-einops
-transformers==4.26.1
-torch-fidelity
-
-# --- 2. Data Science & Metrics ---
+# --- Core Math & Data ---
 numpy==1.26.4
 pandas>=2.0
 scipy==1.11.4
@@ -18,7 +7,7 @@ scikit-multilearn>=0.2.0
 numba
 umap-learn>=0.5
 
-# --- 3. Image Processing (Dataset Gen & Training) ---
+# --- Image & Medical Processing ---
 Pillow>=10.0
 opencv-python-headless
 albumentations
@@ -28,20 +17,23 @@ pydicom
 pylibjpeg
 pylibjpeg-libjpeg
 pylibjpeg-openjpeg
+kornia
+einops
 
-# --- 4. Configuration & Utilities ---
+# --- Deep Learning Architecture ---
+torchxrayvision
+peft>=0.3.0
+transformers>=4.30.0
+torch-fidelity
+
+# --- Configuration & Utilities ---
 pydantic-settings>=2.0
 omegaconf
 pyyaml
 tqdm
 wandb
-pudb
 
-# --- 5. Visualization & Interface ---
-matplotlib>=3.7
-streamlit
-
-# --- 6. Local Packages & Remote Repos ---
+# --- Remote Repositories ---
 -e ./cheff_peft/cheff
 -e git+https://github.com/CompVis/taming-transformers.git@master#egg=taming-transformers
 -e git+https://github.com/openai/CLIP.git@main#egg=clip

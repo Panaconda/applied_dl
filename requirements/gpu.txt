@@ -1,0 +1,10 @@
+# Points to the PyTorch CUDA 12.1 binaries
+--extra-index-url https://download.pytorch.org/whl/cu121
+
+# Pulls in all general dependencies
+-r base.txt
+
+# GPU-specific versions
+torch==2.1.2+cu121
+torchvision==0.16.2+cu121
+pytorch-lightning>=2.1
