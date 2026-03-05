@@ -85,9 +85,8 @@ def download_image(session, url, dest):
         return False
 
 def main(args):
-    script_dir = Path(__file__).parent
-    base_path = (script_dir / args.data_dir).resolve()
-    split_dir = base_path / args.split
+    dicom_dir = Path(args.dicom_dir)
+    split_dir = dicom_dir / args.split
     label_csv = split_dir / f"image_labels_{args.split}.csv"
     base_url = f"https://physionet.org/files/vindr-pcxr/1.0.0/{args.split}/"
 
@@ -98,11 +97,9 @@ def main(args):
     session.mount('https://', adapter)
     session = physionet_login(session, args.username, args.password)
 
-    # Step 1: Download Metadata
     print("\nChecking metadata files...")
     download_metadata(session, split_dir, args.split)
 
-    # Step 2: Get Image IDs
     if not label_csv.exists():
         print(f"Error: {label_csv} not found. Metadata download failed.")
         return
@@ -111,7 +108,6 @@ def main(args):
     image_ids = df['image_id'].unique()
     print(f"Found {len(image_ids)} images to download.")
 
-    # Step 3: Parallel Download
     print(f"Downloading images using {args.workers} workers...")
     
     with ThreadPoolExecutor(max_workers=args.workers) as executor:
@@ -133,8 +129,7 @@ def main(args):
                     pass
                 pbar.update(1)
 
-    # Step 4: Download Checksum File
-    download_checksum(session, base_path)
+    download_checksum(session, dicom_dir)
 
     print("\nProcess complete!")
 
@@ -143,7 +138,7 @@ if __name__ == "__main__":
     parser.add_argument('--username', type=str, default=cfg.physio_username)
     parser.add_argument('--password', type=str, default=cfg.physio_password)
     parser.add_argument('--split', type=str, choices=['train', 'test'], default='test')
-    parser.add_argument('--data_dir', type=str, default=cfg.pcxr_dicom_root)
+    parser.add_argument('--dicom_dir', type=str, default=cfg.pcxr_dicom_root)
     parser.add_argument('--workers', type=int, default=cfg.num_workers)
 
     args = parser.parse_args()
