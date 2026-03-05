@@ -20,6 +20,9 @@ class ParseConfig(BaseSettings):
     pcxr_png_root: str = os.path.join(_PROJECT_ROOT, "data", "pcxr_png")
     pcxr_dicom_root: str = os.path.join(_PROJECT_ROOT, "data", "pcxr_dicom")
 
+    # Checkpoint path
+    checkpoint_dir: str = os.path.join(_PROJECT_ROOT, "cheff_peft", "checkpoints")
+
     # Worker settings
     num_workers: int = 4
     frontal_only: bool = True
