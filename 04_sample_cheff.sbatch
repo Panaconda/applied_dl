@@ -16,12 +16,12 @@
 set -e
 
 # --- 1. Environment Setup ---
-source ~/miniforge3/bin/activate adl_cheff
+source ~/miniforge3/bin/activate .venv
 
 # --- 2. Configuration ---
 export MCML_ROOT="/dss/mcmlscratch/04/ra58cib2"
 export MODEL_BASE="${MCML_ROOT}/pretrained_models"
-export OUTPUT_BASE="${MCML_ROOT}/synthetic_data"
+export OUTPUT_BASE="${MCML_ROOT}/data/synthetic"
 export LORA_ADAPTER="runs/finetune_cheff_slurm_123456/lora_adapter"
 
 # --- 3. Execution ---

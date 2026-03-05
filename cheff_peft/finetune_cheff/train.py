@@ -13,6 +13,11 @@ from __future__ import annotations
 import os
 import sys
 
+# Add cheff source to path
+_SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+_CHEFF_PEFT_ROOT = os.path.dirname(_SCRIPT_DIR)
+sys.path.insert(0, os.path.join(_CHEFF_PEFT_ROOT, "cheff"))
+
 import torch
 import pytorch_lightning as pl
 from pytorch_lightning.callbacks import ModelCheckpoint
@@ -101,13 +106,6 @@ def freeze_non_lora(model: pl.LightningModule) -> None:
 # Main
 # ---------------------------------------------------------------------------
 def main() -> None:
-    # ---- validate ----------------------------------------------------------
-    index_path = os.path.join(ftcfg.machex_output_dir, "mimic", "index.json")
-    if not os.path.exists(index_path):
-        print(f"Error: Prepared data not found at {index_path}")
-        print("Run `python -m finetune_cheff.prepare_data` first.")
-        sys.exit(1)
-
     for name, path in [
         ("cheff_t2i_ckpt", ftcfg.cheff_t2i_ckpt),
         ("cheff_ae_ckpt", ftcfg.cheff_ae_ckpt),

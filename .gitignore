@@ -14,8 +14,12 @@ cheff_peft/finetune_cheff/
 classifier/runs
 touch classifier/runs/.gitkeep
 
-# files
-.pyc
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Models and Env
 .env
-.pt
-.cpkt
+*.pt
+*.ckpt

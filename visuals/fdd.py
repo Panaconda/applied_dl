@@ -16,10 +16,10 @@ import torchxrayvision as xrv
 from PIL import Image
 from tqdm import tqdm
 
-from core.config import cfg
-from core.dataset import build_transform, load_image_id_map, load_labels
-from inference.generate_synthetic import CLASS_PROMPTS, load_model
-from inference.umap_latent import (
+from classifier.core.config import cfg
+from classifier.core.dataset import build_transform, load_image_id_map, load_labels
+from classifier.inference.generate_synthetic import CLASS_PROMPTS, load_model
+from classifier.inference.umap_latent import (
     PATHOLOGY_CLASSES,
     generate_base_images,
     sample_lora_paths,

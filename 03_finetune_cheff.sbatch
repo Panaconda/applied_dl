@@ -17,7 +17,7 @@ set -e
 
 # --- 1. Environment Setup ---
 # Use the mamba/conda instructions from the MCML guide
-source ~/miniforge3/bin/activate adl_cheff
+source ~/miniforge3/bin/activate .venv
 
 # --- 2. Configuration via Environment Variables ---
 # Pydantic (ftcfg) will pick these up automatically.
@@ -27,9 +27,9 @@ export RUN_NAME="finetune_cheff_slurm_${SLURM_JOB_ID}"
 
 # Data & Model Paths (Adjust these to your actual paths on the cluster)
 export MCML_ROOT="/dss/mcmlscratch/04/ra58cib2"
-export DATASET_BASE="${MCML_ROOT}/data/machex_dataset/vindr-pcxr"
+export DATASET_BASE="${MCML_ROOT}/data/pcxr_png"
 export MODEL_BASE="${MCML_ROOT}/pretrained_models"
-export MACHEX_OUT="${MCML_ROOT}/data/machex_dataset/vindr-pcxr/train/"
+export MACHEX_OUT="${MCML_ROOT}/data/pcxr_png/train/"
 
 # Pydantic Config Overrides
 export VINDR_PCXR_TRAIN_INDEX="${DATASET_BASE}/train/index.json"
@@ -56,11 +56,7 @@ elif [[ "$PWD" != *"/cheff_peft" ]]; then
     echo "Warning: Not in 'cheff_peft' folder and 'cheff_peft' subfolder not found. Imports might fail."
 fi
 
-# Step 3a: Prepare Data (if not already done)
-echo "Verifying/Preparing MaCheX data..."
-python -m finetune_cheff.prepare_data
-
-# Step 3b: Launch Training
+# Launch Training
 # No CLI arguments needed; config is loaded from the 'export' statements above.
 python -m finetune_cheff.train
 
@@ -70,4 +66,4 @@ mkdir -p "$LOG_TARGET"
 mv "runs/slurm_${SLURM_JOB_ID}.out" "$LOG_TARGET" 2>/dev/null || true
 mv "runs/slurm_${SLURM_JOB_ID}.err" "$LOG_TARGET" 2>/dev/null || true
 
-echo "Job completed successfully."
+echo "Job completed successfully." 

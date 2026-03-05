@@ -32,8 +32,8 @@ import umap
 from PIL import Image
 from tqdm import tqdm
 
-from core.config import cfg
-from core.dataset import build_transform, load_image_id_map, load_labels
+from classifier.core.config import cfg
+from classifier.core.dataset import build_transform, load_image_id_map, load_labels
 
 # Reuse class prompts & model loader from generation script
 from inference.generate_synthetic import CLASS_PROMPTS, load_model

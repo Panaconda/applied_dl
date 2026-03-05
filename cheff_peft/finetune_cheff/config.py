@@ -4,13 +4,13 @@ import os
 from typing import List
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
-_ENV_FILE = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), ".env")
+_FINETUNE_DIR = os.path.dirname(os.path.abspath(__file__))
+_CHEFF_PEFT_ROOT = os.path.dirname(_FINETUNE_DIR)
+_PROJECT_ROOT = os.path.dirname(_CHEFF_PEFT_ROOT)
+_ENV_FILE = os.path.join(_PROJECT_ROOT, ".env")
 
 class FinetuneCheffConfig(BaseSettings):
-    """Configuration for CheFF fine-tuning, independent of the classifier core.
 
-    All fields can be set via the shared ``.env`` file or environment variables.
-    """
     model_config = SettingsConfigDict(
         env_file=_ENV_FILE,
         env_file_encoding="utf-8",
@@ -18,19 +18,17 @@ class FinetuneCheffConfig(BaseSettings):
     )
 
     # --- Shared VinDr-PCXR paths (from .env) -----------------------------
-    train_image_dir: str = ""
-    train_labels_csv: str = ""
-    vindr_pcxr_train_index: str = ""  # MaCheX index for training
+    train_image_dir: str = os.path.join(_PROJECT_ROOT, "data", "pcxr_png", "train")
+    train_labels_csv: str = os.path.join(_PROJECT_ROOT, "data", "pcxr_png", "train", "image_labels_train.csv")
+    train_index: str = os.path.join(_PROJECT_ROOT, "data", "pcxr_png", "train", "index.json")
+    train_annotations_csv: str = os.path.join(_PROJECT_ROOT, "data", "pcxr_png", "train", "annotations.csv")
 
-    # --- CheFF-specific input paths --------------------------------------
-    train_annotations_csv: str = ""   # annotations_train.csv (finding bboxes)
-
-    # --- MaCheX output ---------------------------------------------------
-    machex_output_dir: str = ""       # prepare_data.py writes here
+    # Path to prepared MaCheX dataset (where index.json is located)
+    machex_output_dir: str = os.path.join(_PROJECT_ROOT, "data", "pcxr_png", "train")
 
     # --- CheFF model checkpoints -----------------------------------------
-    cheff_t2i_ckpt: str = ""          # pre-trained CheFF T2I weights
-    cheff_ae_ckpt: str = ""           # pre-trained CheFF autoencoder weights
+    cheff_t2i_ckpt: str = os.path.join(_CHEFF_PEFT_ROOT, "checkpoints", "cheff_t2i_ckpt.pt")          # pre-trained CheFF T2I weights
+    cheff_ae_ckpt: str = os.path.join(_CHEFF_PEFT_ROOT, "checkpoints", "cheff_ae_ckpt.pt")           # pre-trained CheFF autoencoder weights
 
     # --- LoRA hyper-parameters -------------------------------------------
     lora_rank: int = 16
@@ -50,11 +48,8 @@ class FinetuneCheffConfig(BaseSettings):
 
     @property
     def runs_dir(self) -> str:
-        """Save runs into the cheff_peft/runs directory."""
-        base = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-        d = os.path.join(base, "runs")
+        d = os.path.join(_FINETUNE_DIR, "runs")
         os.makedirs(d, exist_ok=True)
         return d
-
 
 ftcfg = FinetuneCheffConfig()

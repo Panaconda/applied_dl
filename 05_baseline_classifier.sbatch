@@ -16,7 +16,7 @@
 set -e
 
 # --- 1. Environment Setup ---
-source ~/miniforge3/bin/activate adl_cheff
+source ~/miniforge3/bin/activate .venv
 
 # --- 2. Data Paths ---
 MCML_ROOT="/dss/mcmlscratch/04/ra58cib2"

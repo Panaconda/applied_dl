@@ -112,18 +112,32 @@ def generate_class(wrapper, prompt: str, n: int, out_dir: str,
 # CLI
 # ---------------------------------------------------------------------------
 def main() -> None:
+    # Resolve paths relative to cheff_peft root
+    script_dir = Path(__file__).resolve().parent
+    cheff_peft_root = script_dir.parent
+    project_root = cheff_peft_root.parent
+
     parser = argparse.ArgumentParser(
         description="Generate synthetic VinDr-PCXR images with CheFF T2I"
     )
-    parser.add_argument("--model-path", default="../models/cheff_diff_t2i.pt")
-    parser.add_argument("--ae-path", default="../models/cheff_autoencoder.pt")
+    parser.add_argument(
+        "--model-path", 
+        default=str(cheff_peft_root / "checkpoints" / "cheff_t2i_ckpt.pt"),
+        help="Path to pre-trained CheFF T2I weights"
+    )
+    parser.add_argument(
+        "--ae-path", 
+        default=str(cheff_peft_root / "checkpoints" / "cheff_ae_ckpt.pt"),
+        help="Path to pre-trained CheFF autoencoder weights"
+    )
     parser.add_argument(
         "--lora-adapter", default=None,
         help="Path to PEFT adapter directory saved by finetune_cheff.train "
              "(contains adapter_config.json).  Omit to use the base model."
     )
     parser.add_argument(
-        "--output-dir", default="../data/synthetic",
+        "--output-dir", 
+        default=str(project_root / "data" / "synthetic"),
         help="Root directory for generated images"
     )
     parser.add_argument(
@@ -140,9 +154,8 @@ def main() -> None:
     )
     args = parser.parse_args()
 
-    # Resolve paths relative to project root (script is run from experiments/)
-    project_root = Path(__file__).resolve().parents[2]
-    sys.path.insert(0, str(project_root / "cheff"))
+    # Add cheff source to path
+    sys.path.insert(0, str(cheff_peft_root / "cheff"))
 
     # Validate model files
     for name, path in [("model_path", args.model_path), ("ae_path", args.ae_path)]:

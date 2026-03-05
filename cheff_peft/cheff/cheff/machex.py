@@ -70,7 +70,7 @@ class MimicT2IDataset(ChestXrayDataset):
     """Mimic subset with reports."""
 
     def __init__(self, root: str, transforms: Optional[Compose] = None) -> None:
-        root = os.path.join(root, 'mimic')
+        # Use the provided root directly (e.g. data/pcxr_png/train)
         super().__init__(root, transforms)
 
     def __getitem__(self, idx: int) -> Dict:
