@@ -23,7 +23,7 @@ class CoreConfig(BaseSettings):
 
     data_dir: str = os.path.join(_PROJECT_ROOT, "data")
     runs_dir: str = _RUNS_DIR
-    CKPT_DIR: str = os.path.join(_CLASSIFIER_DIR, "checkpoints")
+    ckpt_dir: str = os.path.join(_CLASSIFIER_DIR, "checkpoints")
     
     @computed_field
     @property
@@ -73,11 +73,6 @@ class CoreConfig(BaseSettings):
     @property
     def project_root(self) -> str:
         return _PROJECT_ROOT
-
-    @computed_field
-    @property
-    def runs_dir(self) -> str:
-        return _RUNS_DIR
 
     @computed_field
     @property

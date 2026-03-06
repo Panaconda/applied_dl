@@ -33,9 +33,10 @@ def parse_args() -> argparse.Namespace:
         "--filtered", 
         action="store_true"
     )
-    p.add_argument("--ckpt-dir", default=cfg.CKPT_DIR)
+    p.add_argument("--ckpt-dir", default=cfg.ckpt_dir)
     p.add_argument(
         "--synthetic-dirs",
+
         nargs="+",
         default=[
             os.path.join(cfg.synthetic_data_dir, "Pneumonia"),

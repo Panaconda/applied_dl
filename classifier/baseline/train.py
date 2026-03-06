@@ -26,8 +26,9 @@ def parse_args() -> argparse.Namespace:
     p.add_argument("--test-index-json", default=cfg.test_index)
     p.add_argument("--pretrain-setup", default=cfg.pretrain_setup)
     p.add_argument("--run-name", default=bcfg.run_name)
-    p.add_argument("--ckpt-dir", default=cfg.CKPT_DIR)
+    p.add_argument("--ckpt-dir", default=cfg.ckpt_dir)
     p.add_argument("--val-fraction", type=float, default=bcfg.val_fraction)
+
     p.add_argument("--batch-size", type=int, default=bcfg.batch_size)
     p.add_argument("--num-workers", type=int, default=bcfg.num_workers)
     p.add_argument("--max-epochs", type=int, default=bcfg.max_epochs)
