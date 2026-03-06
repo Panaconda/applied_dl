@@ -77,7 +77,7 @@ echo "Starting Synthetic Filtered Training Job..."
 python -m classifier.train \
     --run-name "${RUN_NAME}" \
     --data-dir "$DATA_DIR" \
-    --synthetic-dirs "$SYNTH_BASE/Pneumonia" "$SYNTH_BASE/Bronchiolitis" "$SYNTH_BASE/Bronchitis" "$SYNTH_BASE/Brocho-pneumonia" \
+    --synthetic-classes Pneumonia Bronchiolitis Bronchitis Brocho-pneumonia \
     --filtered
 
 # Move SLURM logs into the run directory.

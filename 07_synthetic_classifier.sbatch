@@ -46,13 +46,12 @@ if [[ ! -d "classifier" ]]; then
 fi
 
 # Step 3: Train
-# Note: synthetic-dirs will default correctly in train.py if data-dir is provided,
-# but we can also be explicit here.
+# Step 3: Train
 python -m classifier.train \
     --run-name "${RUN_NAME}" \
     --data-dir "$DATA_DIR" \
-    --ckpt-dir "$CKPT_DIR" \
-    --synthetic-dirs "$SYNTH_BASE/Pneumonia" "$SYNTH_BASE/Bronchiolitis" "$SYNTH_BASE/Bronchitis" "$SYNTH_BASE/Brocho-pneumonia" \
+    --synthetic-classes Pneumonia Bronchiolitis Bronchitis Brocho-pneumonia
+
 
 # Move SLURM logs into the run directory.
 LOG_TARGET="classifier/runs/${RUN_NAME}/"
