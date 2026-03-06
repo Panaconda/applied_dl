@@ -21,13 +21,16 @@ class CoreConfig(BaseSettings):
         extra="ignore",
     )
 
-    train_image_dir: str = os.path.join(_PROJECT_ROOT, "data", "pcxr_png", "train")
-    test_image_dir: str = os.path.join(_PROJECT_ROOT, "data", "pcxr_png", "test")
-    train_labels_csv: str = os.path.join(_PROJECT_ROOT, "data", "pcxr_png", "train", "image_labels_train.csv")
-    test_labels_csv: str = os.path.join(_PROJECT_ROOT, "data", "pcxr_png", "test", "image_labels_test.csv")
-    train_index: str = os.path.join(_PROJECT_ROOT, "data", "pcxr_png", "train", "index.json")
-    test_index: str = os.path.join(_PROJECT_ROOT, "data", "pcxr_png", "test", "index.json")
-    synthetic_data_dir: str = os.path.join(_PROJECT_ROOT, "data", "synthetic")
+    data_dir: str = os.path.join(_PROJECT_ROOT, "data")
+    train_image_dir: str = os.path.join(data_dir, "pcxr_png", "train")
+    test_image_dir: str = os.path.join(data_dir, "pcxr_png", "test")
+    train_labels_csv: str = os.path.join(data_dir, "pcxr_png", "train", "image_labels_train.csv")
+    test_labels_csv: str = os.path.join(data_dir, "pcxr_png", "test", "image_labels_test.csv")
+    train_index: str = os.path.join(data_dir, "pcxr_png", "train", "index.json")
+    test_index: str = os.path.join(data_dir, "pcxr_png", "test", "index.json")
+    
+    synthetic_data_dir: str = os.path.join(data_dir, "synthetic")
+
     pretrain_setup: str = "densenet121-res224-chex"
 
     image_size: int = 224

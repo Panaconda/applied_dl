@@ -25,6 +25,8 @@ mamba activate $ENV_NAME
 # --- 3. Execution ---
 RUN_NAME="baseline_slurm_${SLURM_JOB_ID}"
 
+export DATA_DIR="$MCMLSCRATCH/data"
+
 echo "Starting Baseline Training Job: ${SLURM_JOB_NAME} (ID: ${SLURM_JOB_ID})"
 echo "Run Name: ${RUN_NAME}"
 
@@ -34,19 +36,11 @@ if [[ ! -d "classifier" ]]; then
 fi
 
 python -m classifier.baseline.train \
-    --train-image-dir "$MCMLSCRATCH/data/pcxr_png/train" \
-    --test-image-dir "$MCMLSCRATCH/data/pcxr_png/test" \
-    --train-labels-csv "$MCMLSCRATCH/data/pcxr_png/train/image_labels_train.csv" \
-    --test-labels-csv "$MCMLSCRATCH/data/pcxr_png/test/image_labels_test.csv" \
-    --train-index-json "$MCMLSCRATCH/data/pcxr_png/train/index.json" \
-    --test-index-json "$MCMLSCRATCH/data/pcxr_png/test/index.json" \
     --run-name "${RUN_NAME}" \
 
 LOG_TARGET="classifier/runs/${RUN_NAME}/"
 mkdir -p "$LOG_TARGET"
 mv "classifier/runs/slurm_${SLURM_JOB_ID}.out" "$LOG_TARGET" 2>/dev/null || true
 mv "classifier/runs/slurm_${SLURM_JOB_ID}.err" "$LOG_TARGET" 2>/dev/null || true
-
-echo "Job completed successfully."
 
 echo "Job completed successfully."
