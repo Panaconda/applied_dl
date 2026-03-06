@@ -1,7 +1,7 @@
 #!/bin/bash
 # Run from project root (applied_dl/)
 
-#SBATCH -p mcml-dgx-a100-40x8
+#SBATCH -p lrz-v100x2
 #SBATCH --qos=mcml
 #SBATCH --job-name=baseline_classifier
 #SBATCH --output=classifier/runs/slurm_%j.out
