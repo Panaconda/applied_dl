@@ -24,7 +24,7 @@ from pytorch_lightning.callbacks import ModelCheckpoint
 from pytorch_lightning.loggers import CSVLogger
 from peft import LoraConfig, get_peft_model
 from torch.utils.data import DataLoader, random_split
-from torchvision.transforms import Compose, Resize, ToTensor, Normalize
+from torchvision.transforms import Compose, Resize, ToTensor, Normalize, InterpolationMode
 
 from finetune_cheff.config import ftcfg
 
@@ -149,8 +149,8 @@ def main() -> None:
     model.learning_rate = ftcfg.cheff_learning_rate
 
     # ---- data --------------------------------------------------------------
-    transforms = Compose([
-        Resize(256),
+    transforms = transforms.Compose([
+        Resize(256, interpolation=InterpolationMode.BICUBIC),
         ToTensor(),
         Normalize(mean=(0.5, 0.5, 0.5), std=(0.5, 0.5, 0.5)),
     ])

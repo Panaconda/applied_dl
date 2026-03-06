@@ -18,17 +18,16 @@ class FinetuneCheffConfig(BaseSettings):
     )
 
     # --- Shared VinDr-PCXR paths (from .env) -----------------------------
-    train_image_dir: str = os.path.join(_PROJECT_ROOT, "data", "pcxr_png", "train")
-    train_labels_csv: str = os.path.join(_PROJECT_ROOT, "data", "pcxr_png", "train", "image_labels_train.csv")
-    train_index: str = os.path.join(_PROJECT_ROOT, "data", "pcxr_png", "train", "index.json")
-    train_annotations_csv: str = os.path.join(_PROJECT_ROOT, "data", "pcxr_png", "train", "annotations.csv")
-
-    # Path to prepared MaCheX dataset (where index.json is located)
-    machex_output_dir: str = os.path.join(_PROJECT_ROOT, "data", "pcxr_png", "train")
+    data_dir: str = os.path.join(_PROJECT_ROOT, "data", "pcxr_png")
+    train_image_dir: str = os.path.join(data_dir, "train")
+    train_labels_csv: str = os.path.join(data_dir, "train", "image_labels_train.csv")
+    train_index: str = os.path.join(data_dir, "train", "index.json")
+    train_annotations_csv: str = os.path.join(data_dir, "train", "annotations.csv")
 
     # --- CheFF model checkpoints -----------------------------------------
-    cheff_t2i_ckpt: str = os.path.join(_CHEFF_PEFT_ROOT, "checkpoints", "cheff_t2i_ckpt.pt")          # pre-trained CheFF T2I weights
-    cheff_ae_ckpt: str = os.path.join(_CHEFF_PEFT_ROOT, "checkpoints", "cheff_ae_ckpt.pt")           # pre-trained CheFF autoencoder weights
+    checkpoint_dir: str = os.path.join(_CHEFF_PEFT_ROOT, "checkpoints")
+    cheff_t2i_ckpt: str = os.path.join(checkpoint_dir, "cheff_t2i_ckpt.pt")
+    cheff_ae_ckpt: str = os.path.join(checkpoint_dir, "cheff_ae_ckpt.pt")
 
     # --- LoRA hyper-parameters -------------------------------------------
     lora_rank: int = 16
