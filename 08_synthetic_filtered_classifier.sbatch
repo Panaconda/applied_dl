@@ -28,7 +28,7 @@ export CKPT_DIR="$MCMLSCRATCH/checkpoints"
 
 # SET THIS: Path to your best baseline classifier checkpoint
 # Example: "$CKPT_DIR/baseline_slurm_12345/best.ckpt"
-BASELINE_CKPT=""
+BASELINE_CKPT="best.ckpt"
 
 if [[ -z "$BASELINE_CKPT" ]]; then
     echo "Error: BASELINE_CKPT is not set. Please provide the path to the baseline .ckpt file in the script."
@@ -74,8 +74,10 @@ echo "Starting Synthetic Filtered Training Job..."
 
 # Launch training with real + filtered synthetic data
 # The --filtered flag tells the script to use 'filtered_labels.csv' instead of 'synthetic_labels.csv'
-python -m classifier.synthetic.train \
+python -m classifier.train \
     --run-name "${RUN_NAME}" \
+    --data-dir "$DATA_DIR" \
+    --synthetic-dirs "$SYNTH_BASE/Pneumonia" "$SYNTH_BASE/Bronchiolitis" "$SYNTH_BASE/Bronchitis" "$SYNTH_BASE/Brocho-pneumonia" \
     --filtered
 
 # Move SLURM logs into the run directory.

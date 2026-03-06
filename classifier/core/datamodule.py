@@ -1,11 +1,13 @@
 """Lightning DataModule for VinDr-PCXR — shared across all experiment conditions."""
 from __future__ import annotations
 
-from typing import Dict, List, Optional
+import os
+from typing import Dict, List, Optional, Tuple
 
 import numpy as np
 import pandas as pd
 import pytorch_lightning as pl
+import torch
 from skmultilearn.model_selection import iterative_train_test_split
 from torch.utils.data import DataLoader
 
@@ -13,91 +15,85 @@ from classifier.core.dataset import VinDrPCXRDataset, build_transform, load_imag
 
 
 class VinDrPCXRDataModule(pl.LightningDataModule):
-    """Manages train / val / test splits for VinDr-PCXR.
-
-    The test split is always derived from ``test_labels_csv``; it is never
-    touched during training or hyperparameter selection.
-
-    The train CSV is split into train / val using multilabel iterative
-    stratification (``skmultilearn.IterativeStratification``) to preserve
-    per-class ratios across minority classes.
-
-    Args:
-        train_image_dir:  Directory with training images.  For the legacy
-                          dataset these are ``<image_id>.png`` files; for the
-                          MaCheX dataset they are sequential ``000000.jpg``
-                          files whose paths are resolved via ``train_index_json``.
-        test_image_dir:   Corresponding directory for test images.
-        train_labels_csv: Path to ``image_labels_train.csv``.
-        test_labels_csv:  Path to ``image_labels_test.csv``.
-        train_index_json: Path to the MaCheX ``index.json`` for the train split.
-                          When provided, image paths are resolved via
-                          :func:`~core.dataset.load_image_id_map` instead of
-                          ``{image_dir}/{image_id}.png``.
-        test_index_json:  Path to the MaCheX ``index.json`` for the test split.
-        val_fraction:     Fraction of training data held out for validation.
-        batch_size:       DataLoader batch size.
-        num_workers:      DataLoader worker processes.
-        train_transform:  Transform applied to training images only.
-                          Defaults to the plain ``XRVTransform``.
-        eval_transform:   Transform applied to val and test images.
-                          Defaults to the plain ``XRVTransform``.
-        extra_train_ids:   Optional list of additional image_ids (e.g. synthetic
-                           samples) appended to the training set after the split.
-        extra_labels:      Corresponding 6-column label DataFrame for
-                           ``extra_train_ids`` (same format as load_labels).
-        extra_image_paths: Optional dict mapping image_id → absolute file path for
-                           synthetic images stored outside ``train_image_dir``.
-    """
-
     def __init__(
         self,
-        train_image_dir: str,
-        test_image_dir: str,
-        train_labels_csv: str,
-        test_labels_csv: str,
-        train_index_json: str = "",
-        test_index_json: str = "",
+        data_dir: str,
         val_fraction: float = 0.10,
         batch_size: int = 32,
         num_workers: int = 4,
         train_transform=None,
         eval_transform=None,
-        extra_train_ids: Optional[List[str]] = None,
-        extra_labels: Optional[pd.DataFrame] = None,
-        extra_image_paths: Optional[Dict[str, str]] = None,
+        synthetic_classes: Optional[List[str]] = None,
+        use_filtered: bool = False,
     ) -> None:
         super().__init__()
-        self.train_image_dir = train_image_dir
-        self.test_image_dir = test_image_dir
-        self.train_labels_csv = train_labels_csv
-        self.test_labels_csv = test_labels_csv
-        self.train_index_json = train_index_json
-        self.test_index_json = test_index_json
+        self.data_dir = data_dir
+        self.train_image_dir = os.path.join(data_dir, "pcxr_png", "train")
+        self.test_image_dir = os.path.join(data_dir, "pcxr_png", "test")
+        self.synthetic_base_dir = os.path.join(data_dir, "synthetic")
+
+        self.train_labels_csv = os.path.join(self.train_image_dir, "image_labels_train.csv")
+        self.test_labels_csv = os.path.join(self.test_image_dir, "image_labels_test.csv")
+        self.train_index_json = os.path.join(self.train_image_dir, "index.json")
+        self.test_index_json = os.path.join(self.test_image_dir, "index.json")
+
         self.val_fraction = val_fraction
         self.batch_size = batch_size
         self.num_workers = num_workers
         self.train_transform = train_transform or build_transform()
         self.eval_transform = eval_transform or build_transform()
-        self.extra_train_ids = extra_train_ids or []
-        self.extra_labels = extra_labels
-        self.extra_image_paths = extra_image_paths or {}
+
+        self.synthetic_classes = synthetic_classes or []
+        self.use_filtered = use_filtered
 
         self._train_ds: Optional[VinDrPCXRDataset] = None
         self._val_ds: Optional[VinDrPCXRDataset] = None
         self._test_ds: Optional[VinDrPCXRDataset] = None
 
 
+    def _load_synthetic_data(self) -> Tuple[List[str], pd.DataFrame, Dict[str, str]]:
+        """Discover and load synthetic indices from the data_dir/synthetic/ subfolders."""
+        import json
+        all_ids, all_labels, all_paths = [], [], {}
+
+        labels_file = "filtered_labels.csv" if self.use_filtered else "synthetic_labels.csv"
+        paths_file = "filtered_paths.json" if self.use_filtered else "synthetic_paths.json"
+
+        for cls_name in self.synthetic_classes:
+            cls_dir = os.path.join(self.synthetic_base_dir, cls_name)
+            csv_path = os.path.join(cls_dir, labels_file)
+            json_path = os.path.join(cls_dir, paths_file)
+
+            if not os.path.exists(csv_path):
+                raise FileNotFoundError(f"Missing labels file: {csv_path}")
+            if not os.path.exists(json_path):
+                raise FileNotFoundError(f"Missing paths file: {json_path}")
+            labels = pd.read_csv(csv_path, index_col="image_id")
+            with open(json_path) as f:
+                paths = json.load(f)
+
+            all_ids.extend(list(labels.index))
+            all_labels.append(labels)
+            # Resolve paths relative to the class directory
+            all_paths.update({
+                img_id: os.path.join(cls_dir, p) for img_id, p in paths.items()
+            })
+
+        combined_labels = pd.concat(all_labels) if all_labels else None
+        return all_ids, combined_labels, all_paths
+
+
     def setup(self, stage: Optional[str] = None) -> None:
+
         # Build image-path overrides from MaCheX index files when provided.
         train_overrides = (
             load_image_id_map(self.train_index_json, self.train_image_dir)
-            if self.train_index_json
+            if os.path.exists(self.train_index_json)
             else {}
         )
         test_overrides = (
             load_image_id_map(self.test_index_json, self.test_image_dir)
-            if self.test_index_json
+            if os.path.exists(self.test_index_json)
             else {}
         )
 
@@ -134,16 +130,16 @@ class VinDrPCXRDataModule(pl.LightningDataModule):
         train_ids = train_ids_arr.flatten().tolist()
         val_ids = val_ids_arr.flatten().tolist()
 
-        # Append any extra training samples (synthetic data, augmentations…)
+        # Handle synthetic data internally
+        extra_ids, extra_labels, extra_paths = self._load_synthetic_data()
+        
         all_train_labels = train_labels
-        if self.extra_train_ids:
-            if self.extra_labels is None:
-                raise ValueError("extra_labels must be provided when extra_train_ids is set")
-            all_train_labels = pd.concat([train_labels, self.extra_labels])
-            train_ids = train_ids + self.extra_train_ids
+        if extra_ids:
+            all_train_labels = pd.concat([train_labels, extra_labels])
+            train_ids = train_ids + extra_ids
 
-        # Merge base image overrides with any extra synthetic-image paths.
-        train_path_overrides = {**train_overrides, **self.extra_image_paths}
+        # Merge base image overrides (MaCheX) with synthetic-image paths.
+        train_path_overrides = {**train_overrides, **extra_paths}
 
         self._train_ds = VinDrPCXRDataset(
             image_ids=train_ids,
@@ -170,6 +166,16 @@ class VinDrPCXRDataModule(pl.LightningDataModule):
             pin_memory=True,
             persistent_workers=self.num_workers > 0,
         )
+
+    def get_pos_weights(self) -> torch.Tensor:
+        """Compute positive class weights from the training set labels.
+        
+        Must be called AFTER setup().
+        """
+        if self._train_ds is None:
+            raise RuntimeError("DataModule.setup() must be called before get_pos_weights()")
+        from classifier.core.dataset import compute_pos_weights
+        return compute_pos_weights(self._train_ds.labels)
 
     def val_dataloader(self) -> DataLoader:
         return DataLoader(

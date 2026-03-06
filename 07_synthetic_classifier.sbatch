@@ -45,8 +45,13 @@ if [[ ! -d "classifier" ]]; then
     exit 1
 fi
 
-python -m classifier.synthetic.train \
+# Step 3: Train
+# Note: synthetic-dirs will default correctly in train.py if data-dir is provided,
+# but we can also be explicit here.
+python -m classifier.train \
     --run-name "${RUN_NAME}" \
+    --data-dir "$DATA_DIR" \
+    --synthetic-dirs "$SYNTH_BASE/Pneumonia" "$SYNTH_BASE/Bronchiolitis" "$SYNTH_BASE/Bronchitis" "$SYNTH_BASE/Brocho-pneumonia" \
 
 # Move SLURM logs into the run directory.
 LOG_TARGET="classifier/runs/${RUN_NAME}/"

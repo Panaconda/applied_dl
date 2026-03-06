@@ -13,7 +13,7 @@ _RUNS_DIR = os.path.join(_CLASSIFIER_DIR, "runs")
 _ENV_FILE = os.path.join(_PROJECT_ROOT, ".env")
 
 class CoreConfig(BaseSettings):
-    """Experiment configuration."""
+    """General project configuration."""
 
     model_config = SettingsConfigDict(
         env_file=_ENV_FILE,
@@ -22,38 +22,16 @@ class CoreConfig(BaseSettings):
     )
 
     data_dir: str = os.path.join(_PROJECT_ROOT, "data")
-    runs_dir: str = _RUNS_DIR
-    ckpt_dir: str = os.path.join(_CLASSIFIER_DIR, "checkpoints")
     
     @computed_field
     @property
-    def train_image_dir(self) -> str:
-        return os.path.join(self.data_dir, "pcxr_png", "train")
+    def runs_dir(self) -> str:
+        return _RUNS_DIR
 
     @computed_field
     @property
-    def test_image_dir(self) -> str:
-        return os.path.join(self.data_dir, "pcxr_png", "test")
-
-    @computed_field
-    @property
-    def train_labels_csv(self) -> str:
-        return os.path.join(self.train_image_dir, "image_labels_train.csv")
-
-    @computed_field
-    @property
-    def test_labels_csv(self) -> str:
-        return os.path.join(self.test_image_dir, "image_labels_test.csv")
-
-    @computed_field
-    @property
-    def train_index(self) -> str:
-        return os.path.join(self.train_image_dir, "index.json")
-
-    @computed_field
-    @property
-    def test_index(self) -> str:
-        return os.path.join(self.test_image_dir, "index.json")
+    def ckpt_dir(self) -> str:
+        return os.path.join(_PROJECT_ROOT, "checkpoints")
     
     @computed_field
     @property
@@ -61,18 +39,7 @@ class CoreConfig(BaseSettings):
         return os.path.join(self.data_dir, "synthetic")
 
     pretrain_setup: str = "densenet121-res224-chex"
-
     image_size: int = 224
-
-    @computed_field
-    @property
-    def classifier_dir(self) -> str:
-        return _CLASSIFIER_DIR
-
-    @computed_field
-    @property
-    def project_root(self) -> str:
-        return _PROJECT_ROOT
 
     @computed_field
     @property
@@ -91,4 +58,38 @@ class CoreConfig(BaseSettings):
     def num_classes(self) -> int:
         return len(self.viable_classes)
 
+class TrainConfig(BaseSettings):
+    """Default training hyperparameters."""
+    model_config = SettingsConfigDict(
+        env_file=_ENV_FILE,
+        env_file_encoding="utf-8",
+        extra="ignore",
+    )
+
+    # Run identity
+    run_name: str = "baseline"
+
+    # Data split
+    val_fraction: float = 0.10
+
+    # DataLoader
+    batch_size: int = 32
+    num_workers: int = 8
+
+    # Training schedule
+    max_epochs: int = 50
+    warmup_epochs: int = 3    # Phase 1: head only, backbone frozen
+    lr_head: float = 1e-4
+    lr_backbone: float = 1e-5  # Phase 2: full fine-tuning
+
+    # Early stopping
+    patience: int = 5
+    monitor_metric: str = "val/auroc"
+
+    # Hardware
+    accelerator: str = "auto"
+    devices: str = "auto"
+    precision: str = "16-mixed"
+
 cfg = CoreConfig()
+tcfg = TrainConfig()

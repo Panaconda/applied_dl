@@ -34,8 +34,9 @@ if [[ ! -d "classifier" ]]; then
     exit 1
 fi
 
-python -m classifier.baseline.train \
+python -m classifier.train \
     --run-name "${RUN_NAME}" \
+    --data-dir "$DATA_DIR"
 
 LOG_TARGET="classifier/runs/${RUN_NAME}/"
 mkdir -p "$LOG_TARGET"

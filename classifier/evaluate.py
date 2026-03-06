@@ -7,41 +7,36 @@ import os
 
 import torch
 
-from classifier.baseline.config import bcfg
-from classifier.baseline.model import VinDrClassifier
-from classifier.core.config import cfg
+from classifier.core.config import cfg, tcfg
 from classifier.core.datamodule import VinDrPCXRDataModule
 from classifier.core.metrics import compute_metrics, format_metrics_table, mean_auroc
-
+from classifier.core.model import VinDrClassifier
 
 def parse_args() -> argparse.Namespace:
     p = argparse.ArgumentParser(description="Evaluate a VinDr-PCXR classifier checkpoint")
     p.add_argument("--checkpoint", required=True, help="Path to .ckpt file")
-    p.add_argument("--test-image-dir", default=cfg.test_image_dir)
-    p.add_argument("--train-labels-csv", default=cfg.train_labels_csv)
-    p.add_argument("--test-labels-csv", default=cfg.test_labels_csv)
-    p.add_argument("--test-index-json", default=cfg.test_index)
-    p.add_argument("--batch-size", type=int, default=bcfg.batch_size)
-    p.add_argument("--num-workers", type=int, default=bcfg.num_workers)
+    p.add_argument("--data-dir", default=cfg.data_dir, help="Base directory for data")
+    p.add_argument("--batch-size", type=int, default=tcfg.batch_size)
+    p.add_argument("--num-workers", type=int, default=tcfg.num_workers)
     p.add_argument("--output", default=None, help="Optional path to save metrics as JSON")
     return p.parse_args()
 
 
-def main() -> None:
-    args = parse_args()
-
-    model = VinDrClassifier.load_from_checkpoint(args.checkpoint, strict=False)
+def evaluate(
+    checkpoint_path: str,
+    data_dir: str,
+    batch_size: int = tcfg.batch_size,
+    num_workers: int = tcfg.num_workers,
+    output_path: str | None = None,
+) -> None:
+    """Evaluate a saved model on the test set."""
+    model = VinDrClassifier.load_from_checkpoint(checkpoint_path, strict=False)
     model.eval()
 
-    # train_image_dir is unused when stage="test"; pass test dir as placeholder
     dm = VinDrPCXRDataModule(
-        train_image_dir=args.test_image_dir,
-        test_image_dir=args.test_image_dir,
-        train_labels_csv=args.train_labels_csv,
-        test_labels_csv=args.test_labels_csv,
-        test_index_json=args.test_index_json,
-        batch_size=args.batch_size,
-        num_workers=args.num_workers,
+        data_dir=data_dir,
+        batch_size=batch_size,
+        num_workers=num_workers,
     )
     dm.setup(stage="test")
 
@@ -58,14 +53,25 @@ def main() -> None:
     probs_np = torch.cat(all_probs).numpy()
     targets_np = torch.cat(all_targets).numpy()
 
-    metrics = compute_metrics(targets_np, probs_np)
+    metrics = compute_metrics(targets_np, probs_np, class_names=model.class_names)
     print("\n" + format_metrics_table(metrics))
     print(f"\nMean AUC-ROC: {mean_auroc(metrics):.4f}")
 
-    if args.output:
-        with open(args.output, "w") as f:
+    if output_path:
+        with open(output_path, "w") as f:
             json.dump(metrics, f, indent=2)
-        print(f"\nMetrics saved to {args.output}")
+        print(f"\nMetrics saved to {output_path}")
+
+
+def main() -> None:
+    args = parse_args()
+    evaluate(
+        checkpoint_path=args.checkpoint,
+        data_dir=args.data_dir,
+        batch_size=args.batch_size,
+        num_workers=args.num_workers,
+        output_path=args.output,
+    )
 
 
 if __name__ == "__main__":

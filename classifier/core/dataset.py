@@ -86,7 +86,7 @@ class XRVTransform:
                     interpolation=InterpolationMode.BICUBIC, 
                     antialias=True
                 )
-        return tensor
+        return torch.clamp(tensor, -1024, 1024)
 
 def build_transform(size: int = cfg.image_size) -> XRVTransform:
     """Return a picklable XRVTransform for the given output size."""

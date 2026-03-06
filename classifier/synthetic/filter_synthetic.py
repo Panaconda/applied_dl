@@ -12,7 +12,7 @@ import torchxrayvision as xrv
 from PIL import Image
 from tqdm import tqdm
 
-from classifier.baseline.model import VinDrClassifier
+from classifier.core.model import VinDrClassifier
 from classifier.core.config import cfg
 from classifier.core.dataset import build_transform
 
@@ -64,8 +64,9 @@ def main() -> None:
 
     # ------------------------------------------------------------------ index
     with open(args.index) as f:
-        path_index: dict[str, str] = json.load(f)   # {image_id: abs_path}
-
+        path_index: dict[str, str] = json.load(f)   # {image_id: filename}
+    
+    index_dir = os.path.dirname(os.path.abspath(args.index))
     transform = build_transform()   # same XRVTransform used in training
 
     # ------------------------------------------------------------------ filter
@@ -76,7 +77,8 @@ def main() -> None:
           f"threshold={args.threshold}) …")
 
     with torch.no_grad():
-        for image_id, img_path in tqdm(path_index.items()):
+        for image_id, img_rel_path in tqdm(path_index.items()):
+            img_path = os.path.join(index_dir, img_rel_path)
             img = Image.open(img_path)
             tensor = transform(img).unsqueeze(0).to(args.device)  # [1,1,224,224]
 
@@ -85,7 +87,7 @@ def main() -> None:
             scores.append(prob)
 
             if prob >= args.threshold:
-                filtered_paths[image_id] = img_path
+                filtered_paths[image_id] = img_rel_path  # Store relative path/filename
 
     # ------------------------------------------------------------------ report
     accepted = len(filtered_paths)

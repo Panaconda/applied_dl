@@ -6,6 +6,8 @@ data/
 touch data/.gitkeep
 
 # model checkpoints
+checkpoints/
+touch checkpoints/.gitkeep
 cheff_peft/checkpoints
 touch cheff_peft/checkpoints/.gitkeep
 cheff_peft/finetune_cheff/

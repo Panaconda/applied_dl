@@ -57,9 +57,17 @@ def sample_real_paths(n_train: int = 100, n_test: int = 100, seed: int = 42) -> 
     per_cls_test = n_test // len(PATHOLOGY_CLASSES)    # 25
     paths: list[str] = []
 
+    # Derived paths
+    train_image_dir = os.path.join(cfg.data_dir, "pcxr_png", "train")
+    test_image_dir = os.path.join(cfg.data_dir, "pcxr_png", "test")
+    train_labels_csv = os.path.join(train_image_dir, "image_labels_train.csv")
+    test_labels_csv = os.path.join(test_image_dir, "image_labels_test.csv")
+    train_index_json = os.path.join(train_image_dir, "index.json")
+    test_index_json = os.path.join(test_image_dir, "index.json")
+
     for image_dir, csv_path, index_json, per_cls in [
-        (cfg.train_image_dir, cfg.train_labels_csv, cfg.vindr_pcxr_train_index, per_cls_train),
-        (cfg.test_image_dir, cfg.test_labels_csv, cfg.vindr_pcxr_test_index, per_cls_test),
+        (train_image_dir, train_labels_csv, train_index_json, per_cls_train),
+        (test_image_dir, test_labels_csv, test_index_json, per_cls_test),
     ]:
         labels = load_labels(csv_path)
         # Build image_id → file path mapping (handles sequential JPG names)

@@ -61,10 +61,11 @@ def main() -> None:
     image_ids = []
     paths = {}
     for path in files:
-        stem = os.path.splitext(os.path.basename(path))[0]  # e.g. 000001
+        filename = os.path.basename(path)
+        stem = os.path.splitext(filename)[0]  # e.g. 000001
         image_id = f"synth_{dirname.lower()}_{stem}"         # e.g. synth_pneumonia_000001
         image_ids.append(image_id)
-        paths[image_id] = path
+        paths[image_id] = filename  # Store only the filename
 
     # Build labels DataFrame — target class=1, all others=0
     label_data = {cls: 0 for cls in cfg.viable_classes}
