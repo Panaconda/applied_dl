@@ -23,7 +23,6 @@ mamba activate $ENV_NAME
 
 # --- 3. Execution ---
 RUN_NAME="baseline_slurm_${SLURM_JOB_ID}"
-
 export DATA_DIR="$MCMLSCRATCH/data"
 
 echo "Starting Baseline Training Job: ${SLURM_JOB_NAME} (ID: ${SLURM_JOB_ID})"

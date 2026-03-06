@@ -22,14 +22,41 @@ class CoreConfig(BaseSettings):
     )
 
     data_dir: str = os.path.join(_PROJECT_ROOT, "data")
-    train_image_dir: str = os.path.join(data_dir, "pcxr_png", "train")
-    test_image_dir: str = os.path.join(data_dir, "pcxr_png", "test")
-    train_labels_csv: str = os.path.join(data_dir, "pcxr_png", "train", "image_labels_train.csv")
-    test_labels_csv: str = os.path.join(data_dir, "pcxr_png", "test", "image_labels_test.csv")
-    train_index: str = os.path.join(data_dir, "pcxr_png", "train", "index.json")
-    test_index: str = os.path.join(data_dir, "pcxr_png", "test", "index.json")
     
-    synthetic_data_dir: str = os.path.join(data_dir, "synthetic")
+    @computed_field
+    @property
+    def train_image_dir(self) -> str:
+        return os.path.join(self.data_dir, "pcxr_png", "train")
+
+    @computed_field
+    @property
+    def test_image_dir(self) -> str:
+        return os.path.join(self.data_dir, "pcxr_png", "test")
+
+    @computed_field
+    @property
+    def train_labels_csv(self) -> str:
+        return os.path.join(self.train_image_dir, "image_labels_train.csv")
+
+    @computed_field
+    @property
+    def test_labels_csv(self) -> str:
+        return os.path.join(self.test_image_dir, "image_labels_test.csv")
+
+    @computed_field
+    @property
+    def train_index(self) -> str:
+        return os.path.join(self.train_image_dir, "index.json")
+
+    @computed_field
+    @property
+    def test_index(self) -> str:
+        return os.path.join(self.test_image_dir, "index.json")
+    
+    @computed_field
+    @property
+    def synthetic_data_dir(self) -> str:
+        return os.path.join(self.data_dir, "synthetic")
 
     pretrain_setup: str = "densenet121-res224-chex"
 
