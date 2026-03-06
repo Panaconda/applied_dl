@@ -65,15 +65,24 @@ sbatch 04_sample_cheff.sbatch
 
 ### C. Train Classifiers
 
-```bash
+### C. Train Classifiers
 # Baseline (Real data only)
-sbatch 05_baseline_classifier.sbatch
+sbatch 06_baseline_classifier.sbatch
 
 # Synthetic (Real + Synthetic data)
-sbatch 06_synthetic_classifier.sbatch
+sbatch 07_synthetic_classifier.sbatch
 
 # Filtered (Real + Filtered Synthetic data)
-sbatch 07_synthetic_filtered_classifier.sbatch
+sbatch 08_synthetic_filtered_classifier.sbatch
+
+## 03_Download Results (Post-Processing)
+
+After your cluster jobs complete, download the trained models and results to your local machine for evaluation.
+
+```bash
+bash 09_local_download_results.sh
+```
+
 ```
 
 ## END

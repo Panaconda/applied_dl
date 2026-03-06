@@ -33,6 +33,7 @@ def parse_args() -> argparse.Namespace:
         "--filtered", 
         action="store_true"
     )
+    p.add_argument("--ckpt-dir", default=cfg.CKPT_DIR)
     p.add_argument(
         "--synthetic-dirs",
         nargs="+",
@@ -183,6 +184,7 @@ def main() -> None:
     )
 
     checkpoint_cb = ModelCheckpoint(
+        dirpath=os.path.join(args.ckpt_dir, args.run_name),
         filename="best",
         monitor=bcfg.monitor_metric,
         mode="max",

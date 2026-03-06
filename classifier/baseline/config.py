@@ -23,7 +23,7 @@ class BaselineConfig(BaseSettings):
 
     # DataLoader
     batch_size: int = 32
-    num_workers: int = 4
+    num_workers: int = 8
 
     # Training schedule
     max_epochs: int = 50
@@ -38,6 +38,6 @@ class BaselineConfig(BaseSettings):
     # Hardware
     accelerator: str = "auto"
     devices: str = "auto"
-    precision: str = "16"
+    precision: str = "16-mixed"
 
 bcfg = BaselineConfig()

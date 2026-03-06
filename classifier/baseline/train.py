@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import argparse
+import os
 
 import torch
 import pytorch_lightning as pl
@@ -25,6 +26,7 @@ def parse_args() -> argparse.Namespace:
     p.add_argument("--test-index-json", default=cfg.test_index)
     p.add_argument("--pretrain-setup", default=cfg.pretrain_setup)
     p.add_argument("--run-name", default=bcfg.run_name)
+    p.add_argument("--ckpt-dir", default=cfg.CKPT_DIR)
     p.add_argument("--val-fraction", type=float, default=bcfg.val_fraction)
     p.add_argument("--batch-size", type=int, default=bcfg.batch_size)
     p.add_argument("--num-workers", type=int, default=bcfg.num_workers)
@@ -77,6 +79,7 @@ def main() -> None:
     )
 
     checkpoint_cb = ModelCheckpoint(
+        dirpath=os.path.join(args.ckpt_dir, args.run_name),
         filename="best",
         monitor=bcfg.monitor_metric,
         mode="max",

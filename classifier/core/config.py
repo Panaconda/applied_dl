@@ -22,6 +22,8 @@ class CoreConfig(BaseSettings):
     )
 
     data_dir: str = os.path.join(_PROJECT_ROOT, "data")
+    runs_dir: str = _RUNS_DIR
+    CKPT_DIR: str = os.path.join(_CLASSIFIER_DIR, "checkpoints")
     
     @computed_field
     @property
