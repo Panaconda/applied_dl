@@ -2,7 +2,6 @@
 # Run from project root (applied_dl/)
 
 #SBATCH -p lrz-v100x2
-#SBATCH --qos=mcml
 #SBATCH --job-name=baseline_classifier
 #SBATCH --output=classifier/runs/slurm_%j.out
 #SBATCH --error=classifier/runs/slurm_%j.err
