@@ -15,14 +15,12 @@
 # Exit on error
 set -e
 
-# --- 1. Environment Setup ---
-source ~/miniforge3/bin/activate .venv
+# --- 1. Variables ---
+ENV_NAME="adl_env"
 
-# --- 2. Data Paths ---
-MCML_ROOT="/dss/mcmlscratch/04/ra58cib2"
-DATASET_BASE="${MCML_ROOT}/data/pcxr_png"
-TRAIN_DIR="${DATASET_BASE}/train"
-TEST_DIR="${DATASET_BASE}/test"
+# --- 2. Environment Setup ---
+source ~/.bashrc
+mamba activate $ENV_NAME
 
 # --- 3. Execution ---
 RUN_NAME="baseline_slurm_${SLURM_JOB_ID}"
@@ -35,23 +33,15 @@ if [[ ! -d "classifier" ]]; then
     exit 1
 fi
 
-# Launch training using module path
 python -m classifier.baseline.train \
-    --train-image-dir "${TRAIN_DIR}" \
-    --test-image-dir "${TEST_DIR}" \
-    --train-labels-csv "${TRAIN_DIR}/image_labels_train.csv" \
-    --test-labels-csv "${TEST_DIR}/image_labels_test.csv" \
-    --train-index-json "${TRAIN_DIR}/index.json" \
-    --test-index-json "${TEST_DIR}/index.json" \
+    --train-image-dir "$MCMLSCRATCH/data/pcxr_png/train" \
+    --test-image-dir "$MCMLSCRATCH/data/pcxr_png/test" \
+    --train-labels-csv "$MCMLSCRATCH/data/pcxr_png/train/image_labels_train.csv" \
+    --test-labels-csv "$MCMLSCRATCH/data/pcxr_png/test/image_labels_test.csv" \
+    --train-index-json "$MCMLSCRATCH/data/pcxr_png/train/index.json" \
+    --test-index-json "$MCMLSCRATCH/data/pcxr_png/test/index.json" \
     --run-name "${RUN_NAME}" \
-    --batch-size 32 \
-    --num-workers 8 \
-    --max-epochs 50 \
-    --accelerator gpu \
-    --devices 1 \
-    --precision 16-mixed
 
-# Move SLURM logs into the run directory.
 LOG_TARGET="classifier/runs/${RUN_NAME}/"
 mkdir -p "$LOG_TARGET"
 mv "classifier/runs/slurm_${SLURM_JOB_ID}.out" "$LOG_TARGET" 2>/dev/null || true

@@ -16,7 +16,8 @@
 set -e
 
 # --- 1. Environment Setup ---
-source ~/miniforge3/bin/activate .venv
+source ~/.bashrc
+mamba activate adl_env
 
 # --- 2. Configuration ---
 export MCML_ROOT="/dss/mcmlscratch/04/ra58cib2"
