@@ -27,7 +27,7 @@ DATA_DIR="$MCMLSCRATCH/data"
 CKPT_DIR="$MCMLSCRATCH/checkpoints"
 
 # SET THIS: Path to your best baseline classifier checkpoint
-BASELINE_CKPT="best.ckpt"
+BASELINE_CKPT="checkpoints/best.ckpt"
 
 if [[ -z "$BASELINE_CKPT" ]]; then
     echo "Error: BASELINE_CKPT is not set. Please provide the path to the baseline .ckpt file in the script."
