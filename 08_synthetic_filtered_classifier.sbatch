@@ -26,11 +26,12 @@ RUN_NAME="synthetic_filtered_slurm"
 DATA_DIR="$MCMLSCRATCH/data"
 CKPT_DIR="$MCMLSCRATCH/checkpoints"
 
-# SET THIS: Path to your best baseline classifier checkpoint
-BASELINE_CKPT="checkpoints/best.ckpt"
+# Automatically target the best checkpoint from the baseline run
+BASELINE_CKPT="$CKPT_DIR/baseline_slurm/best.ckpt"
 
-if [[ -z "$BASELINE_CKPT" ]]; then
-    echo "Error: BASELINE_CKPT is not set. Please provide the path to the baseline .ckpt file in the script."
+if [[ ! -f "$BASELINE_CKPT" ]]; then
+    echo "Error: Baseline checkpoint not found at $BASELINE_CKPT"
+    echo "Please ensure you have run the baseline classifier first."
     exit 1
 fi
 
