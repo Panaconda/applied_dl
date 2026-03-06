@@ -23,11 +23,10 @@ mamba activate $ENV_NAME
 
 # --- 3. Configuration & Overrides ---
 RUN_NAME="synthetic_filtered_slurm"
-export DATA_DIR="$MCMLSCRATCH/data"
-export CKPT_DIR="$MCMLSCRATCH/checkpoints"
+DATA_DIR="$MCMLSCRATCH/data"
+CKPT_DIR="$MCMLSCRATCH/checkpoints"
 
 # SET THIS: Path to your best baseline classifier checkpoint
-# Example: "$CKPT_DIR/baseline_slurm_12345/best.ckpt"
 BASELINE_CKPT="best.ckpt"
 
 if [[ -z "$BASELINE_CKPT" ]]; then
@@ -55,12 +54,10 @@ for CLS in "${CLASSES[@]}"; do
     echo "Processing class: $CLS"
     
     # Step A: Build the initial synthetic index (synthetic_labels.csv / synthetic_paths.json)
-    # This script scans the folder for .png files and prepares the metadata.
     python -m classifier.synthetic.build_synthetic_index \
         --synthetic-dir "$SYNTH_BASE/$CLS"
         
     # Step B: Filter with the Oracle (produces filtered_labels.csv / filtered_paths.json)
-    # This script keeps only images where the baseline model is confident.
     python -m classifier.synthetic.filter_synthetic \
         --ckpt "$BASELINE_CKPT" \
         --index "$SYNTH_BASE/$CLS/synthetic_paths.json" \
@@ -68,15 +65,14 @@ for CLS in "${CLASSES[@]}"; do
         --threshold 0.70
 done
 
-# --- 5. Training ---
 echo "----------------------------------------------------"
 echo "Starting Synthetic Filtered Training Job..."
 
 # Launch training with real + filtered synthetic data
-# The --filtered flag tells the script to use 'filtered_labels.csv' instead of 'synthetic_labels.csv'
 python -m classifier.train \
     --run-name "${RUN_NAME}" \
     --data-dir "$DATA_DIR" \
+    --ckpt-dir "$CKPT_DIR" \
     --synthetic-classes Pneumonia Bronchiolitis Bronchitis Brocho-pneumonia \
     --filtered
 
