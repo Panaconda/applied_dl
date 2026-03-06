@@ -12,23 +12,12 @@ import torchxrayvision as xrv
 from PIL import Image
 from torch.utils.data import Dataset
 from torchvision import transforms as tv_transforms
-from torchvision.transforms.functional import resize as tv_resize
+from torchvision.transforms.functional import InterpolationMode, resize as tv_resize
 
 from classifier.core.config import cfg
 
 
 def compute_pos_weights(labels: pd.DataFrame) -> torch.Tensor:
-    """Compute per-class positive weights for BCEWithLogitsLoss.
-
-    Formula: pos_weight[i] = (N - pos_i) / pos_i
-
-    Args:
-        labels: DataFrame indexed by image_id with int columns for each class,
-                as returned by :func:`load_labels`.
-
-    Returns:
-        Float32 tensor of shape [num_classes].
-    """
     N = len(labels)
     pos = labels.sum(axis=0).clip(lower=1)  # avoid division by zero
     weights = (N - pos) / pos
@@ -84,15 +73,6 @@ def load_labels(csv_path: str) -> pd.DataFrame:
 
 
 class XRVTransform:
-    """Picklable transform: PIL image → TXRV-normalised [1, size, size] tensor.
-
-    Pipeline:
-      PIL → grayscale uint8 numpy [H, W]
-        → xrv.datasets.normalize → float32 [-1024, 1024]
-        → unsqueeze → [1, H, W] tensor
-        → bilinear resize → [1, size, size]
-    """
-
     def __init__(self, size: int = cfg.image_size) -> None:
         self.size = size
 
@@ -100,42 +80,17 @@ class XRVTransform:
         arr = np.array(img.convert("L")).astype(np.float32)           # [H, W]
         arr = xrv.datasets.normalize(arr, maxval=255)                  # [-1024, 1024]
         tensor = torch.from_numpy(arr).unsqueeze(0)                    # [1, H, W]
-        tensor = tv_resize(tensor, [self.size, self.size], antialias=True)  # [1, size, size]
+        tensor = tv_resize(
+                    tensor, 
+                    [self.size, self.size], 
+                    interpolation=InterpolationMode.BICUBIC, 
+                    antialias=True
+                )
         return tensor
-
 
 def build_transform(size: int = cfg.image_size) -> XRVTransform:
     """Return a picklable XRVTransform for the given output size."""
     return XRVTransform(size)
-
-
-class AugmentedXRVTransform:
-    """Picklable augmented transform for training only."""
-
-    def __init__(self, size: int = 224) -> None:
-        self.size = size
-        self.pil_aug = tv_transforms.Compose([
-            tv_transforms.RandomAffine(
-                degrees=5,
-                translate=(0.02, 0.02),
-                scale=(0.97, 1.03),
-                fill=0,
-            ),
-        ])
-
-    def __call__(self, img: Image.Image) -> torch.Tensor:
-        img = self.pil_aug(img)
-        arr = np.array(img.convert("L")).astype(np.float32)
-        arr = xrv.datasets.normalize(arr, maxval=255)
-        tensor = torch.from_numpy(arr).unsqueeze(0)
-        tensor = tv_transforms.functional.resize(tensor, [self.size, self.size], antialias=True)
-        return tensor
-
-
-def build_augmented_transform(size: int = cfg.image_size) -> AugmentedXRVTransform:
-    """Return a picklable AugmentedXRVTransform for training."""
-    return AugmentedXRVTransform(size)
-
 
 class VinDrPCXRDataset(Dataset):
     """VinDr-PCXR dataset backed by pre-256 PNG files.

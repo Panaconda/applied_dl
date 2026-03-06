@@ -66,12 +66,6 @@ def parse_args() -> argparse.Namespace:
     p.add_argument("--devices", default=bcfg.devices)
     p.add_argument("--precision", default=bcfg.precision)
 
-    # Augmentation
-    p.add_argument(
-        "--augment", action="store_true", default=False,
-        help="Apply AugmentedXRVTransform to real training images (RandomRotation + RandomAffine)",
-    )
-
     return p.parse_args()
 
 
