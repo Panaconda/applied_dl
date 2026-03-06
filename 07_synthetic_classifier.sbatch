@@ -23,8 +23,8 @@ mamba activate $ENV_NAME
 
 # --- 3. Execution ---
 RUN_NAME="synthetic_slurm"
-export DATA_DIR="$MCMLSCRATCH/data"
-export CKPT_DIR="$MCMLSCRATCH/checkpoints"
+DATA_DIR="$MCMLSCRATCH/data"
+CKPT_DIR="$MCMLSCRATCH/checkpoints"
 
 echo "Step 1: Building synthetic indices..."
 CLASSES=("Pneumonia" "Bronchiolitis" "Bronchitis" "Brocho-pneumonia")
@@ -51,6 +51,7 @@ fi
 python -m classifier.train \
     --run-name "${RUN_NAME}" \
     --data-dir "$DATA_DIR" \
+    --ckpt-dir "$CKPT_DIR" \
     --synthetic-dirs "$SYNTH_BASE/Pneumonia" "$SYNTH_BASE/Bronchiolitis" "$SYNTH_BASE/Bronchitis" "$SYNTH_BASE/Brocho-pneumonia" \
 
 # Move SLURM logs into the run directory.

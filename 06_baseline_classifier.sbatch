@@ -23,8 +23,8 @@ mamba activate $ENV_NAME
 
 # --- 3. Execution ---
 RUN_NAME="baseline_slurm"
-export DATA_DIR="$MCMLSCRATCH/data"
-export CKPT_DIR="$MCMLSCRATCH/checkpoints"
+DATA_DIR="$MCMLSCRATCH/data"
+CKPT_DIR="$MCMLSCRATCH/checkpoints"
 
 echo "Starting Baseline Training Job: ${SLURM_JOB_NAME} (ID: ${SLURM_JOB_ID})"
 echo "Run Name: ${RUN_NAME}"
@@ -36,7 +36,8 @@ fi
 
 python -m classifier.train \
     --run-name "${RUN_NAME}" \
-    --data-dir "$DATA_DIR"
+    --data-dir "$DATA_DIR" \
+    --ckpt-dir "$CKPT_DIR"
 
 LOG_TARGET="classifier/runs/${RUN_NAME}/"
 mkdir -p "$LOG_TARGET"
