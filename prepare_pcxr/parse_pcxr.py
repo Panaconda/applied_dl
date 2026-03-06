@@ -346,11 +346,19 @@ class ParseCompositor:
 
 
 if __name__ == '__main__':
+    parser = argparse.ArgumentParser(description="Parse PCXR DICOM files to PNG.")
+    parser.add_argument('--pcxr_png_root', type=str, default=cfg.pcxr_png_root, help='Output directory for PNG files')
+    parser.add_argument('--pcxr_dicom_root', type=str, default=cfg.pcxr_dicom_root, help='Input directory for DICOM files')
+    parser.add_argument('--num_workers', type=int, default=cfg.num_workers, help='Number of worker processes')
+    parser.add_argument('--frontal_only', action='store_true', default=cfg.frontal_only, help='Only parse frontal scans')
+
+    args = parser.parse_args()
+
     pcxr_png = ParseCompositor(
-        pcxr_png_root=cfg.pcxr_png_root,
-        pcxr_dicom_root=cfg.pcxr_dicom_root,
+        pcxr_png_root=args.pcxr_png_root,
+        pcxr_dicom_root=args.pcxr_dicom_root,
         transforms=TRANSFORMS,
-        num_workers=cfg.num_workers,
-        frontal_only=cfg.frontal_only,
+        num_workers=args.num_workers,
+        frontal_only=args.frontal_only,
     )
     pcxr_png.run()

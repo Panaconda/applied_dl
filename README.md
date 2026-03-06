@@ -1,152 +1,79 @@
-# Setup
-
-## 1. Setup Environment (H100 GPU)
-
-Optimized for H100 GPUs with Python 3.9 and PyTorch 2.x:
-
-```bash
-# Create persistent directory structure
-mkdir -p ~/cheff-starter/cheff-models
-cd ~/cheff-starter
-
-# Clone and setup
-git clone https://github.com/Panaconda/applied_dl.git
-cd applied_dl
-bash setup_h100.sh
-```
-
-This will:
-
-- Install Python 3.9
-- Create virtual environment
-- Install PyTorch 2.x with CUDA 12.1 (H100 compatible)
-- Install all dependencies (pytorch-lightning 1.6, transformers, etc.)
-
-### 2. Upload Pre-trained Models
-
-Upload model files to `~/cheff-starter/cheff-models/`:
-
-```bash
-# From your local machine
-scp cheff_*.pt ubuntu@<gpu-ip>:~/cheff-starter/cheff-models/
-```
-
-Required models (~2.4GB total):
-
-- `cheff_autoencoder.pt` (~200MB) - VAE encoder/decoder
-- `cheff_diff_t2i.pt` (~900MB) - Text-to-image diffusion
-- `cheff_diff_uncond.pt` (~900MB) - Unconditional diffusion
-- `cheff_sr_fine.pt` (~400MB) - Super-resolution (256×256 → 1024×1024)
-
-Directory structure:
-
-```
-~/cheff-starter/
-├── applied_dl/          # Code repository
-│   ├── venv/            # Virtual environment
-│   └── cheff/
-└── cheff-models/        # Model weights (persistent)
-    ├── cheff_autoencoder.pt
-    ├── cheff_diff_t2i.pt
-    ├── cheff_diff_uncond.pt
-    └── cheff_sr_fine.pt
-```
-
-### 3. Generate Images
-
-The script automatically detects models from `../cheff-models/`:
-
-```bash
-source venv/bin/activate
-cd cheff
-python test_generation.py --prompt "Chest X-ray showing normal lungs"
-```
-
-**Example prompts:**
-
-- "Chest X-ray showing bilateral pneumonia"
-- "Normal chest radiograph with clear lung fields"
-- "Chest X-ray demonstrating cardiomegaly"
-- "Frontal chest radiograph showing right lower lobe consolidation"
-
-### Python API
-
-```python
-from cheff import CheffLDMT2I, CheffSRModel
-import torch
-from torchvision.utils import save_image
-
-# Load models
-ldm = CheffLDMT2I(
-    model_path='trained_models/cheff_diff_t2i.pt',
-    ae_path='trained_models/cheff_autoencoder.pt',
-    device='cuda'
-)
-
-sr = CheffSRModel(
-    model_path='trained_models/cheff_sr_fine.pt',
-    device='cuda'
-)
-
-# Generate 256×256 image
-image_256 = ldm.sample(
-    sampling_steps=100,
-    eta=1.0,
-    conditioning="Chest X-ray showing normal lungs"
-)
-
-# Upscale to 1024×1024
-image_1024 = sr.sample(image_256, method='ddim', sampling_steps=100)
-save_image(image_1024, 'output_1024.png')
-```
-
-# VinDr-PCXR Dataset Preparation and Modeling
+# Diffusion-Based Data Augmentation:Parameter-Efficient Fine-Tuning of Cheff for Rare Pathologies
 
 ## Overview
 
-This repository contains the code for preparing the VinDr-PCXR dataset and performing downstream tasks like finetuning and classification.
+This repository provides a pipeline for adapting Cheff to pediatric chest x-rays using the VinDr-PCXR dataset. The project evaluates how Parameter-Efficient Fine-Tuning (PEFT) via LoRA can alleviate data scarcity in the PCXR domain for pathology classification.
 
-The repository structure:
+Repository Structure:
 
 - `cheff_peft/`: Logic for finetuning the Cheff model using Parameter-Efficient Fine-Tuning (PEFT).
-- `classifier/`: Implementation of baseline and synthetic-enhanced classifiers.
-- `data/`: Directory for storing DICOM, PNG, and synthetic data (should be created).
+- `classifier/`: Fine-tuning logic for the torchxrayvision pathology classifiers.
+- `data/`: Directory for storing DICOM, PNG, and synthetic samples.
 - `prepare_pcxr/`: Scripts for downloading and parsing the VinDr-PCXR dataset.
 - `visuals/`: Utility scripts for generating visualizations and plots.
 
-## Setup Environment
+## 01_Local Setup
+
+The initial data preprocessing is recommended to be done locally. The reason is to not occupy cluster resources for the lengthy dataset download.
 
 ```bash
-# Clone and setup
-git clone https://github.com/Panaconda/applied_dl.git
+git clone "https://github.com/Panaconda/applied_dl.git" applied_dl
 cd applied_dl
 
-# Create virtual environment and install dependencies
-python -m venv .venv
-source .venv/bin/activate  # On Windows: .venv\Scripts\activate
-pip install -r requirements.txt
+python -m venv "adl_env"
+source "adl_env/Scripts/activate"
+
+python -m pip install --upgrade pip
+pip install -r requirements/local.txt
 ```
 
-## Download Pediatric Chest X-Rays (PCXR)
+### A. Download PCXR
 
-"The LICENSEE will not share access to PhysioNet restricted data with anyone else."
-
-Download the dataset by running the following script. You will need a PhysioNet account and must have signed the Data Use Agreement (DUA) for the [VinDr-PCXR dataset](https://physionet.org/content/vindr-pcxr/1.0.0/).
-
-You can provide your credentials via command line or by creating a `prepare_pcxr/.env` file (see `prepare_pcxr/.env_example`).
+The VinDr-PCXR download is rate-limited. Setting NUM_WORKERS above 4 in 01_download_pcxr.sh may result in a temporary IP ban from the hosting server. Given these safety limits, the 32GB transfer is time-intensive.
 
 ```bash
-# Download test set (~5GB)
-python prepare_pcxr/download_pcxr.py --split test --username "your_email@domain.com" --password "your_password"
-
-# Download train set (~28GB)
-python prepare_pcxr/download_pcxr.py --split train --username "your_email@domain.com" --password "your_password"
+bash 01_download_pcxr.sh
 ```
 
-## Parse PCXR to Prepare Dataset
-
-The `parse_pcxr.py` script converts the downloaded DICOM files into PNG images, resizes them to 1024x1024, and organizes them into the `data/pcxr_png` directory. Moreover, creates the synthetic reports metadata and copies annotation and label CSV files to the target folders.
+### B. Validate and parse DICOMs to PNGs
 
 ```bash
-python prepare_pcxr/parse_pcxr.py
+bash 02_parse_pcxr.sh
 ```
+
+### C. Migrate processed PNGs and repo to LRZ cluster
+
+```bash
+bash 03_migrate_to_cluster.sh
+```
+
+## 02_Remote Pipeline (LRZ Cluster)
+
+The rest of the pipeline can be performed on the cluster.
+
+### A. Finetune Cheff
+
+```bash
+sbatch 04_finetune_cheff.sbatch
+```
+
+### B. Sample Synthetic Data
+
+```bash
+sbatch 04_sample_cheff.sbatch
+```
+
+### C. Train Classifiers
+
+```bash
+# Baseline (Real data only)
+sbatch 05_baseline_classifier.sbatch
+
+# Synthetic (Real + Synthetic data)
+sbatch 06_synthetic_classifier.sbatch
+
+# Filtered (Real + Filtered Synthetic data)
+sbatch 07_synthetic_filtered_classifier.sbatch
+```
+
+## END

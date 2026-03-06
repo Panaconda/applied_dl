@@ -23,7 +23,7 @@ einops
 # --- Deep Learning Architecture ---
 torchxrayvision
 peft>=0.3.0
-transformers>=4.30.0
+transformers==4.37.2
 torch-fidelity
 
 # --- Configuration & Utilities ---
