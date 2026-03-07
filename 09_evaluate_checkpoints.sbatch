@@ -28,21 +28,21 @@ echo "Starting Evaluation Job: ${SLURM_JOB_NAME} (ID: ${SLURM_JOB_ID})"
 
 # 1. Baseline
 echo "Evaluating Baseline..."
-python -m classifier/evaluate \
+python -m classifier.evaluate \
     --checkpoint "$CKPT_DIR/baseline_slurm/best.ckpt" \
     --data-dir "$DATA_DIR" \
     --output "$OUTPUT_BASE/baseline_metrics.json"
 
 # 2. Synthetic Filtered
 echo "Evaluating Synthetic Filtered..."
-python -m classifier/evaluate \
+python -m classifier.evaluate \
     --checkpoint "$CKPT_DIR/synthetic_filtered_slurm/best.ckpt" \
     --data-dir "$DATA_DIR" \
     --output "$OUTPUT_BASE/synthetic_filtered_metrics.json"
 
 # 3. Synthetic
 echo "Evaluating Synthetic..."
-python -m classifier/evaluate \
+python -m classifier.evaluate \
     --checkpoint "$CKPT_DIR/synthetic_slurm/best.ckpt" \
     --data-dir "$DATA_DIR" \
     --output "$OUTPUT_BASE/synthetic_metrics.json"
