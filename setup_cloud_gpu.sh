@@ -41,9 +41,29 @@ mamba run -n "$ENV_NAME" pip install -r "$ROOT/requirements/base.txt" -q
 echo "Reinstalling taming-transformers from local clone..."
 mamba run -n "$ENV_NAME" pip install -e "$ROOT/src/taming-transformers" -q
 
-# --- 8. Install torch from PyPI (has aarch64 CUDA builds; whl server does not) ---
-echo "Installing torch from PyPI..."
-mamba run -n "$ENV_NAME" pip install torch torchvision -q
+# --- 8. Install torch: use system CUDA torch via .pth, not PyPI (PyPI aarch64 = CPU-only) ---
+# Lambda/cloud aarch64 machines have a CUDA-enabled torch at /usr/lib/python3/dist-packages.
+# We point the conda env at it via a .pth file rather than installing a CPU wheel from PyPI.
+echo "Linking system CUDA torch into env..."
+SITE_PACKAGES="$ROOT/.local/share/mamba/envs/$ENV_NAME/lib/python3.10/site-packages"
+SITE_PACKAGES="/home/$(whoami)/.local/share/mamba/envs/$ENV_NAME/lib/python3.10/site-packages"
+SYSTEM_TORCH_DIR=""
+for candidate in /usr/lib/python3/dist-packages /usr/local/lib/python3.10/dist-packages; do
+    if python3 -c "import sys; sys.path.insert(0,'$candidate'); import torch; print(torch.cuda.is_available())" 2>/dev/null | grep -q True; then
+        SYSTEM_TORCH_DIR="$candidate"
+        break
+    fi
+done
+
+if [ -n "$SYSTEM_TORCH_DIR" ]; then
+    # Remove any CPU torch that base.txt may have pulled in transitively
+    mamba run -n "$ENV_NAME" pip uninstall torch torchvision -y -q 2>/dev/null || true
+    echo "$SYSTEM_TORCH_DIR" > "$SITE_PACKAGES/system_torch.pth"
+    echo "  Linked system torch from $SYSTEM_TORCH_DIR"
+else
+    echo "  WARNING: Could not find system CUDA torch. Falling back to PyPI (may be CPU-only)."
+    mamba run -n "$ENV_NAME" pip install torch torchvision -q
+fi
 
 # --- 9. Verify CUDA ---
 echo "Verifying torch CUDA..."
