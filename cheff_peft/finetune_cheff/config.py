@@ -26,14 +26,17 @@ class FinetuneCheffConfig(BaseSettings):
 
     # --- CheFF model checkpoints -----------------------------------------
     checkpoint_dir: str = os.path.join(_CHEFF_PEFT_ROOT, "checkpoints")
-    cheff_t2i_ckpt: str = os.path.join(checkpoint_dir, "cheff_t2i_ckpt.pt")
-    cheff_ae_ckpt: str = os.path.join(checkpoint_dir, "cheff_ae_ckpt.pt")
+    cheff_t2i_ckpt: str = os.path.join(checkpoint_dir, "cheff_diff_t2i.pt")
+    cheff_ae_ckpt: str = os.path.join(checkpoint_dir, "cheff_autoencoder.pt")
 
     # --- LoRA hyper-parameters -------------------------------------------
     lora_rank: int = 16
     lora_alpha: int = 32
     lora_dropout: float = 0.0
     lora_scope: str = "attn"          # all self + cross attention
+
+    # --- data -------------------------------------------------------------
+    machex_output_dir: str = os.path.join(_PROJECT_ROOT, "machex_dataset", "vindr-pcxr")
 
     # --- training ---------------------------------------------------------
     cheff_batch_size: int = 8
@@ -43,6 +46,7 @@ class FinetuneCheffConfig(BaseSettings):
     cheff_max_epochs: int = 15
     seed: int = 42
 
+    accelerator: str = "gpu"
     run_name: str = "finetune_cheff"
 
     @property

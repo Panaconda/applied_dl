@@ -1,5 +1,6 @@
 # venv
 adl_env/
+.venv/
 
 # data 
 data/

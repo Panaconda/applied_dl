@@ -149,13 +149,13 @@ def main() -> None:
     model.learning_rate = ftcfg.cheff_learning_rate
 
     # ---- data --------------------------------------------------------------
-    transforms = transforms.Compose([
+    tfm = Compose([
         Resize(256, interpolation=InterpolationMode.BICUBIC),
         ToTensor(),
         Normalize(mean=(0.5, 0.5, 0.5), std=(0.5, 0.5, 0.5)),
     ])
 
-    dataset = MimicT2IDataset(ftcfg.machex_output_dir, transforms)
+    dataset = MimicT2IDataset(ftcfg.machex_output_dir, tfm)
     print(f"Dataset: {len(dataset)} images")
 
     train_size = len(dataset) - ftcfg.cheff_test_size
@@ -193,7 +193,7 @@ def main() -> None:
     )
 
     trainer = pl.Trainer(
-        accelerator="gpu",
+        accelerator=ftcfg.accelerator,
         devices=1,
         max_epochs=ftcfg.cheff_max_epochs,
         logger=logger,
