@@ -21,10 +21,15 @@ git clone "https://github.com/Panaconda/applied_dl.git" applied_dl
 cd applied_dl
 
 python -m venv "adl_env"
-source "adl_env/Scripts/activate"
+source "adl_env/bin/activate"
 
 python -m pip install --upgrade pip
+
+# Install local dependencies
 pip install -r requirements/local.txt
+
+# Install GPU dependencies if applicable
+pip install -r requirements/gpu.txt
 ```
 
 ### A. Download PCXR
