@@ -3,12 +3,21 @@ set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
-echo "=== Setup: $ROOT ==="
+echo "=== Setup: $ROOT ($(uname -m)) ==="
 
-# Venv inheriting system torch (Lambda pre-installs a CUDA-capable torch)
-python3 -m venv "$ROOT/adl_env" --system-site-packages
+if [ "$(uname -m)" = "aarch64" ]; then
+    python3 -m venv "$ROOT/adl_env" --system-site-packages
+else
+    python3 -m venv "$ROOT/adl_env"
+fi
 source "$ROOT/adl_env/bin/activate"
 pip install --upgrade pip -q
+
+# Install torch on x86_64 (already available via system on aarch64)
+if [ "$(uname -m)" != "aarch64" ]; then
+    pip install torch==2.1.2+cu121 torchvision==0.16.2+cu121 \
+        --index-url https://download.pytorch.org/whl/cu121 -q
+fi
 
 # All other deps
 pip install -r "$ROOT/requirements/base.txt" -q
