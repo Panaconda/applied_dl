@@ -38,16 +38,19 @@ pip install --upgrade pip --quiet
 # Install torch+torchvision with the extra index explicitly on the CLI —
 # relying on --extra-index-url inside the requirements file is unreliable
 # across pip versions and environments.
-echo "[2/4] Installing PyTorch (cu121) ..."
-# Do not pin the torch version — the exact +cu121 wheel available depends on
-# the Python version on the target machine (e.g. 3.12 requires torch>=2.2).
-# Using --index-url (not --extra-index-url) ensures pip searches the PyTorch
-# wheel server and can resolve the +cu121 local-version suffix.
-pip install \
-    "torch>=2.1.2" \
-    "torchvision>=0.16.2" \
-    --index-url https://download.pytorch.org/whl/cu121 \
-    --quiet
+echo "[2/4] Installing PyTorch ..."
+# The PyTorch cu121 wheel server only has x86_64 builds.
+# On aarch64 (ARM), PyPI torch wheels already bundle CUDA — use plain PyPI.
+ARCH="$(uname -m)"
+if [ "$ARCH" = "aarch64" ]; then
+    echo "  → aarch64 detected: installing torch from PyPI (CUDA bundled)"
+    pip install torch torchvision --quiet
+else
+    echo "  → x86_64 detected: installing torch+cu121 from PyTorch wheel server"
+    pip install torch torchvision \
+        --index-url https://download.pytorch.org/whl/cu121 \
+        --quiet
+fi
 
 echo "[2/4] Installing base requirements ..."
 pip install -r "$PROJECT_ROOT/requirements/base.txt" --quiet
