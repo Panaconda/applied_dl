@@ -39,5 +39,5 @@ wandb
 
 # --- Remote Repositories ---
 -e cheff_peft/cheff
--e git+https://github.com/CompVis/taming-transformers.git@master#egg=taming-transformers
--e git+https://github.com/openai/CLIP.git@main#egg=clip
+git+https://github.com/CompVis/taming-transformers.git@master#egg=taming-transformers
+git+https://github.com/openai/CLIP.git@main#egg=clip
