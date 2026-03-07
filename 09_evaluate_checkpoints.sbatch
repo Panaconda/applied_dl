@@ -13,45 +13,40 @@
 set -e
 
 # --- 1. Environment Setup ---
+DATA_DIR="$MCMLSCRATCH/data"
+OUTPUT_BASE="classifier/runs/eval_results"
 ENV_NAME="adl_env"
+CKPT_DIR="$MCMLSCRATCH/checkpoints"
+
+mkdir -p "$OUTPUT_BASE"
 source ~/.bashrc
 mamba activate $ENV_NAME
 
-export PYTHONPATH=$PYTHONPATH:.
-
-# --- 2. Variables ---
-DATA_DIR="$MCMLSCRATCH/data"
-OUTPUT_BASE="classifier/runs/eval_results"
-mkdir -p "$OUTPUT_BASE"
-
-# Checkpoints to evaluate
-declare -A checkpoints
-checkpoints["baseline"]="checkpoints/baseline_slurm/baseline_slurm/best.ckpt"
-checkpoints["synthetic_filtered"]="checkpoints/synthetic_filtered_slurm/synthetic_filtered_slurm/best.ckpt"
-checkpoints["synthetic"]="checkpoints/synthetic_slurm/best.ckpt"
 
 echo "Starting Evaluation Job: ${SLURM_JOB_NAME} (ID: ${SLURM_JOB_ID})"
 
-# --- 3. Execution ---
-for name in "${!checkpoints[@]}"; do
-    ckpt="${checkpoints[$name]}"
-    echo "--------------------------------------------------------------------------------"
-    echo "Evaluating model: $name"
-    echo "Checkpoint: $ckpt"
-    
-    if [ ! -f "$ckpt" ]; then
-        echo "Warning: Checkpoint $ckpt not found, skipping."
-        continue
-    fi
+# --- 3. Execution (Manual Calls) ---
 
-    # Run evaluation
-    python classifier/evaluate.py \
-        --checkpoint "$ckpt" \
-        --data-dir "$DATA_DIR" \
-        --output "$OUTPUT_BASE/${name}_metrics.json"
-        
-    echo "Evaluation for $name completed."
-done
+# 1. Baseline
+echo "Evaluating Baseline..."
+python classifier/evaluate.py \
+    --checkpoint "$CKPT_DIR/baseline_slurm/best.ckpt" \
+    --data-dir "$DATA_DIR" \
+    --output "$OUTPUT_BASE/baseline_metrics.json"
+
+# 2. Synthetic Filtered
+echo "Evaluating Synthetic Filtered..."
+python classifier/evaluate.py \
+    --checkpoint "$CKPT_DIR/synthetic_filtered_slurm/best.ckpt" \
+    --data-dir "$DATA_DIR" \
+    --output "$OUTPUT_BASE/synthetic_filtered_metrics.json"
+
+# 3. Synthetic
+echo "Evaluating Synthetic..."
+python classifier/evaluate.py \
+    --checkpoint "$CKPT_DIR/synthetic_slurm/best.ckpt" \
+    --data-dir "$DATA_DIR" \
+    --output "$OUTPUT_BASE/synthetic_metrics.json"
 
 echo "--------------------------------------------------------------------------------"
 echo "All evaluations completed. Results are in $OUTPUT_BASE"
