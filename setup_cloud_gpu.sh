@@ -45,7 +45,6 @@ mamba run -n "$ENV_NAME" pip install -e "$ROOT/src/taming-transformers" -q
 # Lambda/cloud aarch64 machines have a CUDA-enabled torch at /usr/lib/python3/dist-packages.
 # We point the conda env at it via a .pth file rather than installing a CPU wheel from PyPI.
 echo "Linking system CUDA torch into env..."
-SITE_PACKAGES="$ROOT/.local/share/mamba/envs/$ENV_NAME/lib/python3.10/site-packages"
 SITE_PACKAGES="/home/$(whoami)/.local/share/mamba/envs/$ENV_NAME/lib/python3.10/site-packages"
 SYSTEM_TORCH_DIR=""
 for candidate in /usr/lib/python3/dist-packages /usr/local/lib/python3.10/dist-packages; do
