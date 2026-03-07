@@ -42,7 +42,7 @@ echo "[2/4] Installing PyTorch (cu121) ..."
 pip install \
     torch==2.1.2+cu121 \
     torchvision==0.16.2+cu121 \
-    --extra-index-url https://download.pytorch.org/whl/cu121 \
+    --index-url https://download.pytorch.org/whl/cu121 \
     --quiet
 
 echo "[2/4] Installing base requirements ..."
