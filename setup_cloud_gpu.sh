@@ -19,10 +19,12 @@ echo "Creating Mamba environment $ENV_NAME (skipped if already exists)..."
 mamba create --name "$ENV_NAME" python=3.10 -y --no-default-packages 2>/dev/null || \
     echo "Environment '$ENV_NAME' already exists, continuing..."
 
-# --- 2. Install GPU deps (use mamba run to avoid activate issues in scripts) ---
+# --- 2. Install dependencies from base.txt ---
+# We use base.txt (not gpu.txt) because gpu.txt pins cu121 binaries that may
+# not exist for this architecture. Torch is installed separately in step 4.
 echo "Installing dependencies..."
 mamba run -n "$ENV_NAME" pip install --upgrade pip -q
-mamba run -n "$ENV_NAME" pip install -r "$ROOT/requirements/gpu.txt" -q
+mamba run -n "$ENV_NAME" pip install -r "$ROOT/requirements/base.txt" -q
 
 # --- 3. Reinstall taming-transformers from local clone with absolute path ---
 # The -e git+ clone lands in ./src/ but the .pth path can be unreliable.
@@ -40,12 +42,24 @@ echo "Installing torch cu126..."
 mamba run -n "$ENV_NAME" pip install torch torchvision \
     --index-url https://download.pytorch.org/whl/cu126 -q
 
-# --- 5. .env defaults ---
+# --- 5. PYTHONPATH for taming-transformers ---
+# The editable install .pth can point to an unreachable NFS path.
+# Adding PYTHONPATH is the reliable fix.
+PYTHONPATH_LINE="export PYTHONPATH=$ROOT/src/taming-transformers"
+if ! grep -qF "$PYTHONPATH_LINE" ~/.bashrc 2>/dev/null; then
+    echo "$PYTHONPATH_LINE" >> ~/.bashrc
+    echo "Added PYTHONPATH to ~/.bashrc"
+fi
+
+# --- 6. .env defaults ---
 if [ ! -f "$ROOT/.env" ]; then
     cp "$ROOT/.env.example" "$ROOT/.env"
-    echo "Created .env from .env.example — edit it to set your paths."
+    echo "Created .env from .env.example."
 fi
 
 echo ""
 echo "=== Done! ==="
-echo "Run:  mamba activate $ENV_NAME"
+echo "Now run:"
+echo "  source ~/.bashrc"
+echo "  mamba activate $ENV_NAME"
+echo "  cd $ROOT/cheff_peft && python -m finetune_cheff.train"
