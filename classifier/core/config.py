@@ -83,7 +83,7 @@ class TrainConfig(BaseSettings):
     lr_backbone: float = 1e-5  # Phase 2: full fine-tuning
 
     # Early stopping
-    patience: int = 5
+    patience: int = 10
     monitor_metric: str = "val/auroc"
 
     # Hardware
