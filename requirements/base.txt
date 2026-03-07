@@ -1,5 +1,5 @@
 # --- Core ---
-setuptools
+setuptools==69.5.1
 
 # --- Core Math & Data ---
 numpy==1.26.4
