@@ -4,6 +4,8 @@ adl_env/
 # data 
 data/
 touch data/.gitkeep
+machex_dataset/
+experiments/runs/
 
 # model checkpoints
 cheff_peft/checkpoints
