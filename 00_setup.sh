@@ -35,8 +35,18 @@ pip install --upgrade pip --quiet
 # ---------------------------------------------------------------------------
 # 2. Install all dependencies (torch cu121 + base requirements)
 # ---------------------------------------------------------------------------
-echo "[2/4] Installing dependencies from requirements/gpu.txt ..."
-pip install -r "$PROJECT_ROOT/requirements/gpu.txt" --quiet
+# Install torch+torchvision with the extra index explicitly on the CLI —
+# relying on --extra-index-url inside the requirements file is unreliable
+# across pip versions and environments.
+echo "[2/4] Installing PyTorch (cu121) ..."
+pip install \
+    torch==2.1.2+cu121 \
+    torchvision==0.16.2+cu121 \
+    --extra-index-url https://download.pytorch.org/whl/cu121 \
+    --quiet
+
+echo "[2/4] Installing base requirements ..."
+pip install -r "$PROJECT_ROOT/requirements/base.txt" --quiet
 
 # Ensure numpy stays pinned (some packages try to upgrade it)
 pip install "numpy==1.26.4" --quiet
