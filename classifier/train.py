@@ -102,7 +102,7 @@ def train(
     )
 
     # 3. Trainer setup
-    logger = CSVLogger(save_dir=cfg.runs_dir, name=run_name, version="")
+    logger = CSVLogger(save_dir=cfg.runs_dir, name=run_name)
     checkpoint_cb = ModelCheckpoint(
         dirpath=os.path.join(ckpt_dir, run_name),
         filename="best",
