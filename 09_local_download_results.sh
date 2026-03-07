@@ -33,7 +33,3 @@ mkdir -p ./data/synthetic/
 scp -r "$REMOTE_USER@$REMOTE_HOST:$REMOTE_PATH/data/synthetic/*" ./data/synthetic/
 
 echo "Download complete! Your results are now available locally."
-
-baseline_slurm
-synthetic_slurm
-synthetic_filtered_slurm
