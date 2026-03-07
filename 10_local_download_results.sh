@@ -23,9 +23,9 @@ scp -r "$REMOTE_USER@$REMOTE_HOST:$REMOTE_PATH/checkpoints/synthetic_slurm" ./ch
 scp -r "$REMOTE_USER@$REMOTE_HOST:$REMOTE_PATH/checkpoints/synthetic_filtered_slurm" ./checkpoints/synthetic_filtered_slurm
 
 # 3. Download CheFF PEFT runs (LoRA adapters, logs)
-echo "Downloading CheFF PEFT runs..."
-mkdir -p ./cheff_peft/runs/
-scp -r "$REMOTE_USER@$REMOTE_HOST:~/applied_dl/cheff_peft/runs/*" ./cheff_peft/runs/
+#echo "Downloading CheFF PEFT runs..."
+#mkdir -p ./cheff_peft/runs/
+#scp -r "$REMOTE_USER@$REMOTE_HOST:~/applied_dl/cheff_peft/runs/*" ./cheff_peft/runs/
 
 # 4. Download Synthetic Data (from Scratch)
 echo "Downloading Synthetic Data..."
