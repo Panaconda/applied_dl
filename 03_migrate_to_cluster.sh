@@ -1,11 +1,21 @@
 #!/bin/bash
+set -euo pipefail
+
+# Load config from .env (same file Python uses)
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+if [ -f "$SCRIPT_DIR/.env" ]; then
+    set -a; source "$SCRIPT_DIR/.env"; set +a
+else
+    echo "ERROR: .env not found. Copy .env.example to .env and fill in your values." >&2
+    exit 1
+fi
 
 # Configuration
-REMOTE_USER="ra58cib2"
-REMOTE_HOST="login.ai.lrz.de"
+REMOTE_USER="${LRZ_USER:?Set LRZ_USER in .env}"
+REMOTE_HOST="${LRZ_HOST:-login.ai.lrz.de}"
+MCMLSCRATCH_ROOT="${LRZ_SCRATCH:?Set LRZ_SCRATCH in .env}"
 REPO_URL="https://github.com/Panaconda/applied_dl.git"
 ENV_NAME="adl_env"
-MCMLSCRATCH_ROOT="/dss/mcmlscratch/04/ra58cib2"
 
 #1. Set up environment and download pretrained models on cluster
 
