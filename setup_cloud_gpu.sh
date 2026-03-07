@@ -15,9 +15,9 @@ if ! command -v mamba &>/dev/null; then
 fi
 
 # --- 1. Create mamba env ---
-if ! mamba info --envs | grep -q "$ENV_NAME"; then
+if ! mamba env list | grep -q "^${ENV_NAME} \|/${ENV_NAME}$"; then
     echo "Creating Mamba environment $ENV_NAME..."
-    mamba create --name "$ENV_NAME" python=3.10 -y
+    mamba create --name "$ENV_NAME" python=3.10 -y || true
 fi
 
 # --- 2. Install GPU deps (use mamba run to avoid activate issues in scripts) ---
