@@ -9,8 +9,18 @@ ENV_NAME="adl_env"
 
 echo "=== Cloud GPU Setup: $ROOT ==="
 
-# --- 1. Create mamba env ---
-source ~/.bashrc
+# --- 1. Init mamba shell if needed, then activate ---
+if ! command -v mamba &>/dev/null; then
+    echo "ERROR: mamba not found. Install Miniforge first." >&2
+    exit 1
+fi
+
+# Initialize shell hook (idempotent)
+eval "$(mamba shell hook --shell bash)"
+if [ -f ~/.bashrc ] && ! grep -q "mamba shell" ~/.bashrc; then
+    mamba shell init --shell bash --root-prefix=~/.local/share/mamba
+fi
+source ~/.bashrc 2>/dev/null || true
 
 if ! mamba info --envs | grep -q "$ENV_NAME"; then
     echo "Creating Mamba environment $ENV_NAME..."
