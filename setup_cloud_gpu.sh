@@ -1,65 +1,69 @@
 #!/usr/bin/env bash
-# Mirror of the env-setup portion of 03_migrate_to_cluster.sh,
-# for a cloud GPU that already has data + checkpoints.
+# Full from-scratch cloud GPU setup. Tears everything down first.
 # Usage:  bash setup_cloud_gpu.sh
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ENV_NAME="adl_env"
 
-echo "=== Cloud GPU Setup: $ROOT ==="
+echo "=== Cloud GPU Setup (clean): $ROOT ==="
 
 if ! command -v mamba &>/dev/null; then
     echo "ERROR: mamba not found. Install Miniforge first." >&2
     exit 1
 fi
 
-# --- 1. Create mamba env ---
-echo "Creating Mamba environment $ENV_NAME (skipped if already exists)..."
-mamba create --name "$ENV_NAME" python=3.10 -y --no-default-packages 2>/dev/null || \
-    echo "Environment '$ENV_NAME' already exists, continuing..."
+# --- 1. Nuke existing env ---
+echo "Removing existing '$ENV_NAME' env..."
+mamba env remove -n "$ENV_NAME" -y 2>/dev/null || true
 
-# --- 2. Install dependencies from base.txt ---
-# We use base.txt (not gpu.txt) because gpu.txt pins cu121 binaries that may
-# not exist for this architecture. Torch is installed separately in step 4.
-echo "Installing dependencies..."
+# --- 2. Nuke cloned deps so base.txt re-clones them fresh ---
+echo "Removing src/..."
+rm -rf "$ROOT/src"
+
+# --- 3. Nuke stale .env ---
+echo "Removing .env..."
+rm -f "$ROOT/.env"
+
+# --- 4. Remove stale PYTHONPATH lines from ~/.bashrc ---
+sed -i '/taming-transformers/d' ~/.bashrc
+
+# --- 5. Create env ---
+echo "Creating '$ENV_NAME' (Python 3.10)..."
+mamba create --name "$ENV_NAME" python=3.10 -y
 mamba run -n "$ENV_NAME" pip install --upgrade pip -q
+
+# --- 6. Install base deps (clones taming + CLIP into src/) ---
+echo "Installing requirements/base.txt..."
 mamba run -n "$ENV_NAME" pip install -r "$ROOT/requirements/base.txt" -q
 
-# --- 3. Reinstall taming-transformers from local clone with absolute path ---
-# The -e git+ clone lands in ./src/ but the .pth path can be unreliable.
-# Reinstalling from the absolute local path guarantees Python finds it.
-echo "Fixing taming-transformers install..."
-TAMING_SRC="$ROOT/src/taming-transformers"
-if [ -d "$TAMING_SRC" ]; then
-    mamba run -n "$ENV_NAME" pip install -e "$TAMING_SRC" -q
-else
-    echo "WARNING: $TAMING_SRC not found — taming may not import correctly."
-fi
+# --- 7. Reinstall taming from absolute local path so .pth is correct ---
+echo "Reinstalling taming-transformers from local clone..."
+mamba run -n "$ENV_NAME" pip install -e "$ROOT/src/taming-transformers" -q
 
-# --- 4. Override torch for this GPU's CUDA version (cu126) ---
-echo "Installing torch cu126..."
-mamba run -n "$ENV_NAME" pip install torch torchvision \
-    --index-url https://download.pytorch.org/whl/cu126 -q
+# --- 8. Install torch from PyPI (has aarch64 CUDA builds; whl server does not) ---
+echo "Installing torch from PyPI..."
+mamba run -n "$ENV_NAME" pip install torch torchvision -q
 
-# --- 5. PYTHONPATH for taming-transformers ---
-# The editable install .pth can point to an unreachable NFS path.
-# Adding PYTHONPATH is the reliable fix.
-PYTHONPATH_LINE="export PYTHONPATH=$ROOT/src/taming-transformers"
-if ! grep -qF "$PYTHONPATH_LINE" ~/.bashrc 2>/dev/null; then
-    echo "$PYTHONPATH_LINE" >> ~/.bashrc
-    echo "Added PYTHONPATH to ~/.bashrc"
-fi
+# --- 9. Verify CUDA ---
+echo "Verifying torch CUDA..."
+mamba run -n "$ENV_NAME" python -c "
+import torch
+print(f'  torch {torch.__version__}  |  cuda={torch.cuda.is_available()}')
+if not torch.cuda.is_available():
+    print('  WARNING: CUDA not available — check nvidia-smi')
+"
 
-# --- 6. .env defaults ---
-if [ ! -f "$ROOT/.env" ]; then
-    cp "$ROOT/.env.example" "$ROOT/.env"
-    echo "Created .env from .env.example."
-fi
+# --- 10. PYTHONPATH for taming (belt-and-suspenders over the .pth) ---
+echo "export PYTHONPATH=$ROOT/src/taming-transformers" >> ~/.bashrc
+echo "Added PYTHONPATH to ~/.bashrc"
+
+# --- 11. Write .env ---
+echo "ACCELERATOR=gpu" > "$ROOT/.env"
+echo "Created .env"
 
 echo ""
 echo "=== Done! ==="
 echo "Now run:"
-echo "  source ~/.bashrc"
-echo "  mamba activate $ENV_NAME"
+echo "  source ~/.bashrc && mamba activate $ENV_NAME"
 echo "  cd $ROOT/cheff_peft && python -m finetune_cheff.train"
