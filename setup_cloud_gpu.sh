@@ -9,39 +9,28 @@ ENV_NAME="adl_env"
 
 echo "=== Cloud GPU Setup: $ROOT ==="
 
-# --- 1. Init mamba shell if needed, then activate ---
 if ! command -v mamba &>/dev/null; then
     echo "ERROR: mamba not found. Install Miniforge first." >&2
     exit 1
 fi
 
-# Initialize shell hook (idempotent)
-eval "$(mamba shell hook --shell bash)"
-if [ -f ~/.bashrc ] && ! grep -q "mamba shell" ~/.bashrc; then
-    mamba shell init --shell bash --root-prefix=~/.local/share/mamba
-fi
-source ~/.bashrc 2>/dev/null || true
-
+# --- 1. Create mamba env ---
 if ! mamba info --envs | grep -q "$ENV_NAME"; then
     echo "Creating Mamba environment $ENV_NAME..."
     mamba create --name "$ENV_NAME" python=3.10 -y
 fi
 
-mamba activate "$ENV_NAME"
-
-# --- 2. Install GPU deps ---
-python -m pip install --upgrade pip -q
-pip install -r "$ROOT/requirements/gpu.txt" -q
+# --- 2. Install GPU deps (use mamba run to avoid activate issues in scripts) ---
+echo "Installing dependencies..."
+mamba run -n "$ENV_NAME" pip install --upgrade pip -q
+mamba run -n "$ENV_NAME" pip install -r "$ROOT/requirements/gpu.txt" -q
 
 # --- 3. .env defaults ---
 if [ ! -f "$ROOT/.env" ]; then
-    cat > "$ROOT/.env" <<DOT
-MACHEX_OUTPUT_DIR=$ROOT/machex_dataset/vindr-pcxr
-ACCELERATOR=gpu
-DOT
-    echo "Created default .env"
+    cp "$ROOT/.env.example" "$ROOT/.env"
+    echo "Created .env from .env.example — edit it to set your paths."
 fi
 
 echo ""
 echo "=== Done! ==="
-echo "mamba activate $ENV_NAME"
+echo "Run:  mamba activate $ENV_NAME"
