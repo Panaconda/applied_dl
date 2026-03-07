@@ -25,6 +25,7 @@ ssh -t "$REMOTE_USER@$REMOTE_HOST" \
     fi
     cd applied_dl || exit
     git pull
+    git checkout experiment-01
 
     echo "Requesting CPU node for environment installation..."
     
@@ -34,23 +35,25 @@ ssh -t "$REMOTE_USER@$REMOTE_HOST" \
         
         if ! mamba info --envs | grep -q '$ENV_NAME'; then
             echo 'Creating Mamba environment $ENV_NAME...'
-            mamba create --name '$ENV_NAME' python=3.9 -y
+            mamba create --name '$ENV_NAME' python=3.10 -y
         fi
 
         mamba activate '$ENV_NAME'
 
         cd ~/applied_dl
-        if [ -f 'requirements/gpu.txt' ]; then
-            echo 'Installing dependencies...'
-            python -m pip install --upgrade pip
-            pip install -r requirements/gpu.txt
-        else
-            echo 'Warning: requirements/gpu.txt not found.'
-        fi
+
+        echo 'Installing dependencies...'
+        python -m pip install --upgrade pip
+        pip install -r requirements/gpu.txt
+
+        # Reinstall taming from local clone (editable .pth can be unreliable)
+        pip install -e src/taming-transformers
+
+        # PYTHONPATH for taming (belt-and-suspenders)
+        PYTHONPATH_LINE='export PYTHONPATH=\$HOME/applied_dl/src/taming-transformers'
+        grep -qF 'taming-transformers' ~/.bashrc || echo \"\$PYTHONPATH_LINE\" >> ~/.bashrc
 
         echo 'Downloading Pretrained CheFF Models to cluster...'
-        
-        echo 'Downloading CheFF pretrained models...'
         python -m prepare_pcxr.download_cheff \
             --checkpoint_dir $MCMLSCRATCH_ROOT/checkpoints
 
