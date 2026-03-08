@@ -72,12 +72,19 @@ class VinDrPCXRDataModule(pl.LightningDataModule):
             with open(json_path) as f:
                 paths = json.load(f)
 
-            all_ids.extend(list(labels.index))
-            all_labels.append(labels)
             # Resolve paths relative to the class directory
             all_paths.update({
                 img_id: os.path.join(cls_dir, p) for img_id, p in paths.items()
             })
+
+            # Sync check: only keep IDs that actually have a path entry
+            valid_ids = [i for i in labels.index if i in paths]
+            if len(valid_ids) < len(labels):
+                print(f"Warning: {len(labels) - len(valid_ids)} synthetic IDs in {csv_path} "
+                      f"not found in {json_path}. Skipping them.")
+            
+            all_ids.extend(valid_ids)
+            all_labels.append(labels.loc[valid_ids])
 
         combined_labels = pd.concat(all_labels) if all_labels else None
         return all_ids, combined_labels, all_paths

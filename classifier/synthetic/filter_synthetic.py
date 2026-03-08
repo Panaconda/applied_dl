@@ -106,20 +106,21 @@ def main() -> None:
         json.dump(filtered_paths, f, indent=2)
     print(f"Written: {filtered_json}")
 
-    # Build matching labels CSV — target class = 1, all others = 0
-    if filtered_paths:
-        label_row = {cls: 0 for cls in cfg.viable_classes}
-        label_row[args.target] = 1
-        labels_df = pd.DataFrame(
-            [label_row] * accepted,
-            index=pd.Index(list(filtered_paths.keys()), name="image_id"),
-        )[cfg.viable_classes]
+    # Build matching labels DataFrame — target class = 1, all others = 0
+    label_row = {cls: 0 for cls in cfg.viable_classes}
+    label_row[args.target] = 1
+    labels_df = pd.DataFrame(
+        [label_row] * accepted,
+        index=pd.Index(list(filtered_paths.keys()), name="image_id"),
+    )[cfg.viable_classes]
 
-        filtered_csv = os.path.join(out_dir, "filtered_labels.csv")
-        labels_df.to_csv(filtered_csv)
-        print(f"Written: {filtered_csv}")
-    else:
-        print("WARNING: no images passed the threshold — filtered_labels.csv not written.")
+    filtered_csv = os.path.join(out_dir, "filtered_labels.csv")
+    labels_df.to_csv(filtered_csv)
+    print(f"Written: {filtered_csv}")
+
+    if not filtered_paths:
+        print("WARNING: no images passed the threshold — filtered_labels.csv is empty.")
+
 
 
 if __name__ == "__main__":
