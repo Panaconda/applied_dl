@@ -112,7 +112,8 @@ def main() -> None:
     labels_df = pd.DataFrame(
         [label_row] * accepted,
         index=pd.Index(list(filtered_paths.keys()), name="image_id"),
-    )[cfg.viable_classes]
+        columns=cfg.viable_classes,
+    )
 
     filtered_csv = os.path.join(out_dir, "filtered_labels.csv")
     labels_df.to_csv(filtered_csv)
