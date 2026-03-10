@@ -1,7 +1,8 @@
 #!/bin/bash
 # Run from project root (applied_dl/)
 
-#SBATCH -p lrz-v100x2
+#SBATCH -p mcml-hgx-a100-80x4-mig
+#SBATCH --qos=mcml
 #SBATCH --job-name=synthetic_filtered_classifier
 #SBATCH --output=classifier/runs/slurm_%j.out
 #SBATCH --error=classifier/runs/slurm_%j.err
@@ -63,7 +64,7 @@ for CLS in "${CLASSES[@]}"; do
         --ckpt "$BASELINE_CKPT" \
         --index "$SYNTH_BASE/$CLS/synthetic_paths.json" \
         --target "$CLS" \
-        --threshold 0.50
+        --threshold 0.60
 done
 
 echo "----------------------------------------------------"
