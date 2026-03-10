@@ -53,8 +53,6 @@ python -m classifier.evaluate \
     --output "$LOG_TARGET/metrics.json"
 
 # Move SLURM logs into the specific run directory for better organization
-LOG_TARGET="classifier/runs/${RUN_NAME}/"
-mkdir -p "$LOG_TARGET"
 mv "classifier/runs/slurm_${SLURM_JOB_ID}.out" "$LOG_TARGET" 2>/dev/null || true [cite: 2]
 mv "classifier/runs/slurm_${SLURM_JOB_ID}.err" "$LOG_TARGET" 2>/dev/null || true [cite: 2]
 
