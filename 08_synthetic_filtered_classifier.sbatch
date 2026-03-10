@@ -25,6 +25,15 @@ mamba activate $ENV_NAME
 RUN_NAME="synthetic_filtered_slurm"
 DATA_DIR="$MCMLSCRATCH/data"
 CKPT_DIR="$MCMLSCRATCH/checkpoints"
+LOG_TARGET="classifier/runs/${RUN_NAME}/"
+CKPT_TARGET="$CKPT_DIR/${RUN_NAME}/"
+
+# Empty folders first
+rm -rf "$LOG_TARGET"
+mkdir -p "$LOG_TARGET"
+
+rm -rf "$CKPT_TARGET"
+mkdir -p "$CKPT_TARGET"
 
 # Automatically target the best checkpoint from the baseline run
 BASELINE_CKPT="$CKPT_DIR/baseline_slurm/best.ckpt"
@@ -45,16 +54,15 @@ if [[ ! -d "classifier" ]]; then
     exit 1
 fi
 
-# --- 4. Filtering Synthetic Data ---
-# We loop through each class, index the raw images, and then filter them with the oracle.
+# Step 4: Synthetic Data Pipeline
+echo "Step 1: Preparing Synthetic Data (Indexing & Filtering)..."
 CLASSES=("Pneumonia" "Bronchiolitis" "Bronchitis" "Brocho-pneumonia")
 SYNTH_BASE="$DATA_DIR/synthetic"
 
 for CLS in "${CLASSES[@]}"; do
-    echo "----------------------------------------------------"
     echo "Processing class: $CLS"
     
-    # Step A: Build the initial synthetic index (synthetic_labels.csv / synthetic_paths.json)
+    # Step A: Build Index (required for filter step)
     python -m classifier.synthetic.build_synthetic_index \
         --synthetic-dir "$SYNTH_BASE/$CLS"
         
@@ -63,7 +71,7 @@ for CLS in "${CLASSES[@]}"; do
         --ckpt "$BASELINE_CKPT" \
         --index "$SYNTH_BASE/$CLS/synthetic_paths.json" \
         --target "$CLS" \
-        --threshold 0.70
+        --threshold 0.60
 done
 
 echo "----------------------------------------------------"
@@ -77,9 +85,13 @@ python -m classifier.train \
     --synthetic-classes Pneumonia Bronchiolitis Bronchitis Brocho-pneumonia \
     --filtered
 
+echo "Training complete. Starting Evaluation..."
+python -m classifier.evaluate \
+    --checkpoint "$CKPT_DIR/${RUN_NAME}/best.ckpt" \
+    --data-dir "$DATA_DIR" \
+    --output "$LOG_TARGET/metrics.json"
+
 # Move SLURM logs into the run directory.
-LOG_TARGET="classifier/runs/${RUN_NAME}/"
-mkdir -p "$LOG_TARGET"
 mv "classifier/runs/slurm_${SLURM_JOB_ID}.out" "$LOG_TARGET" 2>/dev/null || true
 mv "classifier/runs/slurm_${SLURM_JOB_ID}.err" "$LOG_TARGET" 2>/dev/null || true
 

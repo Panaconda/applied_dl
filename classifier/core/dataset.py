@@ -18,8 +18,10 @@ from classifier.core.config import cfg
 
 
 def compute_pos_weights(labels: pd.DataFrame) -> torch.Tensor:
-    N = len(labels)
-    pos = labels.sum(axis=0).clip(lower=1)  # avoid division by zero
+    # Ensure numeric types to avoid object-array conversion errors
+    labels_numeric = labels.astype(np.float32)
+    N = len(labels_numeric)
+    pos = labels_numeric.sum(axis=0).clip(lower=1)  # avoid division by zero
     weights = (N - pos) / pos
     return torch.tensor(weights.values, dtype=torch.float32)
 

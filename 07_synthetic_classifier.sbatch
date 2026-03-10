@@ -25,6 +25,15 @@ mamba activate $ENV_NAME
 RUN_NAME="synthetic_slurm"
 DATA_DIR="$MCMLSCRATCH/data"
 CKPT_DIR="$MCMLSCRATCH/checkpoints"
+LOG_TARGET="classifier/runs/${RUN_NAME}/"
+CKPT_TARGET="$CKPT_DIR/${RUN_NAME}/"
+
+# Empty folders first
+rm -rf "$LOG_TARGET"
+mkdir -p "$LOG_TARGET"
+
+rm -rf "$CKPT_TARGET"
+mkdir -p "$CKPT_TARGET"
 
 echo "Step 1: Building synthetic indices..."
 CLASSES=("Pneumonia" "Bronchiolitis" "Bronchitis" "Brocho-pneumonia")
@@ -46,17 +55,19 @@ if [[ ! -d "classifier" ]]; then
 fi
 
 # Step 3: Train
-# Step 3: Train
 python -m classifier.train \
     --run-name "${RUN_NAME}" \
     --data-dir "$DATA_DIR" \
     --ckpt-dir "$CKPT_DIR" \
     --synthetic-classes Pneumonia Bronchiolitis Bronchitis Brocho-pneumonia
 
+echo "Training complete. Starting Evaluation..."
+python -m classifier.evaluate \
+    --checkpoint "$CKPT_DIR/${RUN_NAME}/best.ckpt" \
+    --data-dir "$DATA_DIR" \
+    --output "$LOG_TARGET/metrics.json"
 
 # Move SLURM logs into the run directory.
-LOG_TARGET="classifier/runs/${RUN_NAME}/"
-mkdir -p "$LOG_TARGET"
 mv "classifier/runs/slurm_${SLURM_JOB_ID}.out" "$LOG_TARGET" 2>/dev/null || true
 mv "classifier/runs/slurm_${SLURM_JOB_ID}.err" "$LOG_TARGET" 2>/dev/null || true
 

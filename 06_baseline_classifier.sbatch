@@ -28,6 +28,14 @@ CKPT_DIR="$MCMLSCRATCH/checkpoints"
 
 echo "Starting Baseline Training Job: ${SLURM_JOB_NAME} (ID: ${SLURM_JOB_ID})"
 echo "Run Name: ${RUN_NAME}"
+LOG_TARGET="classifier/runs/${RUN_NAME}/"
+CKPT_TARGET="$CKPT_DIR/${RUN_NAME}/"
+
+rm -rf "$LOG_TARGET" # Empty the folder first
+mkdir -p "$LOG_TARGET"
+
+rm -rf "$CKPT_TARGET" # Empty the folder first
+mkdir -p "$CKPT_TARGET"
 
 if [[ ! -d "classifier" ]]; then
     echo "Error: Must be run from the project root directory (applied_dl/). Current directory is $PWD" >&2
@@ -39,8 +47,12 @@ python -m classifier.train \
     --data-dir "$DATA_DIR" \
     --ckpt-dir "$CKPT_DIR"
 
-LOG_TARGET="classifier/runs/${RUN_NAME}/"
-mkdir -p "$LOG_TARGET"
+echo "Training complete. Starting Evaluation..."
+python -m classifier.evaluate \
+    --checkpoint "$CKPT_DIR/${RUN_NAME}/best.ckpt" \
+    --data-dir "$DATA_DIR" \
+    --output "$LOG_TARGET/metrics.json"
+
 mv "classifier/runs/slurm_${SLURM_JOB_ID}.out" "$LOG_TARGET" 2>/dev/null || true
 mv "classifier/runs/slurm_${SLURM_JOB_ID}.err" "$LOG_TARGET" 2>/dev/null || true
 

@@ -51,7 +51,7 @@ def compute_metrics(
             "f1": f1,
             "sensitivity": float(sensitivity),
             "specificity": float(specificity),
-        }
+        } 
 
     return results
 
