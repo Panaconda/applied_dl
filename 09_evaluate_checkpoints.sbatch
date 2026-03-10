@@ -27,11 +27,11 @@ echo "Starting Evaluation Job: ${SLURM_JOB_NAME} (ID: ${SLURM_JOB_ID})"
 # --- 3. Execution (Manual Calls) ---
 
 # 1. Baseline
-echo "Evaluating Baseline..."
-python -m classifier.evaluate \
-    --checkpoint "$CKPT_DIR/baseline_slurm/best.ckpt" \
-    --data-dir "$DATA_DIR" \
-    --output "$OUTPUT_BASE/baseline_metrics.json"
+# echo "Evaluating Baseline..."
+# python -m classifier.evaluate \
+#     --checkpoint "$CKPT_DIR/baseline_slurm/best.ckpt" \
+#     --data-dir "$DATA_DIR" \
+#     --output "$OUTPUT_BASE/baseline_metrics.json"
 
 # 2. Synthetic Filtered
 echo "Evaluating Synthetic Filtered..."
@@ -40,12 +40,12 @@ python -m classifier.evaluate \
     --data-dir "$DATA_DIR" \
     --output "$OUTPUT_BASE/synthetic_filtered_metrics.json"
 
-# 3. Synthetic
-echo "Evaluating Synthetic..."
-python -m classifier.evaluate \
-    --checkpoint "$CKPT_DIR/synthetic_slurm/best.ckpt" \
-    --data-dir "$DATA_DIR" \
-    --output "$OUTPUT_BASE/synthetic_metrics.json"
+# # 3. Synthetic
+# echo "Evaluating Synthetic..."
+# python -m classifier.evaluate \
+#     --checkpoint "$CKPT_DIR/synthetic_slurm/best.ckpt" \
+#     --data-dir "$DATA_DIR" \
+#     --output "$OUTPUT_BASE/synthetic_metrics.json"
 
 echo "--------------------------------------------------------------------------------"
 echo "All evaluations completed. Results are in $OUTPUT_BASE"
