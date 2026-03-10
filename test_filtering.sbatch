@@ -1,6 +1,7 @@
 #!/bin/bash
 
-#SBATCH -p lrz-v100x2
+#SBATCH -p mcml-hgx-a100-80x4-mig
+#SBATCH --qos=mcml
 #SBATCH --job-name=synthetic_filtered_train
 #SBATCH --output=classifier/runs/slurm_%j.out
 #SBATCH --error=classifier/runs/slurm_%j.err
