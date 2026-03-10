@@ -38,6 +38,11 @@ fi
 
 echo "Starting Synthetic Filtered Workflow: ${SLURM_JOB_NAME} (ID: ${SLURM_JOB_ID})"
 echo "Run Name: ${RUN_NAME}"
+LOG_TARGET="classifier/runs/${RUN_NAME}/"
+
+rm -rf "$LOG_TARGET" # Empty the folder first
+mkdir -p "$LOG_TARGET"
+
 echo "Using Baseline Oracle: $BASELINE_CKPT"
 
 # Ensure we are in the project root
@@ -79,8 +84,6 @@ python -m classifier.train \
     --filtered
 
 # Move SLURM logs into the run directory.
-LOG_TARGET="classifier/runs/${RUN_NAME}/"
-mkdir -p "$LOG_TARGET"
 mv "classifier/runs/slurm_${SLURM_JOB_ID}.out" "$LOG_TARGET" 2>/dev/null || true
 mv "classifier/runs/slurm_${SLURM_JOB_ID}.err" "$LOG_TARGET" 2>/dev/null || true
 

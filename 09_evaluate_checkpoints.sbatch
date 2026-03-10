@@ -14,11 +14,13 @@ set -e
 
 # --- 1. Environment Setup ---
 DATA_DIR="$MCMLSCRATCH/data"
-OUTPUT_BASE="classifier/runs/eval_results"
 ENV_NAME="adl_env"
 CKPT_DIR="$MCMLSCRATCH/checkpoints"
 
-mkdir -p "$OUTPUT_BASE"
+LOG_TARGET="classifier/runs/eval_results"
+rm -rf "$LOG_TARGET" # Empty the folder first
+mkdir -p "$LOG_TARGET"
+
 source ~/.bashrc
 mamba activate $ENV_NAME
 
