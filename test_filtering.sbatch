@@ -22,9 +22,17 @@ mamba activate adl_env
 export PYTHONPATH=$PYTHONPATH:.
 
 # --- 2. Configuration via Environment Variables ---
-export RUN_NAME="synthetic_filtered_slurm"
-export DATA_DIR="/dss/mcmlscratch/04/ra58cib2/data"
-export CKPT_DIR="/dss/mcmlscratch/04/ra58cib2/checkpoints"
+RUN_NAME="synthetic_filtered_slurm"
+DATA_DIR="$MCMLSCRATCH/data"
+CKPT_DIR="$MCMLSCRATCH/checkpoints"
+LOG_TARGET="classifier/runs/${RUN_NAME}/"
+CKPT_TARGET="$CKPT_DIR/${RUN_NAME}/"
+
+rm -rf "$LOG_TARGET" # Empty the folder first
+mkdir -p "$LOG_TARGET"
+
+rm -rf "$CKPT_TARGET" # Empty the folder first
+mkdir -p "$CKPT_TARGET"
 
 # --- 3. Execution ---
 echo "Starting Synthetic Filtered Training: ${SLURM_JOB_NAME} (ID: ${SLURM_JOB_ID})"
@@ -37,6 +45,12 @@ python -m classifier.train \
     --ckpt-dir "$CKPT_DIR" \
     --synthetic-classes Pneumonia Bronchiolitis Bronchitis Brocho-pneumonia \
     --filtered
+
+echo "Training complete. Starting Evaluation..."
+python -m classifier.evaluate \
+    --checkpoint "$CKPT_DIR/${RUN_NAME}/best.ckpt" \
+    --data-dir "$DATA_DIR" \
+    --output "$LOG_TARGET/metrics.json"
 
 # Move SLURM logs into the specific run directory for better organization
 LOG_TARGET="classifier/runs/${RUN_NAME}/"

@@ -1,8 +1,7 @@
 #!/bin/bash
 # Run from project root (applied_dl/)
 
-#SBATCH -p mcml-hgx-a100-80x4-mig
-#SBATCH --qos=mcml
+#SBATCH -p lrz-v100x2
 #SBATCH --job-name=synthetic_filtered_classifier
 #SBATCH --output=classifier/runs/slurm_%j.out
 #SBATCH --error=classifier/runs/slurm_%j.err
@@ -26,6 +25,15 @@ mamba activate $ENV_NAME
 RUN_NAME="synthetic_filtered_slurm"
 DATA_DIR="$MCMLSCRATCH/data"
 CKPT_DIR="$MCMLSCRATCH/checkpoints"
+LOG_TARGET="classifier/runs/${RUN_NAME}/"
+CKPT_TARGET="$CKPT_DIR/${RUN_NAME}/"
+
+# Empty folders first
+rm -rf "$LOG_TARGET"
+mkdir -p "$LOG_TARGET"
+
+rm -rf "$CKPT_TARGET"
+mkdir -p "$CKPT_TARGET"
 
 # Automatically target the best checkpoint from the baseline run
 BASELINE_CKPT="$CKPT_DIR/baseline_slurm/best.ckpt"
@@ -38,14 +46,6 @@ fi
 
 echo "Starting Synthetic Filtered Workflow: ${SLURM_JOB_NAME} (ID: ${SLURM_JOB_ID})"
 echo "Run Name: ${RUN_NAME}"
-LOG_TARGET="classifier/runs/${RUN_NAME}/"
-
-rm -rf "$LOG_TARGET" # Empty the folder first
-mkdir -p "$LOG_TARGET"
-
-rm -rf "$CKPT_TARGET" # Empty the folder first
-mkdir -p "$CKPT_TARGET"
-
 echo "Using Baseline Oracle: $BASELINE_CKPT"
 
 # Ensure we are in the project root
@@ -54,16 +54,15 @@ if [[ ! -d "classifier" ]]; then
     exit 1
 fi
 
-# --- 4. Filtering Synthetic Data ---
-# We loop through each class, index the raw images, and then filter them with the oracle.
+# Step 4: Synthetic Data Pipeline
+echo "Step 1: Preparing Synthetic Data (Indexing & Filtering)..."
 CLASSES=("Pneumonia" "Bronchiolitis" "Bronchitis" "Brocho-pneumonia")
 SYNTH_BASE="$DATA_DIR/synthetic"
 
 for CLS in "${CLASSES[@]}"; do
-    echo "----------------------------------------------------"
     echo "Processing class: $CLS"
     
-    # Step A: Build the initial synthetic index (synthetic_labels.csv / synthetic_paths.json)
+    # Step A: Build Index (required for filter step)
     python -m classifier.synthetic.build_synthetic_index \
         --synthetic-dir "$SYNTH_BASE/$CLS"
         
@@ -85,6 +84,12 @@ python -m classifier.train \
     --ckpt-dir "$CKPT_DIR" \
     --synthetic-classes Pneumonia Bronchiolitis Bronchitis Brocho-pneumonia \
     --filtered
+
+echo "Training complete. Starting Evaluation..."
+python -m classifier.evaluate \
+    --checkpoint "$CKPT_DIR/${RUN_NAME}/best.ckpt" \
+    --data-dir "$DATA_DIR" \
+    --output "$LOG_TARGET/metrics.json"
 
 # Move SLURM logs into the run directory.
 mv "classifier/runs/slurm_${SLURM_JOB_ID}.out" "$LOG_TARGET" 2>/dev/null || true
