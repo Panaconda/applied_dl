@@ -43,6 +43,9 @@ LOG_TARGET="classifier/runs/${RUN_NAME}/"
 rm -rf "$LOG_TARGET" # Empty the folder first
 mkdir -p "$LOG_TARGET"
 
+rm -rf "$CKPT_TARGET" # Empty the folder first
+mkdir -p "$CKPT_TARGET"
+
 echo "Using Baseline Oracle: $BASELINE_CKPT"
 
 # Ensure we are in the project root

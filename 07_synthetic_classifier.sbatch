@@ -43,6 +43,9 @@ LOG_TARGET="classifier/runs/${RUN_NAME}/"
 rm -rf "$LOG_TARGET" # Empty the folder first
 mkdir -p "$LOG_TARGET"
 
+rm -rf "$CKPT_TARGET" # Empty the folder first
+mkdir -p "$CKPT_TARGET"
+
 # Ensure we are in the project root
 if [[ ! -d "classifier" ]]; then
     echo "Error: Must be run from the project root directory (applied_dl/). Current directory is $PWD" >&2
