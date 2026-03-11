@@ -75,11 +75,21 @@ def train(
     accelerator: str = tcfg.accelerator,
     devices: str = tcfg.devices,
     precision: str = tcfg.precision,
-    pretrain_setup: str = cfg.pretrain_setup,
+    pretrain_setup: str | None = cfg.pretrain_setup,
 ) -> None:
     """Unified training pipeline."""
     torch.set_float32_matmul_precision("high")
     pl.seed_everything(42, workers=True)
+
+    # Handle scratch training: if no weights, we don't want backbone frozen
+    if pretrain_setup == "None" or pretrain_setup is None:
+        pretrain_setup = None
+        # If the user didn't explicitly override these to something else,
+        # we disable warmup and match backbone LR to head LR for scratch training.
+        if warmup_epochs == tcfg.warmup_epochs:
+            warmup_epochs = 0
+        if lr_backbone == tcfg.lr_backbone:
+            lr_backbone = lr_head
 
     # 1. DataModule handles everything: real data split, synthetic loading, MaCheX overrides
     dm = VinDrPCXRDataModule(

@@ -59,7 +59,8 @@ python -m classifier.train \
     --run-name "${RUN_NAME}" \
     --data-dir "$DATA_DIR" \
     --ckpt-dir "$CKPT_DIR" \
-    --synthetic-classes Pneumonia Bronchiolitis Bronchitis Brocho-pneumonia
+    --synthetic-classes Pneumonia Bronchiolitis Bronchitis Brocho-pneumonia \
+    --pretrain-setup None
 
 echo "Training complete. Starting Evaluation..."
 python -m classifier.evaluate \

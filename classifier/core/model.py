@@ -23,11 +23,15 @@ class VinDrClassifier(pl.LightningModule):
         num_classes: int = cfg.num_classes,
         class_names: Optional[List[str]] = None,
         pos_weights: Optional[torch.Tensor] = None,
-        pretrain_setup: str = "densenet121-res224-chex"
+        pretrain_setup: str | None = "densenet121-res224-chex"
     ) -> None:
         super().__init__()
         self.save_hyperparameters(ignore=["pos_weights"])
         self.class_names = class_names or cfg.viable_classes
+
+        # Handle string "None" passed via CLI
+        if pretrain_setup == "None":
+            pretrain_setup = None
 
         print(f"--- Initializing VinDrClassifier with weights: {pretrain_setup} ---")
         self.model = xrv.models.DenseNet(weights=pretrain_setup)

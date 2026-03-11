@@ -38,7 +38,7 @@ class CoreConfig(BaseSettings):
     def synthetic_data_dir(self) -> str:
         return os.path.join(self.data_dir, "synthetic")
 
-    pretrain_setup: str = "densenet121-res224-chex"
+    pretrain_setup: str | None = "densenet121-res224-chex"
     image_size: int = 224
 
     @computed_field
