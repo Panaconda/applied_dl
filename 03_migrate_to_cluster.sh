@@ -86,3 +86,14 @@ rsync -av --progress ./data/pcxr_png/ "$REMOTE_USER@$REMOTE_HOST:$MCMLSCRATCH_RO
 
 echo "Sync complete! You can now run the .sbatch scripts on the cluster."
 
+# Rewrite absolute local paths in index.json to cluster paths
+echo "Rewriting index.json paths for cluster..."
+LOCAL_DATA_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/data/pcxr_png"
+for split in train test; do
+    REMOTE_INDEX="$MCMLSCRATCH_ROOT/data/pcxr_png/$split/index.json"
+    REMOTE_SPLIT_ROOT="$MCMLSCRATCH_ROOT/data/pcxr_png/$split"
+    ssh "$REMOTE_USER@$REMOTE_HOST" \
+        "sed -i 's|${LOCAL_DATA_ROOT}/${split}|${REMOTE_SPLIT_ROOT}|g' ${REMOTE_INDEX} 2>/dev/null || true"
+done
+echo "Path rewrite complete."
+

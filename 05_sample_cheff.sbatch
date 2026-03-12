@@ -17,24 +17,22 @@ set -e
 
 # --- 1. Environment Setup ---
 source ~/.bashrc
+eval "$(mamba shell hook --shell bash)"
 mamba activate adl_env
 
 # --- 2. Configuration ---
-export MCML_ROOT="/dss/mcmlscratch/04/ra58cib2"
-export MODEL_BASE="${MCML_ROOT}/pretrained_models"
+export MCML_ROOT="/dss/mcmlscratch/02/ra68jip2"
+export MODEL_BASE="${MCML_ROOT}/checkpoints"
 export OUTPUT_BASE="${MCML_ROOT}/data/synthetic"
-export LORA_ADAPTER="runs/finetune_cheff_slurm_123456/lora_adapter"
+# Set FINETUNE_JOB_ID to the SLURM job ID from 04_finetune_cheff before submitting
+# e.g.: export FINETUNE_JOB_ID=5515561; sbatch 05_sample_cheff.sbatch
+export LORA_ADAPTER="${HOME}/applied_dl/cheff_peft/finetune_cheff/runs/finetune_cheff_slurm_${FINETUNE_JOB_ID}/lora_adapter"
 
 # --- 3. Execution ---
 echo "Starting CheFF Synthetic Generation: ${SLURM_JOB_NAME} (ID: ${SLURM_JOB_ID})"
 
-# Ensure we are in the 'cheff_peft' folder
-if [ -d "cheff_peft" ]; then
-    echo "Changing directory to cheff_peft/"
-    cd cheff_peft
-elif [[ "$PWD" != *"/cheff_peft" ]]; then
-    echo "Warning: Not in 'cheff_peft' folder and 'cheff_peft' subfolder not found. Imports might fail."
-fi
+cd ~/applied_dl/cheff_peft
+mkdir -p runs
 
 # Determine if we use LoRA or base model
 EXTRA_ARGS=""
