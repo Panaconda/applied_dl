@@ -149,8 +149,8 @@ def main() -> None:
     model.learning_rate = ftcfg.cheff_learning_rate
 
     # ---- data --------------------------------------------------------------
-    transforms = transforms.Compose([
-        Resize(256, interpolation=InterpolationMode.BICUBIC),
+    transforms = Compose([
+        Resize(256),
         ToTensor(),
         Normalize(mean=(0.5, 0.5, 0.5), std=(0.5, 0.5, 0.5)),
     ])
