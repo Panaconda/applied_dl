@@ -86,6 +86,8 @@ fi
 echo ""
 echo "=== Step 3/4  UMAP ==="
 cd "${HOME}/applied_dl"
+# Point classifier config to scratch data (image_labels_*.csv live there)
+export DATA_DIR="${MCML_ROOT}/data"
 python -m visuals.umap_latent \
     --lora-dir  "${SYNTH_LORA}" \
     --base-dir  "${SYNTH_BASE}" \
