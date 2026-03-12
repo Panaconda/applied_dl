@@ -25,7 +25,7 @@ mamba activate adl_env
 export RUN_NAME="finetune_cheff_slurm_${SLURM_JOB_ID}"
 
 # Data & Model Paths (Adjust these to your actual paths on the cluster)
-export MCML_ROOT="/dss/mcmlscratch/04/ra68jip2"
+export MCML_ROOT="/dss/mcmlscratch/02/ra68jip2"
 export DATA_DIR="${MCML_ROOT}/data/pcxr_png"
 export CHECKPOINT_DIR="${MCML_ROOT}/checkpoints"
 export CHEFF_T2I_CKPT="${CHECKPOINT_DIR}/cheff_diff_t2i.pt"
