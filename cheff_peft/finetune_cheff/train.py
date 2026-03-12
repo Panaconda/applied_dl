@@ -155,7 +155,7 @@ def main() -> None:
         Normalize(mean=(0.5, 0.5, 0.5), std=(0.5, 0.5, 0.5)),
     ])
 
-    dataset = MimicT2IDataset(ftcfg.machex_output_dir, transforms)
+    dataset = MimicT2IDataset(ftcfg.train_image_dir, transforms)
     print(f"Dataset: {len(dataset)} images")
 
     train_size = len(dataset) - ftcfg.cheff_test_size
@@ -185,7 +185,7 @@ def main() -> None:
     logger = CSVLogger(save_dir=log_dir, name="logs")
 
     checkpoint_cb = ModelCheckpoint(
-        monitor="val/loss_simple_ema",
+        monitor="val/loss_simple",
         mode="min",
         save_top_k=1,
         save_last=False,
@@ -213,7 +213,7 @@ def main() -> None:
     print(f"  Batch size: {ftcfg.cheff_batch_size}")
     print(f"  Max epochs: {ftcfg.cheff_max_epochs}")
     print(f"  Train:      {len(train_ds)} | Val: {len(val_ds)}")
-    print(f"  Data:       {ftcfg.machex_output_dir}")
+    print(f"  Data:       {ftcfg.train_image_dir}")
     print(f"  Log dir:    {log_dir}")
     print("=" * 60)
 
