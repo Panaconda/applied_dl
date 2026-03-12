@@ -1,0 +1,13 @@
+{
+  "base_model_name_or_path": null,
+  "bias": "none",
+  "fan_in_fan_out": false,
+  "inference_mode": true,
+  "lora_alpha": 32,
+  "lora_dropout": 0.0,
+  "modules_to_save": null,
+  "peft_type": "LORA",
+  "r": 16,
+  "target_modules": ".*attn.*(to_q|to_k|to_v|to_out.0)",
+  "task_type": null
+}

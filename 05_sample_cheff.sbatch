@@ -24,9 +24,12 @@ mamba activate adl_env
 export MCML_ROOT="/dss/mcmlscratch/02/ra68jip2"
 export MODEL_BASE="${MCML_ROOT}/checkpoints"
 export OUTPUT_BASE="${MCML_ROOT}/data/synthetic"
-# Set FINETUNE_JOB_ID to the SLURM job ID from 04_finetune_cheff before submitting
-# e.g.: export FINETUNE_JOB_ID=5515561; sbatch 05_sample_cheff.sbatch
-export LORA_ADAPTER="${HOME}/applied_dl/cheff_peft/finetune_cheff/runs/finetune_cheff_slurm_${FINETUNE_JOB_ID}/lora_adapter"
+# Set FINETUNE_JOB_ID to use a trained adapter, or leave unset to use the default repo adapter
+if [ -n "${FINETUNE_JOB_ID:-}" ]; then
+    export LORA_ADAPTER="${HOME}/applied_dl/cheff_peft/finetune_cheff/runs/finetune_cheff_slurm_${FINETUNE_JOB_ID}/lora_adapter"
+else
+    export LORA_ADAPTER="${HOME}/applied_dl/lora_adapter"
+fi
 
 # --- 3. Execution ---
 echo "Starting CheFF Synthetic Generation: ${SLURM_JOB_NAME} (ID: ${SLURM_JOB_ID})"
