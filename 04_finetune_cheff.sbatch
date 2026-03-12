@@ -17,6 +17,7 @@ set -e
 
 # --- 1. Environment Setup ---
 source ~/.bashrc
+eval "$(mamba shell hook --shell bash)"
 mamba activate adl_env
 
 # --- 2. Configuration via Environment Variables ---
