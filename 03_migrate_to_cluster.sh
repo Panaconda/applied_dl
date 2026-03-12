@@ -45,6 +45,7 @@ ssh -t "$REMOTE_USER@$REMOTE_HOST" \
     srun -p lrz-cpu --ntasks=1 --qos cpu --time=00:45:00 bash -c "
 
         source ~/.bashrc
+        eval \"\$(mamba shell hook --shell bash)\"
 
         if ! mamba info --envs 2>/dev/null | grep -q '$ENV_NAME'; then
             echo 'Creating Mamba environment $ENV_NAME...'

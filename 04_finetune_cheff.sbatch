@@ -28,6 +28,8 @@ export RUN_NAME="finetune_cheff_slurm_${SLURM_JOB_ID}"
 export MCML_ROOT="/dss/mcmlscratch/04/ra68jip2"
 export DATA_DIR="${MCML_ROOT}/data/pcxr_png"
 export CHECKPOINT_DIR="${MCML_ROOT}/checkpoints"
+export CHEFF_T2I_CKPT="${CHECKPOINT_DIR}/cheff_diff_t2i.pt"
+export CHEFF_AE_CKPT="${CHECKPOINT_DIR}/cheff_autoencoder.pt"
 
 # --- 3. Execution ---
 echo "Starting CheFF LoRA Fine-Tuning: ${SLURM_JOB_NAME} (ID: ${SLURM_JOB_ID})"
