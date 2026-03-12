@@ -1,4 +1,15 @@
-"""Fréchet DenseNet Distance (FDD): Real vs LoRA-synthetic vs Base-synthetic CXR."""
+"""Fréchet DenseNet Distance (FDD): Real vs LoRA-synthetic vs Base-synthetic CXR.
+
+Computes FDD between the real VinDr-PCXR distribution and two synthetic
+distributions (LoRA-fine-tuned and base CheFF), using 1024-d XRV DenseNet121
+features as the feature space.
+
+Usage (from project root):
+    python -m visuals.fdd \\
+        --lora-dir  data/synthetic_lora \\
+        --base-dir  data/synthetic_base \\
+        --output    visuals/runs/fdd.txt
+"""
 from __future__ import annotations
 
 import argparse
@@ -8,6 +19,8 @@ import sys
 from glob import glob
 from pathlib import Path
 
+import csv
+
 import numpy as np
 import scipy.linalg
 import torch
@@ -16,10 +29,17 @@ import torchxrayvision as xrv
 from PIL import Image
 from tqdm import tqdm
 
+# Ensure project root and cheff_peft are importable from any working directory
+_PROJECT_ROOT = str(Path(__file__).resolve().parents[1])
+_CHEFF_PEFT_ROOT = os.path.join(_PROJECT_ROOT, "cheff_peft")
+for _p in [_PROJECT_ROOT, _CHEFF_PEFT_ROOT]:
+    if _p not in sys.path:
+        sys.path.insert(0, _p)
+
 from classifier.core.config import cfg
 from classifier.core.dataset import build_transform, load_image_id_map, load_labels
-from classifier.inference.generate_synthetic import CLASS_PROMPTS, load_model
-from classifier.inference.umap_latent import (
+from sample_cheff.generate_synthetic import CLASS_PROMPTS, load_model
+from visuals.umap_latent import (
     PATHOLOGY_CLASSES,
     generate_base_images,
     sample_lora_paths,
@@ -92,34 +112,31 @@ def extract_features(
 
 def main() -> None:
     parser = argparse.ArgumentParser(description="Compute FDD: real vs synthetic CXRs")
-    parser.add_argument("--lora-dir", default="../samples/lora",
+    parser.add_argument("--lora-dir", required=True,
                         help="Root dir of LoRA synthetic images (subdirs per class)")
-    parser.add_argument("--per-class", type=int, default=200,
-                        help="Synthetic images per class to sample (default 200)")
+    parser.add_argument("--per-class", type=int, default=100,
+                        help="Synthetic images per class to sample (default 100)")
     parser.add_argument("--n-real-train", type=int, default=200,
                         help="Real train images sampled (balanced across classes)")
     parser.add_argument("--n-real-test", type=int, default=200,
                         help="Real test images sampled (balanced across classes)")
-    # Base model on-the-fly generation
-    parser.add_argument("--base-on-the-fly", action="store_true",
-                        help="Generate base model images on-the-fly instead of "
-                             "loading from --base-dir")
     parser.add_argument("--base-dir", default=None,
-                        help="Pre-generated base-model images dir (same layout as "
-                             "--lora-dir).  Used when --base-on-the-fly is not set.")
-    parser.add_argument("--model-path", default="../models/cheff_diff_t2i.pt")
-    parser.add_argument("--ae-path", default="../models/cheff_autoencoder.pt")
+                        help="Pre-generated base-model images dir (same layout as --lora-dir).")
+    parser.add_argument("--model-path",
+                        default=os.path.join(_CHEFF_PEFT_ROOT, "checkpoints", "cheff_diff_t2i.pt"),
+                        help="CheFF T2I weights (only needed when --base-dir is not set)")
+    parser.add_argument("--ae-path",
+                        default=os.path.join(_CHEFF_PEFT_ROOT, "checkpoints", "cheff_autoencoder.pt"),
+                        help="CheFF autoencoder weights (only needed when --base-dir is not set)")
     parser.add_argument("--steps", type=int, default=50,
-                        help="DDIM steps for on-the-fly base generation")
+                        help="DDIM steps for on-the-fly base generation (ignored when --base-dir is set)")
     parser.add_argument("--eta", type=float, default=1.0)
-    parser.add_argument("--output", default="runs/fdd.txt")
+    parser.add_argument("--output", default="visuals/runs/fdd.csv")
     parser.add_argument("--device", default="cuda" if torch.cuda.is_available() else "cpu")
     parser.add_argument("--batch-size", type=int, default=32)
     parser.add_argument("--seed", type=int, default=42)
     args = parser.parse_args()
 
-    project_root = Path(__file__).resolve().parents[2]
-    sys.path.insert(0, str(project_root / "cheff"))
     transform = build_transform()
 
     # ---- 1. Real images --------------------------------------------------------
@@ -136,7 +153,11 @@ def main() -> None:
 
     # ---- 3. Base synthetic images ----------------------------------------------
     print("\n=== 3/4  Base-synthetic images ===")
-    if args.base_on_the_fly:
+    if args.base_dir:
+        base_paths = sample_lora_paths(args.base_dir, per_class=args.per_class, seed=args.seed)
+        base_tensors = load_paths_as_tensors(base_paths, transform)
+    else:
+        print("  --base-dir not set; generating base images on-the-fly …")
         for name, path in [("model_path", args.model_path), ("ae_path", args.ae_path)]:
             if not os.path.exists(path):
                 print(f"Error: {name}={path!r} not found.")
@@ -154,12 +175,6 @@ def main() -> None:
         torch.cuda.empty_cache()
         base_tensors = pils_to_tensors(base_pils, transform)
         del base_pils
-    elif args.base_dir:
-        base_paths = sample_lora_paths(args.base_dir, per_class=args.per_class, seed=args.seed)
-        base_tensors = load_paths_as_tensors(base_paths, transform)
-    else:
-        print("  Skipping base model (pass --base-on-the-fly or --base-dir to include).")
-        base_tensors = []
 
     print(f"  {len(base_tensors)} base-synthetic images ready")
 
@@ -183,6 +198,8 @@ def main() -> None:
         f"FDD(real, LoRA)  = {fdd_lora:.2f}",
     ]
 
+    fdd_base: float | None = None
+    X_base: np.ndarray | None = None
     if base_tensors:
         X_base = extract_features(base_tensors, args.device, args.batch_size)
         mu_base, sig_base = gaussian_stats(X_base)
@@ -202,13 +219,23 @@ def main() -> None:
     )
     lines += ["", f"FDD(real, real) self-check = {fdd_self:.2f}  (should be ~0)"]
 
-    report = "\n".join(lines)
-    print("\n" + report)
+    print("\n" + "\n".join(lines))
 
-    os.makedirs(os.path.dirname(args.output) or ".", exist_ok=True)
-    with open(args.output, "w") as f:
-        f.write(report + "\n")
-    print(f"\nSaved → {args.output}")
+    csv_path = Path(args.output)
+    os.makedirs(csv_path.parent, exist_ok=True)
+
+    rows = [
+        {"comparison": "real_vs_lora", "n_real": len(X_real), "n_synthetic": len(X_lora), "fdd": round(fdd_lora, 4)},
+    ]
+    if fdd_base is not None and X_base is not None:
+        rows.append({"comparison": "real_vs_base", "n_real": len(X_real), "n_synthetic": len(X_base), "fdd": round(fdd_base, 4)})
+    rows.append({"comparison": "real_self_check", "n_real": len(X_real), "n_synthetic": len(X_real), "fdd": round(fdd_self, 4)})
+
+    with open(csv_path, "w", newline="") as f:
+        writer = csv.DictWriter(f, fieldnames=["comparison", "n_real", "n_synthetic", "fdd"])
+        writer.writeheader()
+        writer.writerows(rows)
+    print(f"\nSaved → {csv_path}")
 
 
 if __name__ == "__main__":

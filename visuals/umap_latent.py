@@ -1,16 +1,16 @@
 """UMAP latent-space visualization: Real vs LoRA-synthetic vs Base-synthetic CXR.
 
-Self-contained script that:
-  1. Samples 200 real VinDr-PCXR images (100 train + 100 test, 25 per pathology)
-  2. Samples 200 LoRA-adapted CheFF synthetic images (50 per class from disk)
-  3. Generates 200 base CheFF synthetic images on-the-fly (50 per class, no LoRA)
-  4. Extracts 1024-d features with the *pretrained* XRV DenseNet121
-  5. Fits UMAP on all 600 vectors and saves a scatter plot colored by source
+Extracts 1024-d XRV DenseNet121 features from three image sources and projects
+them into 2D with UMAP, producing a scatter plot colored by source.
 
-Usage (from experiments/):
-    python -m inference.umap_latent \
-        --lora-dir ../samples/lora \
-        --output runs/umap_latent.png
+Usage (from project root):
+    python -m visuals.umap_latent \\
+        --lora-dir  data/synthetic_lora \\
+        --base-dir  data/synthetic_base \\
+        --output    visuals/runs/umap_latent.png
+
+If --base-dir is omitted, base images are generated on-the-fly from the
+pretrained CheFF model (requires --model-path and --ae-path).
 """
 from __future__ import annotations
 
@@ -20,6 +20,13 @@ import random
 import sys
 from glob import glob
 from pathlib import Path
+
+# Ensure project root and cheff_peft are importable from any working directory
+_PROJECT_ROOT = str(Path(__file__).resolve().parents[1])
+_CHEFF_PEFT_ROOT = os.path.join(_PROJECT_ROOT, "cheff_peft")
+for _p in [_PROJECT_ROOT, _CHEFF_PEFT_ROOT]:
+    if _p not in sys.path:
+        sys.path.insert(0, _p)
 
 import matplotlib
 matplotlib.use("Agg")
@@ -36,7 +43,7 @@ from classifier.core.config import cfg
 from classifier.core.dataset import build_transform, load_image_id_map, load_labels
 
 # Reuse class prompts & model loader from generation script
-from inference.generate_synthetic import CLASS_PROMPTS, load_model
+from sample_cheff.generate_synthetic import CLASS_PROMPTS, load_model
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -227,23 +234,28 @@ def fit_and_plot(
 def main() -> None:
     parser = argparse.ArgumentParser(description="UMAP latent-space evaluation")
     parser.add_argument(
-        "--lora-dir", default="../samples/lora",
-        help="Root dir with LoRA synthetic images (subdirs per class)",
+        "--lora-dir", required=True,
+        help="Root dir with LoRA synthetic images (one subdir per class)",
     )
-    parser.add_argument("--model-path", default="../models/cheff_diff_t2i.pt")
-    parser.add_argument("--ae-path", default="../models/cheff_autoencoder.pt")
+    parser.add_argument(
+        "--base-dir", default=None,
+        help="Root dir with base-model synthetic images.  When provided, images are "
+             "loaded from disk instead of being generated on-the-fly.",
+    )
+    parser.add_argument("--per-class", type=int, default=100,
+                        help="Synthetic images per class to sample (default 100)")
+    parser.add_argument("--model-path",
+                        default=os.path.join(_CHEFF_PEFT_ROOT, "checkpoints", "cheff_diff_t2i.pt"))
+    parser.add_argument("--ae-path",
+                        default=os.path.join(_CHEFF_PEFT_ROOT, "checkpoints", "cheff_autoencoder.pt"))
     parser.add_argument("--steps", type=int, default=100,
-                        help="DDIM sampling steps for base CheFF generation")
+                        help="DDIM sampling steps (only used when --base-dir is not set)")
     parser.add_argument("--eta", type=float, default=1.0)
-    parser.add_argument("--output", default="runs/umap_latent.png")
+    parser.add_argument("--output", default="visuals/runs/umap_latent.png")
     parser.add_argument("--device", default="cuda" if torch.cuda.is_available() else "cpu")
     parser.add_argument("--seed", type=int, default=42)
     parser.add_argument("--batch-size", type=int, default=32)
     args = parser.parse_args()
-
-    # Ensure cheff is importable
-    project_root = Path(__file__).resolve().parents[2]
-    sys.path.insert(0, str(project_root / "cheff"))
 
     transform = build_transform()
 
@@ -255,24 +267,32 @@ def main() -> None:
 
     # ---- 2. LoRA synthetic images ----
     print("\n=== 2/5  Sampling LoRA-synthetic images ===")
-    lora_paths = sample_lora_paths(args.lora_dir, per_class=50, seed=args.seed)
+    lora_paths = sample_lora_paths(args.lora_dir, per_class=args.per_class, seed=args.seed)
     lora_tensors = load_paths_as_tensors(lora_paths, transform)
     print(f"  {len(lora_tensors)} LoRA-synthetic images loaded")
 
-    # ---- 3. Generate base CheFF images (no LoRA) ----
-    print("\n=== 3/5  Generating base CheFF images (no LoRA) ===")
-    wrapper = load_model(
-        model_path=args.model_path,
-        ae_path=args.ae_path,
-        lora_adapter=None,
-        device=args.device,
-    )
-    base_pils = generate_base_images(wrapper, per_class=50, steps=args.steps, eta=args.eta)
-    del wrapper
-    torch.cuda.empty_cache()
-    base_tensors = pils_to_tensors(base_pils, transform)
-    del base_pils
-    print(f"  {len(base_tensors)} base-synthetic images generated")
+    # ---- 3. Base CheFF images (from disk or on-the-fly) ----
+    if args.base_dir:
+        print("\n=== 3/5  Loading base-synthetic images from disk ===")
+        base_paths = sample_lora_paths(args.base_dir, per_class=args.per_class, seed=args.seed)
+        base_tensors = load_paths_as_tensors(base_paths, transform)
+        print(f"  {len(base_tensors)} base-synthetic images loaded")
+    else:
+        print("\n=== 3/5  Generating base CheFF images on-the-fly (no LoRA) ===")
+        wrapper = load_model(
+            model_path=args.model_path,
+            ae_path=args.ae_path,
+            lora_adapter=None,
+            device=args.device,
+        )
+        base_pils = generate_base_images(
+            wrapper, per_class=args.per_class, steps=args.steps, eta=args.eta
+        )
+        del wrapper
+        torch.cuda.empty_cache()
+        base_tensors = pils_to_tensors(base_pils, transform)
+        del base_pils
+        print(f"  {len(base_tensors)} base-synthetic images generated")
 
     # ---- 4. Extract features ----
     print("\n=== 4/5  Extracting XRV features ===")
