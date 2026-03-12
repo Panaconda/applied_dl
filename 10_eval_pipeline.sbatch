@@ -26,6 +26,10 @@ eval "$(mamba shell hook --shell bash)"
 mamba activate adl_env
 
 # --- 2. Configuration --------------------------------------------------------
+# Set SKIP_SAMPLING=1 to skip generation and jump straight to UMAP + FDD
+# (useful when synthetic dirs already exist from a previous run)
+SKIP_SAMPLING=${SKIP_SAMPLING:-0}
+
 MCML_ROOT="/dss/mcmlscratch/02/ra68jip2"
 CKPT="${MCML_ROOT}/checkpoints"
 N=${N_PER_CLASS:-100}
@@ -53,26 +57,30 @@ echo "  outputs     : ${OUTPUT_DIR}"
 echo "============================================================"
 
 # --- 3. Sample base model (no LoRA) ------------------------------------------
-echo ""
-echo "=== Step 1/4  Sample base model ==="
-cd "${HOME}/applied_dl/cheff_peft"
-python -m sample_cheff.generate_synthetic \
-    --model-path "${CKPT}/cheff_diff_t2i.pt" \
-    --ae-path    "${CKPT}/cheff_autoencoder.pt" \
-    --output-dir "${SYNTH_BASE}" \
-    --n          "${N}" \
-    --steps      100
+if [ "${SKIP_SAMPLING}" = "1" ]; then
+    echo "SKIP_SAMPLING=1 — skipping generation steps"
+else
+    echo ""
+    echo "=== Step 1/4  Sample base model ==="
+    cd "${HOME}/applied_dl/cheff_peft"
+    python -m sample_cheff.generate_synthetic \
+        --model-path "${CKPT}/cheff_diff_t2i.pt" \
+        --ae-path    "${CKPT}/cheff_autoencoder.pt" \
+        --output-dir "${SYNTH_BASE}" \
+        --n          "${N}" \
+        --steps      100
 
-# --- 4. Sample LoRA model ----------------------------------------------------
-echo ""
-echo "=== Step 2/4  Sample LoRA model ==="
-python -m sample_cheff.generate_synthetic \
-    --model-path  "${CKPT}/cheff_diff_t2i.pt" \
-    --ae-path     "${CKPT}/cheff_autoencoder.pt" \
-    --lora-adapter "${LORA_ADAPTER}" \
-    --output-dir  "${SYNTH_LORA}" \
-    --n           "${N}" \
-    --steps       100
+    # --- 4. Sample LoRA model ------------------------------------------------
+    echo ""
+    echo "=== Step 2/4  Sample LoRA model ==="
+    python -m sample_cheff.generate_synthetic \
+        --model-path   "${CKPT}/cheff_diff_t2i.pt" \
+        --ae-path      "${CKPT}/cheff_autoencoder.pt" \
+        --lora-adapter "${LORA_ADAPTER}" \
+        --output-dir   "${SYNTH_LORA}" \
+        --n            "${N}" \
+        --steps        100
+fi
 
 # --- 5. UMAP -----------------------------------------------------------------
 echo ""

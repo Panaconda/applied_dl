@@ -8,6 +8,9 @@ scikit-multilearn>=0.2.0
 numba
 umap-learn>=0.5
 
+# --- Visualisation ---
+matplotlib>=3.7
+
 # --- Image & Medical Processing ---
 Pillow>=10.0
 opencv-python-headless
