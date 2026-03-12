@@ -24,7 +24,7 @@ mamba activate adl_env
 export RUN_NAME="finetune_cheff_slurm_${SLURM_JOB_ID}"
 
 # Data & Model Paths (Adjust these to your actual paths on the cluster)
-export MCML_ROOT="/dss/mcmlscratch/04/ra58cib2"
+export MCML_ROOT="/dss/mcmlscratch/04/ra68jip2"
 export DATA_DIR="${MCML_ROOT}/data/pcxr_png"
 export CHECKPOINT_DIR="${MCML_ROOT}/checkpoints"
 
@@ -32,6 +32,8 @@ export CHECKPOINT_DIR="${MCML_ROOT}/checkpoints"
 echo "Starting CheFF LoRA Fine-Tuning: ${SLURM_JOB_NAME} (ID: ${SLURM_JOB_ID})"
 echo "Run Name: ${RUN_NAME}"
 
+cd ~/applied_dl/cheff_peft
+mkdir -p runs
 python -m finetune_cheff.train
 
 # Move SLURM logs into the run directory

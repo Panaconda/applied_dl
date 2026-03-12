@@ -1,15 +1,28 @@
 #!/bin/bash
+set -euo pipefail
+
+# Load config from .env (same file Python uses)
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+if [ -f "$SCRIPT_DIR/.env" ]; then
+    set -a; source "$SCRIPT_DIR/.env"; set +a
+else
+    echo "ERROR: .env not found. Copy .env.example to .env and fill in your values." >&2
+    exit 1
+fi
 
 # Configuration
-REMOTE_USER="ra58cib2"
-REMOTE_HOST="login.ai.lrz.de"
+REMOTE_USER="${LRZ_USER:?Set LRZ_USER in .env}"
+REMOTE_HOST="${LRZ_HOST:-login.ai.lrz.de}"
+MCMLSCRATCH_ROOT="${LRZ_SCRATCH:?Set LRZ_SCRATCH in .env}"
 REPO_URL="https://github.com/Panaconda/applied_dl.git"
 ENV_NAME="adl_env"
-MCMLSCRATCH_ROOT="/dss/mcmlscratch/04/ra58cib2"
 
 #1. Set up environment and download pretrained models on cluster
 
 echo "Connecting to $REMOTE_HOST to set up Mamba and environment..."
+
+# Create scratch root (login node has permission)
+ssh "$REMOTE_USER@$REMOTE_HOST" "mkdir -p $MCMLSCRATCH_ROOT"
 
 ssh -t "$REMOTE_USER@$REMOTE_HOST" \
     ENV_NAME="$ENV_NAME" \
@@ -24,49 +37,51 @@ ssh -t "$REMOTE_USER@$REMOTE_HOST" \
         git clone "$REPO_URL" applied_dl
     fi
     cd applied_dl || exit
+    git checkout main
     git pull
 
     echo "Requesting CPU node for environment installation..."
-    
+
     srun -p lrz-cpu --ntasks=1 --qos cpu --time=00:45:00 bash -c "
 
         source ~/.bashrc
-        
-        if ! mamba info --envs | grep -q '$ENV_NAME'; then
+
+        if ! mamba info --envs 2>/dev/null | grep -q '$ENV_NAME'; then
             echo 'Creating Mamba environment $ENV_NAME...'
-            mamba create --name '$ENV_NAME' python=3.9 -y
+            mamba create --name '$ENV_NAME' python=3.10 -y
         fi
 
         mamba activate '$ENV_NAME'
 
         cd ~/applied_dl
-        if [ -f 'requirements/gpu.txt' ]; then
-            echo 'Installing dependencies...'
-            python -m pip install --upgrade pip
-            pip install -r requirements/gpu.txt
-        else
-            echo 'Warning: requirements/gpu.txt not found.'
-        fi
+
+        echo 'Installing dependencies...'
+        python -m pip install --upgrade pip
+        pip install -r requirements/gpu.txt
+
+        # Reinstall taming from local clone (editable .pth can be unreliable)
+        pip install -e src/taming-transformers
+
+        # PYTHONPATH for taming
+        PYTHONPATH_LINE='export PYTHONPATH=\$HOME/applied_dl/src/taming-transformers:\$PYTHONPATH'
+        grep -qF 'taming-transformers' ~/.bashrc || echo "\$PYTHONPATH_LINE" >> ~/.bashrc
 
         echo 'Downloading Pretrained CheFF Models to cluster...'
-        
-        echo 'Downloading CheFF pretrained models...'
+        mkdir -p $MCMLSCRATCH_ROOT/checkpoints
         python -m prepare_pcxr.download_cheff \
             --checkpoint_dir $MCMLSCRATCH_ROOT/checkpoints
 
-    echo 'Download complete!'
+        echo 'Download complete!'
     "
 EOF
 
 # 2. Sync data to cluster
+echo "Creating data directory on cluster..."
+ssh "$REMOTE_USER@$REMOTE_HOST" "mkdir -p $MCMLSCRATCH_ROOT/data/pcxr_png"
 
-# Create target directories on the cluster
-echo "Creating root folder for png-data in $MCMLSCRATCH_ROOT/data/pcxr_png/"
-ssh "$REMOTE_USER@$REMOTE_HOST" "mkdir -p $MCMLSCRATCH_ROOT/data $MCMLSCRATCH_ROOT/data/pcxr_png/" 
-
-# Sync processed PNG data
+# rsync skips files already transferred
 echo "Syncing processed PNG data (pcxr_png)..."
-scp -r ./data/pcxr_png "$REMOTE_USER@$REMOTE_HOST:$MCMLSCRATCH_ROOT/data"
+rsync -av --progress ./data/pcxr_png/ "$REMOTE_USER@$REMOTE_HOST:$MCMLSCRATCH_ROOT/data/pcxr_png/"
 
 echo "Sync complete! You can now run the .sbatch scripts on the cluster."
 
