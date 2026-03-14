@@ -1,0 +1,4 @@
+comparison,n_real,n_synthetic,fdd
+real_vs_lora,400,400,1.6111
+real_vs_base,400,400,17.8052
+real_self_check,400,400,0.6635
