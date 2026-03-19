@@ -78,12 +78,12 @@ class TrainConfig(BaseSettings):
 
     # Training schedule
     max_epochs: int = 100
-    warmup_epochs: int = 8    # Phase 1: head only, backbone frozen
+    warmup_epochs: int = 6    # Phase 1: head only, backbone frozen
     lr_head: float = 1e-4
     lr_backbone: float = 1e-5  # Phase 2: full fine-tuning
 
     # Early stopping
-    patience: int = 10
+    patience: int = 8
     monitor_metric: str = "val/auroc"
 
     # Hardware

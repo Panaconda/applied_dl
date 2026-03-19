@@ -1,7 +1,8 @@
 #!/bin/bash
 # Run from project root (applied_dl/)
 
-#SBATCH -p lrz-v100x2
+#SBATCH --qos=mcml
+#SBATCH -p mcml-hgx-a100-80x4-mig
 #SBATCH --job-name=synthetic_filtered_classifier
 #SBATCH --output=classifier/runs/slurm_%j.out
 #SBATCH --error=classifier/runs/slurm_%j.err
@@ -44,7 +45,7 @@ if [[ ! -f "$BASELINE_CKPT" ]]; then
     exit 1
 fi
 
-echo "Starting Synthetic Filtered Workflow: ${SLURM_JOB_NAME} (ID: ${SLURM_JOB_ID})"
+echo "Starting Synthetic Filtered Workflow (Oracle): ${SLURM_JOB_NAME} (ID: ${SLURM_JOB_ID})"
 echo "Run Name: ${RUN_NAME}"
 echo "Using Baseline Oracle: $BASELINE_CKPT"
 
@@ -67,7 +68,7 @@ for CLS in "${CLASSES[@]}"; do
         --synthetic-dir "$SYNTH_BASE/$CLS"
         
     # Step B: Filter with the Oracle (produces filtered_labels.csv / filtered_paths.json)
-    python -m classifier.synthetic.filter_synthetic \
+    python -m classifier.synthetic.filter_synthetic_oracle \
         --ckpt "$BASELINE_CKPT" \
         --index "$SYNTH_BASE/$CLS/synthetic_paths.json" \
         --target "$CLS" \

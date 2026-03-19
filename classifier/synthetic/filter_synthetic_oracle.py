@@ -101,7 +101,7 @@ def main() -> None:
     print("-" * 50)
 
     # ------------------------------------------------------------------ save
-    filtered_json = os.path.join(out_dir, "filtered_paths.json")
+    filtered_json = os.path.join(out_dir, "filtered_paths_orcale.json")
     with open(filtered_json, "w") as f:
         json.dump(filtered_paths, f, indent=2)
     print(f"Written: {filtered_json}")
@@ -115,7 +115,7 @@ def main() -> None:
         columns=cfg.viable_classes,
     )
 
-    filtered_csv = os.path.join(out_dir, "filtered_labels.csv")
+    filtered_csv = os.path.join(out_dir, "filtered_labels_orcale.csv")
     labels_df.to_csv(filtered_csv)
     print(f"Written: {filtered_csv}")
 

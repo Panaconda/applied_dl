@@ -35,9 +35,10 @@ def parse_args() -> argparse.Namespace:
         help="Optional: per-class synthetic folders to include from data_dir/synthetic/",
     )
     p.add_argument(
-        "--filtered", 
-        action="store_true",
-        help="If using synthetic data, prefer filtered_ labels/paths"
+        "--filtered-type",
+        choices=["orcale", "combined"],
+        default=None,
+        help="If using synthetic data, specify which filtered version to use (orcale, combined)"
     )
 
     # Hyperparameters
@@ -63,7 +64,7 @@ def train(
     ckpt_dir: str = cfg.ckpt_dir,
     run_name: str = tcfg.run_name,
     synthetic_classes: list[str] | None = None,
-    filtered: bool = False,
+    filtered_type: str | None = None,
     val_fraction: float = tcfg.val_fraction,
     batch_size: int = tcfg.batch_size,
     num_workers: int = tcfg.num_workers,
@@ -98,7 +99,7 @@ def train(
         batch_size=batch_size,
         num_workers=num_workers,
         synthetic_classes=synthetic_classes,
-        use_filtered=filtered,
+        filtered_type=filtered_type,
     )
     dm.setup()
 
@@ -148,7 +149,7 @@ def main() -> None:
         ckpt_dir=args.ckpt_dir,
         run_name=args.run_name,
         synthetic_classes=args.synthetic_classes,
-        filtered=args.filtered,
+        filtered_type=args.filtered_type,
         val_fraction=args.val_fraction,
         batch_size=args.batch_size,
         num_workers=args.num_workers,
