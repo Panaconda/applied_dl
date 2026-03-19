@@ -1,7 +1,8 @@
 #!/bin/bash
 # Run from project root (applied_dl/)
 
-#SBATCH -p lrz-v100x2
+#SBATCH --qos=mcml
+#SBATCH -p mcml-hgx-a100-80x4-mig
 #SBATCH --job-name=synthetic_classifier
 #SBATCH --output=classifier/runs/slurm_%j.out
 #SBATCH --error=classifier/runs/slurm_%j.err

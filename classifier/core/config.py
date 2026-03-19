@@ -38,7 +38,7 @@ class CoreConfig(BaseSettings):
     def synthetic_data_dir(self) -> str:
         return os.path.join(self.data_dir, "synthetic")
 
-    pretrain_setup: str = "densenet121-res224-chex"
+    pretrain_setup: str | None = "densenet121-res224-chex"
     image_size: int = 224
 
     @computed_field
@@ -77,13 +77,13 @@ class TrainConfig(BaseSettings):
     num_workers: int = 8
 
     # Training schedule
-    max_epochs: int = 50
-    warmup_epochs: int = 3    # Phase 1: head only, backbone frozen
+    max_epochs: int = 100
+    warmup_epochs: int = 6    # Phase 1: head only, backbone frozen
     lr_head: float = 1e-4
     lr_backbone: float = 1e-5  # Phase 2: full fine-tuning
 
     # Early stopping
-    patience: int = 10
+    patience: int = 8
     monitor_metric: str = "val/auroc"
 
     # Hardware

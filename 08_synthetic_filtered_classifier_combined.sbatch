@@ -3,7 +3,7 @@
 
 #SBATCH --qos=mcml
 #SBATCH -p mcml-hgx-a100-80x4-mig
-#SBATCH --job-name=synthetic_filtered_classifier
+#SBATCH --job-name=synthetic_combined_filtered_classifier
 #SBATCH --output=classifier/runs/slurm_%j.out
 #SBATCH --error=classifier/runs/slurm_%j.err
 #SBATCH --ntasks=1
@@ -23,7 +23,7 @@ source ~/.bashrc
 mamba activate $ENV_NAME
 
 # --- 3. Configuration & Overrides ---
-RUN_NAME="synthetic_filtered_slurm"
+RUN_NAME="synthetic_combined_filtered_slurm"
 DATA_DIR="$MCMLSCRATCH/data"
 CKPT_DIR="$MCMLSCRATCH/checkpoints"
 LOG_TARGET="classifier/runs/${RUN_NAME}/"
@@ -45,7 +45,7 @@ if [[ ! -f "$BASELINE_CKPT" ]]; then
     exit 1
 fi
 
-echo "Starting Synthetic Filtered Workflow (Oracle): ${SLURM_JOB_NAME} (ID: ${SLURM_JOB_ID})"
+echo "Starting Combined Synthetic Filtered Workflow (Oracle + AE): ${SLURM_JOB_NAME} (ID: ${SLURM_JOB_ID})"
 echo "Run Name: ${RUN_NAME}"
 echo "Using Baseline Oracle: $BASELINE_CKPT"
 
@@ -56,9 +56,11 @@ if [[ ! -d "classifier" ]]; then
 fi
 
 # Step 4: Synthetic Data Pipeline
-echo "Step 1: Preparing Synthetic Data (Indexing & Filtering)..."
+echo "Step 1: Preparing Synthetic Data (Indexing & Double Filtering)..."
 CLASSES=("Pneumonia" "Bronchiolitis" "Bronchitis" "Brocho-pneumonia")
 SYNTH_BASE="$DATA_DIR/synthetic"
+ORACLE_THRESH=0.60
+AE_THRESH=4500.0
 
 for CLS in "${CLASSES[@]}"; do
     echo "Processing class: $CLS"
@@ -67,24 +69,35 @@ for CLS in "${CLASSES[@]}"; do
     python -m classifier.synthetic.build_synthetic_index \
         --synthetic-dir "$SYNTH_BASE/$CLS"
         
-    # Step B: Filter with the Oracle (produces filtered_labels.csv / filtered_paths.json)
+    # Step B: Filter with the Oracle (produces filtered_labels_orcale.csv / filtered_paths_orcale.json)
+    echo "Running Oracle filter with threshold $ORACLE_THRESH ..."
     python -m classifier.synthetic.filter_synthetic_oracle \
         --ckpt "$BASELINE_CKPT" \
         --index "$SYNTH_BASE/$CLS/synthetic_paths.json" \
         --target "$CLS" \
-        --threshold 0.60
+        --threshold $ORACLE_THRESH
+    
+    # Step C: Further filter with the AE (removes images from the oracle's output)
+    # This reads the oracle's output and saves the double-filtered results with _combined suffix
+    echo "Running AE filter with threshold $AE_THRESH ..."
+    python -m classifier.synthetic.filter_synthetic_ae \
+        --synthetic-dir "$SYNTH_BASE/$CLS" \
+        --input-index "$SYNTH_BASE/$CLS/filtered_paths_orcale.json" \
+        --input-labels "$SYNTH_BASE/$CLS/filtered_labels_orcale.csv" \
+        --threshold $AE_THRESH
 done
 
 echo "----------------------------------------------------"
-echo "Starting Synthetic Filtered Training Job..."
+echo "Starting Combined Synthetic Filtered Training Job..."
 
 # Launch training with real + filtered synthetic data
+# classifier.train handles loading filtered_labels_combined.csv / filtered_paths_combined.json if --filtered-type combined is set
 python -m classifier.train \
     --run-name "${RUN_NAME}" \
     --data-dir "$DATA_DIR" \
     --ckpt-dir "$CKPT_DIR" \
     --synthetic-classes Pneumonia Bronchiolitis Bronchitis Brocho-pneumonia \
-    --filtered
+    --filtered-type combined
 
 echo "Training complete. Starting Evaluation..."
 python -m classifier.evaluate \

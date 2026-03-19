@@ -24,7 +24,7 @@ class VinDrPCXRDataModule(pl.LightningDataModule):
         train_transform=None,
         eval_transform=None,
         synthetic_classes: Optional[List[str]] = None,
-        use_filtered: bool = False,
+        filtered_type: Optional[str] = None,
     ) -> None:
         super().__init__()
         self.data_dir = data_dir
@@ -44,7 +44,7 @@ class VinDrPCXRDataModule(pl.LightningDataModule):
         self.eval_transform = eval_transform or build_transform()
 
         self.synthetic_classes = synthetic_classes or []
-        self.use_filtered = use_filtered
+        self.filtered_type = filtered_type
 
         self._train_ds: Optional[VinDrPCXRDataset] = None
         self._val_ds: Optional[VinDrPCXRDataset] = None
@@ -56,8 +56,14 @@ class VinDrPCXRDataModule(pl.LightningDataModule):
         import json
         all_ids, all_labels, all_paths = [], [], {}
 
-        labels_file = "filtered_labels.csv" if self.use_filtered else "synthetic_labels.csv"
-        paths_file = "filtered_paths.json" if self.use_filtered else "synthetic_paths.json"
+        if self.filtered_type == "oracle":
+            labels_file = "filtered_labels_oracle.csv"
+            paths_file = "filtered_paths_oracle.json"
+        elif self.filtered_type == "combined":
+            labels_file = "filtered_labels_combined.csv"
+            paths_file = "filtered_paths_combined.json"
+        else:
+            raise ValueError(f"Unsupported filtered_type: {self.filtered_type}. ")
 
         for cls_name in self.synthetic_classes:
             cls_dir = os.path.join(self.synthetic_base_dir, cls_name)
