@@ -45,8 +45,7 @@ fi
 python -m classifier.train \
     --run-name "${RUN_NAME}" \
     --data-dir "$DATA_DIR" \
-    --ckpt-dir "$CKPT_DIR" \
-    --pretrain-setup None
+    --ckpt-dir "$CKPT_DIR"
 
 echo "Training complete. Starting Evaluation..."
 python -m classifier.evaluate \
