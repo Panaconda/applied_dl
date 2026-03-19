@@ -77,8 +77,8 @@ class TrainConfig(BaseSettings):
     num_workers: int = 8
 
     # Training schedule
-    max_epochs: int = 50
-    warmup_epochs: int = 3    # Phase 1: head only, backbone frozen
+    max_epochs: int = 100
+    warmup_epochs: int = 8    # Phase 1: head only, backbone frozen
     lr_head: float = 1e-4
     lr_backbone: float = 1e-5  # Phase 2: full fine-tuning
 
