@@ -77,7 +77,7 @@ for CLS in "${CLASSES[@]}"; do
         --ckpt "$BASELINE_CKPT" \
         --index "$SYNTH_BASE/$CLS/synthetic_paths.json" \
         --target "$CLS" \
-        --threshold 0.60 \
+        --threshold 0.70 \
         --runs-dir "$LOG_TARGET"
 done
 
