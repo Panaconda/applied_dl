@@ -28,3 +28,6 @@ __pycache__/
 *.pt
 *.ckpt
 visuals/runs_comparison.csv
+
+# legacy files
+machex

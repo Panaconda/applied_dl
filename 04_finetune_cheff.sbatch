@@ -15,6 +15,11 @@
 # Exit on error
 set -e
 
+# Load environment variables from .env if it exists
+if [ -f .env ]; then
+    set -a; source .env; set +a
+fi
+
 # --- 1. Environment Setup ---
 source ~/.bashrc
 eval "$(mamba shell hook --shell bash)"
@@ -24,13 +29,12 @@ mamba activate adl_env
 
 export RUN_NAME="finetune_cheff_slurm_${SLURM_JOB_ID}"
 
-# Data & Model Paths (Adjust these to your actual paths on the cluster)
-export MCML_ROOT="/dss/mcmlscratch/02/ra68jip2"
-export DATA_DIR="${MCML_ROOT}/data/pcxr_png"
+# Data & Model Paths
+export DATA_DIR="${DATA_DIR:-$MCMLSCRATCH/data/pcxr_png}"
+export CKPT_DIR="${CKPT_DIR:-$MCMLSCRATCH/checkpoints}"
 export TRAIN_IMAGE_DIR="${DATA_DIR}/train"
-export CHECKPOINT_DIR="${MCML_ROOT}/checkpoints"
-export CHEFF_T2I_CKPT="${CHECKPOINT_DIR}/cheff_diff_t2i.pt"
-export CHEFF_AE_CKPT="${CHECKPOINT_DIR}/cheff_autoencoder.pt"
+export CHEFF_T2I_CKPT="${CKPT_DIR}/cheff_diff_t2i.pt"
+export CHEFF_AE_CKPT="${CKPT_DIR}/cheff_autoencoder.pt"
 
 # --- 3. Execution ---
 echo "Starting CheFF LoRA Fine-Tuning: ${SLURM_JOB_NAME} (ID: ${SLURM_JOB_ID})"

@@ -15,7 +15,14 @@
 # Exit on error
 set -e
 
-# --- 1. Variables ---
+# --- 1. Load Environment Variables ---
+if [ -f .env ]; then
+    set -a; source .env; set +a
+fi
+
+# Fallbacks if .env not present
+DATA_DIR="${DATA_DIR:-$MCMLSCRATCH/data}"
+CKPT_DIR="${CKPT_DIR:-$MCMLSCRATCH/checkpoints}"
 ENV_NAME="adl_env"
 
 # --- 2. Environment Setup ---
@@ -24,8 +31,6 @@ mamba activate $ENV_NAME
 
 # --- 3. Execution ---
 RUN_NAME="baseline_slurm"
-DATA_DIR="$MCMLSCRATCH/data"
-CKPT_DIR="$MCMLSCRATCH/checkpoints"
 
 echo "Starting Baseline Training Job: ${SLURM_JOB_NAME} (ID: ${SLURM_JOB_ID})"
 echo "Run Name: ${RUN_NAME}"

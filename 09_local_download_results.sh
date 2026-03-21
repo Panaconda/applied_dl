@@ -1,9 +1,14 @@
 #!/bin/bash
 
+# Load config from .env
+if [ -f .env ]; then
+    set -a; source .env; set +a
+fi
+
 # Configuration
-REMOTE_USER="ra58cib2"
-REMOTE_HOST="login.ai.lrz.de"
-REMOTE_PATH="/dss/mcmlscratch/04/ra58cib2"
+REMOTE_USER="${LRZ_USER:?Set LRZ_USER in .env}"
+REMOTE_HOST="${LRZ_HOST:-login.ai.lrz.de}"
+REMOTE_PATH="${LRZ_SCRATCH:?Set LRZ_SCRATCH in .env}"
 
 echo "Downloading results from LRZ cluster ($REMOTE_HOST) using SCP..."
 
@@ -23,9 +28,9 @@ scp -r "$REMOTE_USER@$REMOTE_HOST:$REMOTE_PATH/checkpoints/synthetic_slurm" ./ch
 scp -r "$REMOTE_USER@$REMOTE_HOST:$REMOTE_PATH/checkpoints/synthetic_filtered_slurm" ./checkpoints/synthetic_filtered_slurm
 
 # 3. Download CheFF PEFT runs (LoRA adapters, logs)
-#echo "Downloading CheFF PEFT runs..."
-#mkdir -p ./cheff_peft/runs/
-#scp -r "$REMOTE_USER@$REMOTE_HOST:~/applied_dl/cheff_peft/runs/*" ./cheff_peft/runs/
+echo "Downloading CheFF PEFT runs..."
+mkdir -p ./cheff_peft/runs/
+scp -r "$REMOTE_USER@$REMOTE_HOST:~/applied_dl/cheff_peft/runs/*" ./cheff_peft/runs/
 
 # 4. Download Synthetic Data (from Scratch)
 echo "Downloading Synthetic Data..."

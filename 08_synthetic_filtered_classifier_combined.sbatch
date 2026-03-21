@@ -15,7 +15,14 @@
 # Exit on error
 set -e
 
-# --- 1. Variables ---
+# --- 1. Load Environment Variables ---
+if [ -f .env ]; then
+    set -a; source .env; set +a
+fi
+
+# Fallbacks if .env not present
+DATA_DIR="${DATA_DIR:-$MCMLSCRATCH/data}"
+CKPT_DIR="${CKPT_DIR:-$MCMLSCRATCH/checkpoints}"
 ENV_NAME="adl_env"
 
 # --- 2. Environment Setup ---
@@ -24,8 +31,6 @@ mamba activate $ENV_NAME
 
 # --- 3. Configuration & Overrides ---
 RUN_NAME="synthetic_combined_filtered_slurm"
-DATA_DIR="$MCMLSCRATCH/data"
-CKPT_DIR="$MCMLSCRATCH/checkpoints"
 LOG_TARGET="classifier/runs/${RUN_NAME}/"
 CKPT_TARGET="$CKPT_DIR/${RUN_NAME}/"
 
@@ -85,6 +90,12 @@ for CLS in "${CLASSES[@]}"; do
         --input-index "$SYNTH_BASE/$CLS/filtered_paths_orcale.json" \
         --input-labels "$SYNTH_BASE/$CLS/filtered_labels_orcale.csv" \
         --threshold $AE_THRESH
+
+    # Copy reports to the run directory for easy access
+    echo "Copying filtering reports for $CLS to $LOG_TARGET ..."
+    mkdir -p "$LOG_TARGET/filtering_reports/$CLS"
+    cp "$SYNTH_BASE/$CLS"/*.png "$LOG_TARGET/filtering_reports/$CLS/" 2>/dev/null || true
+    cp "$SYNTH_BASE/$CLS"/filter_*_metadata.json "$LOG_TARGET/filtering_reports/$CLS/" 2>/dev/null || true
 done
 
 echo "----------------------------------------------------"

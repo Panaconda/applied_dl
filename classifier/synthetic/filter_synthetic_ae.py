@@ -112,9 +112,9 @@ def main() -> None:
         "accepted": accepted,
         "discarded": total - accepted,
         "yield_rate": yield_rate,
-        "mse_threshold": args.threshold,
-        "mse_mean": float(np.mean(errors)) if errors else 0,
-        "mse_median": float(np.median(errors)) if errors else 0,
+        "threshold": args.threshold,
+        "mean": float(np.mean(errors)) if errors else 0,
+        "median": float(np.median(errors)) if errors else 0,
         "mse_min": float(np.min(errors)) if errors else 0,
         "mse_max": float(np.max(errors)) if errors else 0,
     }
@@ -124,7 +124,7 @@ def main() -> None:
     print(f"Accepted (≤{args.threshold}): {accepted}")
     print(f"Discarded       : {total - accepted}")
     print(f"Yield rate      : {yield_rate * 100:.1f}%")
-    print(f"MSE  mean/med   : {stats['mse_mean']:.1f} / {stats['mse_median']:.1f}")
+    print(f"MSE  mean/med   : {stats['mean']:.1f} / {stats['median']:.1f}")
     print("-" * 50)
 
     # ------------------------------------------------------------------ save

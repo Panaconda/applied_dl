@@ -1,8 +1,11 @@
 #!/bin/bash
 
+# Load config from .env
+if [ -f .env ]; then
+    set -a; source .env; set +a
+fi
+
 ENV_NAME="adl_env"
-PHYSIO_USERNAME=
-PHYSIO_PASSWORD=
 NUM_WORKERS=4
 
 echo "Starting local PCXR data download..."

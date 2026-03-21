@@ -15,15 +15,21 @@
 # Exit on error
 set -e
 
+# Load environment variables from .env if it exists
+if [ -f .env ]; then
+    set -a; source .env; set +a
+fi
+
 # --- 1. Environment Setup ---
 source ~/.bashrc
 eval "$(mamba shell hook --shell bash)"
 mamba activate adl_env
 
 # --- 2. Configuration ---
-export MCML_ROOT="/dss/mcmlscratch/02/ra68jip2"
-export MODEL_BASE="${MCML_ROOT}/checkpoints"
-export OUTPUT_BASE="${MCML_ROOT}/data/synthetic"
+export DATA_DIR="${DATA_DIR:-$MCMLSCRATCH/data}"
+export CKPT_DIR="${CKPT_DIR:-$MCMLSCRATCH/checkpoints}"
+export MODEL_BASE="${CKPT_DIR}"
+export OUTPUT_BASE="${DATA_DIR}/synthetic"
 # Set FINETUNE_JOB_ID to use a trained adapter, or leave unset to use the default repo adapter
 if [ -n "${FINETUNE_JOB_ID:-}" ]; then
     export LORA_ADAPTER="${HOME}/applied_dl/cheff_peft/finetune_cheff/runs/finetune_cheff_slurm_${FINETUNE_JOB_ID}/lora_adapter"

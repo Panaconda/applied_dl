@@ -15,7 +15,14 @@
 # Exit on error
 set -e
 
-# --- 1. Variables ---
+# --- 1. Load Environment Variables ---
+if [ -f .env ]; then
+    set -a; source .env; set +a
+fi
+
+# Fallbacks if .env not present
+DATA_DIR="${DATA_DIR:-$MCMLSCRATCH/data}"
+CKPT_DIR="${CKPT_DIR:-$MCMLSCRATCH/checkpoints}"
 ENV_NAME="adl_env"
 
 # --- 2. Environment Setup ---
@@ -24,8 +31,6 @@ mamba activate $ENV_NAME
 
 # --- 3. Configuration & Overrides ---
 RUN_NAME="synthetic_filtered_slurm"
-DATA_DIR="$MCMLSCRATCH/data"
-CKPT_DIR="$MCMLSCRATCH/checkpoints"
 LOG_TARGET="classifier/runs/${RUN_NAME}/"
 CKPT_TARGET="$CKPT_DIR/${RUN_NAME}/"
 
@@ -62,12 +67,12 @@ SYNTH_BASE="$DATA_DIR/synthetic"
 
 for CLS in "${CLASSES[@]}"; do
     echo "Processing class: $CLS"
-    
+
     # Step A: Build Index (required for filter step)
     python -m classifier.synthetic.build_synthetic_index \
         --synthetic-dir "$SYNTH_BASE/$CLS"
-        
-    # Step B: Filter with the Oracle (produces filtered_labels.csv / filtered_paths.json)
+
+    # Step B: Filter with the Oracle (produces filtered_labels_orcale.csv / filtered_paths_orcale.json)
     python -m classifier.synthetic.filter_synthetic_oracle \
         --ckpt "$BASELINE_CKPT" \
         --index "$SYNTH_BASE/$CLS/synthetic_paths.json" \
@@ -84,7 +89,7 @@ python -m classifier.train \
     --data-dir "$DATA_DIR" \
     --ckpt-dir "$CKPT_DIR" \
     --synthetic-classes Pneumonia Bronchiolitis Bronchitis Brocho-pneumonia \
-    --filtered
+    --filtered-type orcale
 
 echo "Training complete. Starting Evaluation..."
 python -m classifier.evaluate \

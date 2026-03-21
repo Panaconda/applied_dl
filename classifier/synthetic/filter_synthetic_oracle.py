@@ -11,6 +11,7 @@ import torch
 import torchxrayvision as xrv
 from PIL import Image
 from tqdm import tqdm
+import matplotlib.pyplot as plt
 
 from classifier.core.model import VinDrClassifier
 from classifier.core.config import cfg
@@ -92,15 +93,33 @@ def main() -> None:
     # ------------------------------------------------------------------ report
     accepted = len(filtered_paths)
     total = len(path_index)
+    yield_rate = accepted / total if total > 0 else 0
+    stats = {
+        "target_pathology": args.target,
+        "threshold": args.threshold,
+        "total_evaluated": total,
+        "accepted": accepted,
+        "discarded": total - accepted,
+        "yield_rate": yield_rate,
+        "score_mean": float(np.mean(scores)) if scores else 0,
+        "score_median": float(np.median(scores)) if scores else 0,
+    }
+
     print("-" * 50)
     print(f"Total evaluated : {total}")
     print(f"Accepted (≥{args.threshold:.0%}): {accepted}")
     print(f"Discarded       : {total - accepted}")
-    print(f"Yield rate      : {accepted / total * 100:.1f}%")
-    print(f"Score  mean/med : {np.mean(scores):.3f} / {np.median(scores):.3f}")
+    print(f"Yield rate      : {yield_rate * 100:.1f}%")
+    print(f"Score  mean/med : {stats['score_mean']:.3f} / {stats['score_median']:.3f}")
     print("-" * 50)
 
     # ------------------------------------------------------------------ save
+    # Metadata
+    meta_path = os.path.join(out_dir, "filter_oracle_metadata.json")
+    with open(meta_path, "w") as f:
+        json.dump(stats, f, indent=2)
+    print(f"Written: {meta_path}")
+
     filtered_json = os.path.join(out_dir, "filtered_paths_orcale.json")
     with open(filtered_json, "w") as f:
         json.dump(filtered_paths, f, indent=2)
@@ -118,6 +137,23 @@ def main() -> None:
     filtered_csv = os.path.join(out_dir, "filtered_labels_orcale.csv")
     labels_df.to_csv(filtered_csv)
     print(f"Written: {filtered_csv}")
+
+    # Plot
+    if scores:
+        plt.figure(figsize=(10, 6))
+        plt.hist(scores, bins=50, alpha=0.75, color='lightgreen', edgecolor='black', label='Oracle Scores')
+        plt.axvline(args.threshold, color='red', linestyle='dashed', linewidth=2, label=f'Threshold ({args.threshold})')
+        
+        plt.title(f'Oracle Confidence Distribution - {args.target}')
+        plt.xlabel(f'P({args.target})')
+        plt.ylabel('Frequency')
+        plt.xlim(0, 1)
+        plt.legend()
+        plt.grid(axis='y', alpha=0.3)
+        
+        plot_path = os.path.join(out_dir, f'oracle_distribution_{args.target}.png')
+        plt.savefig(plot_path)
+        print(f"Oracle distribution plot saved to: {plot_path}")
 
     if not filtered_paths:
         print("WARNING: no images passed the threshold — filtered_labels.csv is empty.")
