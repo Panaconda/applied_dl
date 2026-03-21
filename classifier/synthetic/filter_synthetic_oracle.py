@@ -45,6 +45,10 @@ def parse_args() -> argparse.Namespace:
              "(defaults to directory of --index)"
     )
     p.add_argument(
+        "--runs-dir", default=None,
+        help="Where to save diagnostic plots and metadata (e.g. classifier/runs/name/)"
+    )
+    p.add_argument(
         "--device", default="cuda" if torch.cuda.is_available() else "cpu"
     )
     return p.parse_args()
@@ -55,7 +59,9 @@ def main() -> None:
 
     target_idx = cfg.viable_classes.index(args.target)
     out_dir = args.output_dir or os.path.dirname(os.path.abspath(args.index))
+    runs_dir = args.runs_dir or out_dir
     os.makedirs(out_dir, exist_ok=True)
+    os.makedirs(runs_dir, exist_ok=True)
 
     # ------------------------------------------------------------------ model
     print(f"Loading baseline oracle from {args.ckpt} …")
@@ -114,12 +120,13 @@ def main() -> None:
     print("-" * 50)
 
     # ------------------------------------------------------------------ save
-    # Metadata
-    meta_path = os.path.join(out_dir, "filter_oracle_metadata.json")
+    # Metadata (save to runs_dir)
+    meta_path = os.path.join(runs_dir, f"filter_oracle_metadata_{args.target}.json")
     with open(meta_path, "w") as f:
         json.dump(stats, f, indent=2)
     print(f"Written: {meta_path}")
 
+    # Index and Labels (save to out_dir)
     filtered_json = os.path.join(out_dir, "filtered_paths_oracle.json")
     with open(filtered_json, "w") as f:
         json.dump(filtered_paths, f, indent=2)
@@ -138,7 +145,7 @@ def main() -> None:
     labels_df.to_csv(filtered_csv)
     print(f"Written: {filtered_csv}")
 
-    # Plot
+    # Plot (save to runs_dir)
     if scores:
         plt.figure(figsize=(10, 6))
         plt.hist(scores, bins=50, alpha=0.75, color='lightgreen', edgecolor='black', label='Oracle Scores')
@@ -151,7 +158,7 @@ def main() -> None:
         plt.legend()
         plt.grid(axis='y', alpha=0.3)
         
-        plot_path = os.path.join(out_dir, f'oracle_distribution_{args.target}.png')
+        plot_path = os.path.join(runs_dir, f'oracle_distribution_{args.target}.png')
         plt.savefig(plot_path)
         print(f"Oracle distribution plot saved to: {plot_path}")
 
