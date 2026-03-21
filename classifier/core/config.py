@@ -89,7 +89,7 @@ class TrainConfig(BaseSettings):
     # Hardware
     accelerator: str = "auto"
     devices: str = "auto"
-    precision: str = "16-mixed"
+    precision: str = "16"
 
 cfg = CoreConfig()
 tcfg = TrainConfig()
