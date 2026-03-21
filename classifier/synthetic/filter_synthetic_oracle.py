@@ -120,7 +120,7 @@ def main() -> None:
         json.dump(stats, f, indent=2)
     print(f"Written: {meta_path}")
 
-    filtered_json = os.path.join(out_dir, "filtered_paths_orcale.json")
+    filtered_json = os.path.join(out_dir, "filtered_paths_oracle.json")
     with open(filtered_json, "w") as f:
         json.dump(filtered_paths, f, indent=2)
     print(f"Written: {filtered_json}")
@@ -134,7 +134,7 @@ def main() -> None:
         columns=cfg.viable_classes,
     )
 
-    filtered_csv = os.path.join(out_dir, "filtered_labels_orcale.csv")
+    filtered_csv = os.path.join(out_dir, "filtered_labels_oracle.csv")
     labels_df.to_csv(filtered_csv)
     print(f"Written: {filtered_csv}")
 

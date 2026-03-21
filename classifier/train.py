@@ -36,9 +36,9 @@ def parse_args() -> argparse.Namespace:
     )
     p.add_argument(
         "--filtered-type",
-        choices=["orcale"],
+        choices=["oracle"],
         default=None,
-        help="If using synthetic data, specify which filtered version to use (orcale, combined)"
+        help="If using synthetic data, specify which filtered version to use (oracle, combined)"
     )
 
     # Hyperparameters

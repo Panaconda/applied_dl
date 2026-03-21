@@ -72,7 +72,7 @@ for CLS in "${CLASSES[@]}"; do
     python -m classifier.synthetic.build_synthetic_index \
         --synthetic-dir "$SYNTH_BASE/$CLS"
 
-    # Step B: Filter with the Oracle (produces filtered_labels_orcale.csv / filtered_paths_orcale.json)
+    # Step B: Filter with the Oracle (produces filtered_labels_oracle.csv / filtered_paths_oracle.json)
     python -m classifier.synthetic.filter_synthetic_oracle \
         --ckpt "$BASELINE_CKPT" \
         --index "$SYNTH_BASE/$CLS/synthetic_paths.json" \
@@ -89,7 +89,7 @@ python -m classifier.train \
     --data-dir "$DATA_DIR" \
     --ckpt-dir "$CKPT_DIR" \
     --synthetic-classes Pneumonia Bronchiolitis Bronchitis Brocho-pneumonia \
-    --filtered-type orcale
+    --filtered-type oracle
 
 echo "Training complete. Starting Evaluation..."
 python -m classifier.evaluate \
