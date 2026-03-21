@@ -2,19 +2,24 @@
 
 ## Overview
 
-This repository provides a pipeline for adapting Cheff to pediatric chest x-rays using the VinDr-PCXR dataset. The project evaluates how Parameter-Efficient Fine-Tuning (PEFT) via LoRA can alleviate data scarcity in the PCXR domain for pathology classification.
+This repository provides a pipeline for adapting the diffusion model Cheff, predominantly trained on adult Chest x-ray scans to the pediatric domain. The project evaluates how Parameter-Efficient Fine-Tuning (PEFT) via LoRA can alleviate data scarcity in the PCXR domain for pathology classification.
+More information on the context of the research can be found in results/proposal.md.
+The main results of the project are shown in results/results_summary.ipynb
 
-Repository Structure:
+## Repository Structure:
 
 - `cheff_peft/`: Logic for finetuning the Cheff model using Parameter-Efficient Fine-Tuning (PEFT).
 - `classifier/`: Fine-tuning logic for the torchxrayvision pathology classifiers.
 - `data/`: Directory for storing DICOM, PNG, and synthetic samples.
 - `prepare_pcxr/`: Scripts for downloading and parsing the VinDr-PCXR dataset.
 - `visuals/`: Utility scripts for generating visualizations and plots.
+- `results/`: Summarizes the main results of our research.
 
-## 01_Local Setup
+## Execution Guide
 
-The initial data preprocessing is recommended to be done locally. The reason is to not occupy cluster resources for the lengthy dataset download.
+### 1. Local Setup
+
+To conserve cluster resources, initial processing is performed locally.
 
 ```bash
 git clone "https://github.com/Panaconda/applied_dl.git" applied_dl
@@ -27,62 +32,36 @@ python -m pip install --upgrade pip
 pip install -r requirements/local.txt
 ```
 
-### A. Download PCXR
+Then run these script in sequence via bash to prepare the pediatric data:
 
-The VinDr-PCXR download is rate-limited. Setting NUM_WORKERS above 4 in 01_download_pcxr.sh may result in a temporary IP ban from the hosting server. Given these safety limits, the 32GB transfer is time-intensive.
+- 01_download_pcxr.sh: Downloads the VinDr-PCXR dataset (keep NUM_WORKERS $\le$ 4 to avoid rate-limiting IP bans)
+- 02_parse_pcxr.sh: Validates and converts DICOM files to PNG format
+- 03_migrate_to_cluster.sh: Transfers processed images and the repository to the LRZ Cluster
 
-```bash
-bash 01_download_pcxr.sh
-```
-
-### B. Validate and parse DICOMs to PNGs
-
-```bash
-bash 02_parse_pcxr.sh
-```
-
-### C. Migrate processed PNGs and repo to LRZ cluster
-
-```bash
-bash 03_migrate_to_cluster.sh
-```
-
-## 02_Remote Pipeline (LRZ Cluster)
+### 2. Remote Pipeline (LRZ Cluster)
 
 The rest of the pipeline can be performed on the cluster.
 
-### A. Finetune Cheff
+Cheff LoRA:
 
-```bash
-sbatch 04_finetune_cheff.sbatch
-```
+- 04_finetune_cheff.sbatch: Performs LoRA fine-tuning on the Cheff semantic diffusion model
+- 05_sample_cheff.sbatch: Generates high-fidelity synthetic pediatric radiographs.
 
-### B. Sample Synthetic Data
+Pathology Classifier:
 
-```bash
-sbatch 04_sample_cheff.sbatch
-```
+- 06_baseline_classifier.sbatch: Training on real pediatric data only
+- 07_synthetic_classifier.sbatch: Training on real + synthetic data
+- 08_synthetic_filtered_classifier.sbatch: Training on real + filtered synthetic data
 
-### C. Train Classifiers
+### 3. Download Results
 
-### C. Train Classifiers
-# Baseline (Real data only)
-sbatch 06_baseline_classifier.sbatch
+- 09_local_download_results.sh: Download the trained models and results to the local machine
 
-# Synthetic (Real + Synthetic data)
-sbatch 07_synthetic_classifier.sbatch
+## Credits
 
-# Filtered (Real + Filtered Synthetic data)
-sbatch 08_synthetic_filtered_classifier.sbatch
+This projects builds upon the work **Cascaded Latent Diffusion Models for High-Resolution Chest X-ray Synthesis**. Our code and the model weights of Cheff are based on its conneceted repository:
+https://github.com/saiboxx/machex
+https://github.com/saiboxx/chexray-diffusion
+Feel free to check them out!
 
-## 03_Download Results (Post-Processing)
-
-After your cluster jobs complete, download the trained models and results to your local machine for evaluation.
-
-```bash
-bash 09_local_download_results.sh
-```
-
-```
-
-## END
+This project was conducted in the context of an Applied Deep Learning course offered by Prof. Dr. David Rügamer at LMU Munich.
