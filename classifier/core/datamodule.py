@@ -62,6 +62,9 @@ class VinDrPCXRDataModule(pl.LightningDataModule):
         elif self.filtered_type == "combined":
             labels_file = "filtered_labels_combined.csv"
             paths_file = "filtered_paths_combined.json"
+        elif self.filtered_type is None:
+            labels_file = "synthetic_labels.csv"
+            paths_file = "synthetic_paths.json"
         else:
             raise ValueError(f"Unsupported filtered_type: {self.filtered_type}. ")
 
