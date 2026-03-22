@@ -51,9 +51,9 @@ mkdir -p "${OUTPUT_DIR}"
 
 # LoRA adapter: use a trained run if FINETUNE_JOB_ID is set, else repo default
 if [ -n "${FINETUNE_JOB_ID:-}" ]; then
-    LORA_ADAPTER="${HOME}/applied_dl/cheff_peft/finetune_cheff/runs/finetune_cheff_slurm_${FINETUNE_JOB_ID}/lora_adapter"
+    LORA_ADAPTER="${HOME}/applied_dl/cheff_peft/runs/finetune_slurm_${FINETUNE_JOB_ID}/lora_adapter"
 else
-    LORA_ADAPTER="${HOME}/applied_dl/lora_adapter"
+    LORA_ADAPTER="${HOME}/applied_dl/cheff_peft/runs/finetune_ref/lora_adapter"
 fi
 
 echo "============================================================"
@@ -70,7 +70,7 @@ else
     echo ""
     echo "=== Step 1/4  Sample base model ==="
     cd "${HOME}/applied_dl/cheff_peft"
-    python -m sample_cheff.generate_synthetic \
+    python -m inference.generate \
         --model-path "${CKPT_DIR}/cheff_diff_t2i.pt" \
         --ae-path    "${CKPT_DIR}/cheff_autoencoder.pt" \
         --output-dir "${SYNTH_BASE}" \
@@ -80,7 +80,7 @@ else
     # --- 5. Sample LoRA model ------------------------------------------------
     echo ""
     echo "=== Step 2/4  Sample LoRA model ==="
-    python -m sample_cheff.generate_synthetic \
+    python -m inference.generate \
         --model-path   "${CKPT_DIR}/cheff_diff_t2i.pt" \
         --ae-path      "${CKPT_DIR}/cheff_autoencoder.pt" \
         --lora-adapter "${LORA_ADAPTER}" \
@@ -92,10 +92,10 @@ fi
 # --- 6. UMAP -----------------------------------------------------------------
 echo ""
 echo "=== Step 3/4  UMAP ==="
-cd "${HOME}/applied_dl"
+cd "${HOME}/applied_dl/cheff_peft"
 # Point classifier config to scratch data (image_labels_*.csv live there)
 export DATA_DIR="${DATA_DIR}"
-python -m visuals.umap_latent \
+python -m eval.umap \
     --lora-dir  "${SYNTH_LORA}" \
     --base-dir  "${SYNTH_BASE}" \
     --per-class "${N}" \
@@ -104,7 +104,7 @@ python -m visuals.umap_latent \
 # --- 7. FDD ------------------------------------------------------------------
 echo ""
 echo "=== Step 4/4  FDD ==="
-python -m visuals.fdd \
+python -m eval.fdd \
     --lora-dir  "${SYNTH_LORA}" \
     --base-dir  "${SYNTH_BASE}" \
     --per-class "${N}" \

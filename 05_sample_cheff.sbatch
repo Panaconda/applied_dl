@@ -1,5 +1,5 @@
 #!/bin/bash
-# Run from ./cheff_peft folder
+# Run from the project root (~/applied_dl)
 
 #SBATCH -p mcml-dgx-a100-40x8
 #SBATCH --qos=mcml
@@ -32,9 +32,9 @@ export MODEL_BASE="${CKPT_DIR}"
 export OUTPUT_BASE="${DATA_DIR}/synthetic"
 # Set FINETUNE_JOB_ID to use a trained adapter, or leave unset to use the default repo adapter
 if [ -n "${FINETUNE_JOB_ID:-}" ]; then
-    export LORA_ADAPTER="${HOME}/applied_dl/cheff_peft/finetune_cheff/runs/finetune_cheff_slurm_${FINETUNE_JOB_ID}/lora_adapter"
+    export LORA_ADAPTER="${HOME}/applied_dl/cheff_peft/runs/finetune_slurm_${FINETUNE_JOB_ID}/lora_adapter"
 else
-    export LORA_ADAPTER="${HOME}/applied_dl/lora_adapter"
+    export LORA_ADAPTER="${HOME}/applied_dl/cheff_peft/runs/finetune_ref/lora_adapter"
 fi
 
 # --- 3. Execution ---
@@ -52,7 +52,7 @@ else
     echo "Using base model (no LoRA)"
 fi
 
-python -m sample_cheff.generate_synthetic \
+python -m inference.generate \
     --model-path "${MODEL_BASE}/cheff_diff_t2i.pt" \
     --ae-path "${MODEL_BASE}/cheff_autoencoder.pt" \
     --output-dir "${OUTPUT_BASE}" \

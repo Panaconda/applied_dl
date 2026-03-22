@@ -1,53 +1,25 @@
-"""Generate a synthetic chest X-ray dataset using CheFF T2I."""
 from __future__ import annotations
 
 import argparse
 import os
 import sys
-from pathlib import Path
-from typing import Dict
 
 import torch
 from torchvision.utils import save_image
 from tqdm import tqdm
 
-# ---------------------------------------------------------------------------
-# Class prompts
-# ---------------------------------------------------------------------------
-CLASS_PROMPTS: Dict[str, str] = {
-    "Pneumonia": (
-        "Findings: Frontal radiograph of a child. "
-        "Evaluation reveals opacities. "
-        "Impressions: pneumonia."
-    ),
-    "Bronchiolitis": (
-        "Findings: Frontal radiograph of a child. "
-        "Evaluation reveals reticulonodular opacities. "
-        "Impressions: bronchiolitis."
-    ),
-    "Bronchitis": (
-        "Findings: Frontal radiograph of a child. "
-        "Evaluation reveals bronchial wall thickening. "
-        "Impressions: bronchitis."
-    ),
-    "Brocho-pneumonia": (
-        "Findings: Frontal radiograph of a child. "
-        "Evaluation reveals patchy opacities. "
-        "Impressions: brocho-pneumonia."
-    ),
-}
+from config import ftcfg, _PROJECT_ROOT
+from .prompts import CLASS_PROMPTS
 
-# ---------------------------------------------------------------------------
-# Gradient-checkpointing patch (needed only if cheff uses use_checkpoint=True
-# in the UNet — safe to apply unconditionally)
-# ---------------------------------------------------------------------------
+from cheff.ldm.inference import CheffLDMT2I
+from peft import PeftModel
+import cheff.ldm.modules.diffusionmodules.util as cheff_util
+import cheff.ldm.modules.attention as cheff_attn
+import cheff.ldm.modules.diffusionmodules.openaimodel as cheff_openai
+
 def _patch_gradient_checkpointing() -> None:
     def _wrapper(func, inputs, params, flag):
         return torch.utils.checkpoint.checkpoint(func, *inputs, use_reentrant=False)
-
-    import cheff.ldm.modules.diffusionmodules.util as cheff_util
-    import cheff.ldm.modules.attention as cheff_attn
-    import cheff.ldm.modules.diffusionmodules.openaimodel as cheff_openai
 
     cheff_util.checkpoint = _wrapper
     cheff_attn.checkpoint = _wrapper
@@ -55,16 +27,10 @@ def _patch_gradient_checkpointing() -> None:
         cheff_openai.checkpoint = _wrapper
 
 
-# ---------------------------------------------------------------------------
-# Model loading
-# ---------------------------------------------------------------------------
 def load_model(model_path: str, ae_path: str, lora_adapter: str | None,
                device: str):
     """Load CheFF T2I, optionally merging a PEFT adapter saved with save_pretrained."""
     _patch_gradient_checkpointing()
-
-    from cheff.ldm.inference import CheffLDMT2I  # noqa: E402
-    from peft import PeftModel                   # noqa: E402
 
     print(f"Loading CheFF T2I …  ({device})")
     wrapper = CheffLDMT2I(model_path=model_path, ae_path=ae_path, device=device)
@@ -89,10 +55,6 @@ def load_model(model_path: str, ae_path: str, lora_adapter: str | None,
     wrapper.model.eval()
     return wrapper
 
-
-# ---------------------------------------------------------------------------
-# Generation loop
-# ---------------------------------------------------------------------------
 @torch.no_grad()
 def generate_class(wrapper, prompt: str, n: int, out_dir: str,
                    steps: int, eta: float, device: str) -> None:
@@ -107,37 +69,28 @@ def generate_class(wrapper, prompt: str, n: int, out_dir: str,
         image = (image.clamp(-1, 1) + 1) / 2  # [-1,1] → [0,1]
         save_image(image, os.path.join(out_dir, f"{i:06d}.png"))
 
-
-# ---------------------------------------------------------------------------
-# CLI
-# ---------------------------------------------------------------------------
 def main() -> None:
-    # Resolve paths relative to cheff_peft root
-    script_dir = Path(__file__).resolve().parent
-    cheff_peft_root = script_dir.parent
-    project_root = cheff_peft_root.parent
-
     parser = argparse.ArgumentParser(
         description="Generate synthetic VinDr-PCXR images with CheFF T2I"
     )
     parser.add_argument(
-        "--model-path", 
-        default=str(cheff_peft_root / "checkpoints" / "cheff_t2i_ckpt.pt"),
+        "--model-path",
+        default=ftcfg.cheff_t2i_ckpt,
         help="Path to pre-trained CheFF T2I weights"
     )
     parser.add_argument(
-        "--ae-path", 
-        default=str(cheff_peft_root / "checkpoints" / "cheff_ae_ckpt.pt"),
+        "--ae-path",
+        default=ftcfg.cheff_ae_ckpt,
         help="Path to pre-trained CheFF autoencoder weights"
     )
     parser.add_argument(
         "--lora-adapter", default=None,
-        help="Path to PEFT adapter directory saved by finetune_cheff.train "
+        help="Path to PEFT adapter directory saved by finetune.train "
              "(contains adapter_config.json).  Omit to use the base model."
     )
     parser.add_argument(
-        "--output-dir", 
-        default=str(project_root / "data" / "synthetic"),
+        "--output-dir",
+        default=os.path.join(_PROJECT_ROOT, "data", "synthetic"),
         help="Root directory for generated images"
     )
     parser.add_argument(
@@ -153,9 +106,6 @@ def main() -> None:
         help="Subset of classes to generate (default: all 4)"
     )
     args = parser.parse_args()
-
-    # Add cheff source to path
-    sys.path.insert(0, str(cheff_peft_root / "cheff"))
 
     # Validate model files
     for name, path in [("model_path", args.model_path), ("ae_path", args.ae_path)]:

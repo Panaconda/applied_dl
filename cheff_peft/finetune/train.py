@@ -11,12 +11,13 @@ from peft import LoraConfig, get_peft_model
 from torch.utils.data import DataLoader, random_split
 from torchvision.transforms import Compose, Resize, ToTensor, Normalize, InterpolationMode
 
-from finetune_cheff.config import ftcfg
+from config import ftcfg
+
+import cheff.ldm.modules.diffusionmodules.util as cheff_util
+import cheff.ldm.modules.attention as cheff_attn
+import cheff.ldm.modules.diffusionmodules.openaimodel as cheff_openai
 
 
-# ---------------------------------------------------------------------------
-# Gradient-checkpointing patch (must run BEFORE CheFF model imports)
-# ---------------------------------------------------------------------------
 def _patch_gradient_checkpointing() -> None:
     """Replace OpenAI's legacy checkpoint with use_reentrant=False.
 
@@ -24,10 +25,6 @@ def _patch_gradient_checkpointing() -> None:
     """
     def _wrapper(func, inputs, params, flag):
         return torch.utils.checkpoint.checkpoint(func, *inputs, use_reentrant=False)
-
-    import cheff.ldm.modules.diffusionmodules.util as cheff_util
-    import cheff.ldm.modules.attention as cheff_attn
-    import cheff.ldm.modules.diffusionmodules.openaimodel as cheff_openai
 
     cheff_util.checkpoint = _wrapper
     cheff_attn.checkpoint = _wrapper
@@ -38,14 +35,11 @@ def _patch_gradient_checkpointing() -> None:
 
 _patch_gradient_checkpointing()
 
-from cheff.ldm.inference import CheffLDMT2I                     # noqa: E402
-from cheff.machex import MimicT2IDataset                        # noqa: E402
-from cheff.peft_modules.inject_lora import export_lora_weights   # noqa: E402
+from cheff.ldm.inference import CheffLDMT2I # noqa: E402
+from cheff.machex import MimicT2IDataset # noqa: E402
+from cheff.peft_modules.inject_lora import export_lora_weights # noqa: E402
 
 
-# ---------------------------------------------------------------------------
-# LoRA helpers
-# ---------------------------------------------------------------------------
 def apply_lora(model: pl.LightningModule) -> pl.LightningModule:
     """Wrap UNet attention layers with LoRA adapters."""
     target_modules = ".*attn.*(to_q|to_k|to_v|to_out.0)"
@@ -87,9 +81,6 @@ def freeze_non_lora(model: pl.LightningModule) -> None:
         p.requires_grad = "lora_" in name
 
 
-# ---------------------------------------------------------------------------
-# Main
-# ---------------------------------------------------------------------------
 def main() -> None:
     for name, path in [
         ("cheff_t2i_ckpt", ftcfg.cheff_t2i_ckpt),
@@ -99,20 +90,17 @@ def main() -> None:
             print(f"Error: '{name}' not set or file not found ({path!r}).")
             sys.exit(1)
 
-    # ---- seed --------------------------------------------------------------
     pl.seed_everything(ftcfg.seed, workers=True)
     torch.set_float32_matmul_precision("high")
 
-    # ---- load model --------------------------------------------------------
     print("Loading CheFF T2I model …")
     wrapper = CheffLDMT2I(
         model_path=ftcfg.cheff_t2i_ckpt,
         ae_path=ftcfg.cheff_ae_ckpt,
         device="cpu",  # load on CPU first, Trainer moves to GPU
     )
-    model = wrapper.model  # LatentDiffusion (LightningModule)
+    model = wrapper.model
 
-    # ---- apply LoRA --------------------------------------------------------
     print("Applying LoRA …")
     model = apply_lora(model)
     freeze_non_lora(model)
@@ -124,16 +112,12 @@ def main() -> None:
     # Don't include BERT params in the optimizer (we freeze them).
     model.cond_stage_trainable = False
 
-    # PL 1.9.5 does not pass dataloader_idx for single-dataloader setups,
-    # but LatentDiffusion.on_train_batch_start requires it.  Make it optional.
     _orig_otbs = model.on_train_batch_start.__func__
     model.on_train_batch_start = lambda batch, batch_idx, dataloader_idx=0: \
         _orig_otbs(model, batch, batch_idx, dataloader_idx)
 
-    # Set learning rate (used by LatentDiffusion.configure_optimizers)
     model.learning_rate = ftcfg.cheff_learning_rate
 
-    # ---- data --------------------------------------------------------------
     transforms = Compose([
         Resize(256),
         ToTensor(),
@@ -165,7 +149,6 @@ def main() -> None:
         pin_memory=True,
     )
 
-    # ---- trainer -----------------------------------------------------------
     log_dir = os.path.join(ftcfg.runs_dir, ftcfg.run_name)
     logger = CSVLogger(save_dir=log_dir, name="logs")
 
@@ -188,7 +171,6 @@ def main() -> None:
         log_every_n_steps=50,
     )
 
-    # ---- banner ------------------------------------------------------------
     print("=" * 60)
     print("CheFF LoRA Fine-Tuning")
     print("=" * 60)
@@ -202,10 +184,8 @@ def main() -> None:
     print(f"  Log dir:    {log_dir}")
     print("=" * 60)
 
-    # ---- train -------------------------------------------------------------
     trainer.fit(model, train_dataloaders=train_loader, val_dataloaders=val_loader)
 
-    # ---- export LoRA adapter -----------------------------------------------
     export_lora_weights(model, log_dir)
     adapter_dir = os.path.join(log_dir, "lora_adapter")
     print(f"\nLoRA adapter saved to: {adapter_dir}")

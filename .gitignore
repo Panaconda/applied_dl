@@ -12,11 +12,11 @@ checkpoints/
 touch checkpoints/.gitkeep
 cheff_peft/checkpoints
 touch cheff_peft/checkpoints/.gitkeep
-cheff_peft/finetune_cheff/
-
 # runs
 classifier/runs/*
 touch classifier/runs/.gitkeep
+cheff_peft/runs/*
+!cheff_peft/runs/finetune_ref
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
@@ -27,7 +27,7 @@ __pycache__/
 .env
 *.pt
 *.ckpt
-visuals/runs_comparison.csv
+cheff_peft/eval/runs_comparison.csv
 
 # legacy files
 machex

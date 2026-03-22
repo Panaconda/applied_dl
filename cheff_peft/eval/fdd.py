@@ -1,15 +1,3 @@
-"""Fréchet DenseNet Distance (FDD): Real vs LoRA-synthetic vs Base-synthetic CXR.
-
-Computes FDD between the real VinDr-PCXR distribution and two synthetic
-distributions (LoRA-fine-tuned and base CheFF), using 1024-d XRV DenseNet121
-features as the feature space.
-
-Usage (from project root):
-    python -m visuals.fdd \\
-        --lora-dir  data/synthetic_lora \\
-        --base-dir  data/synthetic_base \\
-        --output    visuals/runs/fdd.txt
-"""
 from __future__ import annotations
 
 import argparse
@@ -29,17 +17,16 @@ import torchxrayvision as xrv
 from PIL import Image
 from tqdm import tqdm
 
-# Ensure project root and cheff_peft are importable from any working directory
-_PROJECT_ROOT = str(Path(__file__).resolve().parents[1])
-_CHEFF_PEFT_ROOT = os.path.join(_PROJECT_ROOT, "cheff_peft")
-for _p in [_PROJECT_ROOT, _CHEFF_PEFT_ROOT]:
-    if _p not in sys.path:
-        sys.path.insert(0, _p)
+# Make project root importable (needed for classifier.* imports)
+_CHEFF_PEFT_ROOT = str(Path(__file__).resolve().parents[1])
+_PROJECT_ROOT = str(Path(__file__).resolve().parents[2])
+if _PROJECT_ROOT not in sys.path:
+    sys.path.insert(0, _PROJECT_ROOT)
 
 from classifier.core.config import cfg
 from classifier.core.dataset import build_transform, load_image_id_map, load_labels
-from sample_cheff.generate_synthetic import CLASS_PROMPTS, load_model
-from visuals.umap_latent import (
+from inference.generate import CLASS_PROMPTS, load_model
+from eval.umap import (
     PATHOLOGY_CLASSES,
     generate_base_images,
     sample_lora_paths,
@@ -131,7 +118,7 @@ def main() -> None:
     parser.add_argument("--steps", type=int, default=50,
                         help="DDIM steps for on-the-fly base generation (ignored when --base-dir is set)")
     parser.add_argument("--eta", type=float, default=1.0)
-    parser.add_argument("--output", default="visuals/runs/fdd.csv")
+    parser.add_argument("--output", default="eval/runs/fdd.csv")
     parser.add_argument("--device", default="cuda" if torch.cuda.is_available() else "cpu")
     parser.add_argument("--batch-size", type=int, default=32)
     parser.add_argument("--seed", type=int, default=42)

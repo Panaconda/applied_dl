@@ -1,9 +1,9 @@
 #!/bin/bash
-# Run from ./cheff_peft folder
+# Run from the project root (~/applied_dl)
 
 #SBATCH -p mcml-dgx-a100-40x8
 #SBATCH --qos=mcml
-#SBATCH --job-name=finetune_cheff
+#SBATCH --job-name=finetune
 #SBATCH --output=cheff_peft/runs/slurm_%j.out
 #SBATCH --error=cheff_peft/runs/slurm_%j.err
 #SBATCH --ntasks=1
@@ -27,7 +27,7 @@ mamba activate adl_env
 
 # --- 2. Configuration via Environment Variables ---
 
-export RUN_NAME="finetune_cheff_slurm_${SLURM_JOB_ID}"
+export RUN_NAME="finetune_slurm_${SLURM_JOB_ID}"
 
 # Data & Model Paths
 export DATA_DIR="${DATA_DIR:-$MCMLSCRATCH/data/pcxr_png}"
@@ -42,7 +42,7 @@ echo "Run Name: ${RUN_NAME}"
 
 cd ~/applied_dl/cheff_peft
 mkdir -p runs
-python -m finetune_cheff.train
+python -m finetune.train
 
 # Move SLURM logs into the run directory
 LOG_TARGET="runs/${RUN_NAME}/"

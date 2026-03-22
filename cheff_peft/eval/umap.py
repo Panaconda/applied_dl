@@ -1,17 +1,3 @@
-"""UMAP latent-space visualization: Real vs LoRA-synthetic vs Base-synthetic CXR.
-
-Extracts 1024-d XRV DenseNet121 features from three image sources and projects
-them into 2D with UMAP, producing a scatter plot colored by source.
-
-Usage (from project root):
-    python -m visuals.umap_latent \\
-        --lora-dir  data/synthetic_lora \\
-        --base-dir  data/synthetic_base \\
-        --output    visuals/runs/umap_latent.png
-
-If --base-dir is omitted, base images are generated on-the-fly from the
-pretrained CheFF model (requires --model-path and --ae-path).
-"""
 from __future__ import annotations
 
 import argparse
@@ -21,12 +7,11 @@ import sys
 from glob import glob
 from pathlib import Path
 
-# Ensure project root and cheff_peft are importable from any working directory
-_PROJECT_ROOT = str(Path(__file__).resolve().parents[1])
-_CHEFF_PEFT_ROOT = os.path.join(_PROJECT_ROOT, "cheff_peft")
-for _p in [_PROJECT_ROOT, _CHEFF_PEFT_ROOT]:
-    if _p not in sys.path:
-        sys.path.insert(0, _p)
+# Make project root importable (needed for classifier.* imports)
+_CHEFF_PEFT_ROOT = str(Path(__file__).resolve().parents[1])
+_PROJECT_ROOT = str(Path(__file__).resolve().parents[2])
+if _PROJECT_ROOT not in sys.path:
+    sys.path.insert(0, _PROJECT_ROOT)
 
 import matplotlib
 matplotlib.use("Agg")
@@ -43,7 +28,7 @@ from classifier.core.config import cfg
 from classifier.core.dataset import build_transform, load_image_id_map, load_labels
 
 # Reuse class prompts & model loader from generation script
-from sample_cheff.generate_synthetic import CLASS_PROMPTS, load_model
+from inference.generate import CLASS_PROMPTS, load_model
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -251,7 +236,7 @@ def main() -> None:
     parser.add_argument("--steps", type=int, default=100,
                         help="DDIM sampling steps (only used when --base-dir is not set)")
     parser.add_argument("--eta", type=float, default=1.0)
-    parser.add_argument("--output", default="visuals/runs/umap_latent.png")
+    parser.add_argument("--output", default="eval/runs/umap.png")
     parser.add_argument("--device", default="cuda" if torch.cuda.is_available() else "cpu")
     parser.add_argument("--seed", type=int, default=42)
     parser.add_argument("--batch-size", type=int, default=32)

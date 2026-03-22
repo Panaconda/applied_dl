@@ -1,19 +1,18 @@
 from __future__ import annotations
 
 import os
-from typing import List
+import sys
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
-_FINETUNE_DIR = os.path.dirname(os.path.abspath(__file__))
-_CHEFF_PEFT_ROOT = os.path.dirname(_FINETUNE_DIR)
+_CHEFF_PEFT_ROOT = os.path.dirname(os.path.abspath(__file__))
 _PROJECT_ROOT = os.path.dirname(_CHEFF_PEFT_ROOT)
-_ENV_FILE = os.path.join(_PROJECT_ROOT, ".env")
 
-class FinetuneCheffConfig(BaseSettings):
+# Make the bundled cheff source importable
+sys.path.insert(0, os.path.join(_CHEFF_PEFT_ROOT, "cheff"))
+
+class FinetuneConfig(BaseSettings):
 
     model_config = SettingsConfigDict(
-        env_file=_ENV_FILE,
-        env_file_encoding="utf-8",
         extra="ignore",
     )
 
@@ -43,12 +42,12 @@ class FinetuneCheffConfig(BaseSettings):
     cheff_max_epochs: int = 15
     seed: int = 42
 
-    run_name: str = "finetune_cheff"
+    run_name: str = "finetune"
 
     @property
     def runs_dir(self) -> str:
-        d = os.path.join(_FINETUNE_DIR, "runs")
+        d = os.path.join(_CHEFF_PEFT_ROOT, "runs")
         os.makedirs(d, exist_ok=True)
         return d
 
-ftcfg = FinetuneCheffConfig()
+ftcfg = FinetuneConfig()
