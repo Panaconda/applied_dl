@@ -6,9 +6,15 @@ Medical imaging suffers from inherent data scarcity, which is especially pronoun
 
 This project explores the adaptation of Cheff, a cascaded latent diffusion model primarily trained on adult CXRs. By applying Parameter-Efficient Fine-Tuning via Low-Rank Adaptation (LoRA), we aim to generate high-fidelity synthetic pediatric radiographs. The objective is to determine whether augmenting real datasets with these synthetic samples can improve pathology classifier performance in data-constrained scenarios.
 
+## Related Literature
+
+To provide perspective on the results of our pathology classifier, we refer to the three-stage framework proposed by Zhang et al. Similar to our approach, they trained a ResNet architecture on the VinDr-PCXR dataset. While our synthetic augmentation does not outperform their framework, the proximity of our metrics confirms that the adapted Cheff model generates samples within a valid performance range.
+
+To put our results into perspective, the paper **Three-Stage Framework for Accurate Pediatric Chest X-ray Diagnosis Using Self-Supervision and Transfer Learning on Small Datasets** from Zhang et al. might be of interest. They also trained a Resnet on the VinDr-PCXR dataset. While we were not able to outperform them, it proves that our results are within a valid range of what is to be expected.
+
 ## Data
 
-The project utilizes the **VinDr-PCXR** dataset, a large-scale collection of pediatric chest X-rays.
+The project utilizes the VinDr-PCXR dataset, a large-scale collection of pediatric chest X-rays.
 
 - **Content**: DICOM images annotated for various pathologies including Bronchitis, Bronchiolitis, Pleural Effusion, and Pneumonia.
 - **Challenges**: The distinct anatomical features of pediatric patients compared to adults make this a challenging domain for standard generative models and hence requires adaptation.
@@ -38,3 +44,4 @@ Preliminary results indicate the following:
 - **Cheff Model**: Weber, T., Ingrisch, M., Bischl, B., & Rügamer, D. (2023). Cascaded Latent Diffusion Models for High-Resolution Chest X-ray Synthesis. Advances in Knowledge Discovery and Data Mining: 27th Pacific-Asia Conference, PAKDD 2023
 - **VinDr-PCXR Dataset**: Pham, H. H., Tran, T. T., & Nguyen, H. Q. (2022). VinDr-PCXR: An open, large-scale pediatric chest X-ray dataset for interpretation of common thoracic diseases. PhysioNet
 - **TorchXRayVision**: Cohen, J. P., Viviano, J. D., Bertin, P., Morrison, P., Torabian, P., Guarrera, M., ... & Bertrand, H. (2021). TorchXRayVision: A library of chest X-ray datasets and models. arXiv preprint arXiv:2111.00595
+- **Three-stage pathology classifier**: Zhang, Y., Kohne, J., Wittrup, E., & Najarian, K. (2024). Three-Stage Framework for Accurate Pediatric Chest X-ray Diagnosis Using Self-Supervision and Transfer Learning on Small Datasets. Diagnostics, 14(15), 1634.
