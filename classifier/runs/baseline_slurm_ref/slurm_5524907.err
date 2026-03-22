@@ -1,0 +1,54 @@
+[rank: 0] Seed set to 42
+Using 16bit Automatic Mixed Precision (AMP)
+GPU available: True (cuda), used: True
+TPU available: False, using: 0 TPU cores
+LOCAL_RANK: 0 - CUDA_VISIBLE_DEVICES: [MIG-290a7e87-1d01-512d-b416-9f942ab91e68]
+
+  | Name      | Type              | Params | Mode  | FLOPs
+----------------------------------------------------------------
+0 | model     | DenseNet          | 7.0 M  | eval  | 0    
+1 | criterion | BCEWithLogitsLoss | 0      | train | 0    
+----------------------------------------------------------------
+6.2 K     Trainable params
+6.9 M     Non-trainable params
+7.0 M     Total params
+27.815    Total estimated model params size (MB)
+2         Modules in train mode
+432       Modules in eval mode
+0         Total Flops
+SLURM auto-requeueing enabled. Setting signal handlers.
+Metric val/auroc improved. New best score: 0.649
+Metric val/auroc improved by 0.027 >= min_delta = 0.0. New best score: 0.676
+Metric val/auroc improved by 0.006 >= min_delta = 0.0. New best score: 0.683
+Metric val/auroc improved by 0.004 >= min_delta = 0.0. New best score: 0.686
+Metric val/auroc improved by 0.001 >= min_delta = 0.0. New best score: 0.687
+Metric val/auroc improved by 0.001 >= min_delta = 0.0. New best score: 0.689
+Metric val/auroc improved by 0.001 >= min_delta = 0.0. New best score: 0.689
+Metric val/auroc improved by 0.002 >= min_delta = 0.0. New best score: 0.692
+Metric val/auroc improved by 0.003 >= min_delta = 0.0. New best score: 0.694
+Metric val/auroc improved by 0.003 >= min_delta = 0.0. New best score: 0.697
+Metric val/auroc improved by 0.004 >= min_delta = 0.0. New best score: 0.701
+Metric val/auroc improved by 0.002 >= min_delta = 0.0. New best score: 0.703
+Metric val/auroc improved by 0.002 >= min_delta = 0.0. New best score: 0.706
+Metric val/auroc improved by 0.002 >= min_delta = 0.0. New best score: 0.708
+Metric val/auroc improved by 0.001 >= min_delta = 0.0. New best score: 0.709
+Metric val/auroc improved by 0.003 >= min_delta = 0.0. New best score: 0.712
+Metric val/auroc improved by 0.001 >= min_delta = 0.0. New best score: 0.713
+Metric val/auroc improved by 0.001 >= min_delta = 0.0. New best score: 0.715
+Metric val/auroc improved by 0.002 >= min_delta = 0.0. New best score: 0.716
+Metric val/auroc improved by 0.001 >= min_delta = 0.0. New best score: 0.717
+Metric val/auroc improved by 0.001 >= min_delta = 0.0. New best score: 0.718
+Metric val/auroc improved by 0.002 >= min_delta = 0.0. New best score: 0.720
+Metric val/auroc improved by 0.000 >= min_delta = 0.0. New best score: 0.720
+Metric val/auroc improved by 0.001 >= min_delta = 0.0. New best score: 0.721
+Metric val/auroc improved by 0.002 >= min_delta = 0.0. New best score: 0.723
+Metric val/auroc improved by 0.001 >= min_delta = 0.0. New best score: 0.724
+Metric val/auroc improved by 0.001 >= min_delta = 0.0. New best score: 0.725
+Metric val/auroc improved by 0.002 >= min_delta = 0.0. New best score: 0.727
+Metric val/auroc improved by 0.001 >= min_delta = 0.0. New best score: 0.728
+Metric val/auroc improved by 0.001 >= min_delta = 0.0. New best score: 0.728
+Metric val/auroc improved by 0.001 >= min_delta = 0.0. New best score: 0.729
+Metric val/auroc improved by 0.000 >= min_delta = 0.0. New best score: 0.729
+Metric val/auroc improved by 0.000 >= min_delta = 0.0. New best score: 0.729
+Metric val/auroc improved by 0.000 >= min_delta = 0.0. New best score: 0.730
+Monitored metric val/auroc did not improve in the last 8 records. Best score: 0.730. Signaling Trainer to stop.

@@ -1,0 +1,10 @@
+{
+  "target_pathology": "Brocho-pneumonia",
+  "threshold": 0.7,
+  "total_evaluated": 1000,
+  "accepted": 365,
+  "discarded": 635,
+  "yield_rate": 0.365,
+  "score_mean": 0.5745767031367868,
+  "score_median": 0.615829348564148
+}

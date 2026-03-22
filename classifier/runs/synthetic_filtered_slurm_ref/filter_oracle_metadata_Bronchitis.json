@@ -1,0 +1,10 @@
+{
+  "target_pathology": "Bronchitis",
+  "threshold": 0.7,
+  "total_evaluated": 1000,
+  "accepted": 68,
+  "discarded": 932,
+  "yield_rate": 0.068,
+  "score_mean": 0.46147212564200163,
+  "score_median": 0.46471793949604034
+}

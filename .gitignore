@@ -15,7 +15,7 @@ touch cheff_peft/checkpoints/.gitkeep
 cheff_peft/finetune_cheff/
 
 # runs
-classifier/runs
+classifier/runs/*
 touch classifier/runs/.gitkeep
 
 # Byte-compiled / optimized / DLL files
@@ -31,3 +31,8 @@ visuals/runs_comparison.csv
 
 # legacy files
 machex
+
+# references (files added for showing output)
+!classifier/runs/baseline_slurm_ref
+!classifier/runs/synthetic_slurm_ref
+!classifier/runs/synthetic_filtered_slurm_ref

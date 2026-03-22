@@ -1,0 +1,10 @@
+{
+  "target_pathology": "Pneumonia",
+  "threshold": 0.7,
+  "total_evaluated": 1000,
+  "accepted": 345,
+  "discarded": 655,
+  "yield_rate": 0.345,
+  "score_mean": 0.5202903465600685,
+  "score_median": 0.5385953187942505
+}
