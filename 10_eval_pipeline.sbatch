@@ -26,7 +26,7 @@ if [ -f .env ]; then
 fi
 
 # Fallbacks if .env not present
-DATA_DIR="${DATA_DIR:-$MCMLSCRATCH/data}"
+DATA_DIR="${DATA_DIR:-$MCMLSCRATCH/data/pcxr_png}"
 CKPT_DIR="${CKPT_DIR:-$MCMLSCRATCH/checkpoints}"
 
 # --- 2. Environment Setup ----------------------------------------------------------
