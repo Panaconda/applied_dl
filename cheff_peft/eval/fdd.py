@@ -9,20 +9,18 @@ from pathlib import Path
 import numpy as np
 import scipy.linalg
 import torch
-import torch.nn.functional as F
-import torchxrayvision as xrv
-from tqdm import tqdm
 
 from config import _CHEFF_PEFT_ROOT
-from inference.generate import load_model
-from eval.umap import (
+from eval.shared import (
     build_transform,
+    extract_features,
     generate_base_images,
-    sample_lora_paths,
-    sample_real_paths,
     load_paths_as_tensors,
     pils_to_tensors,
+    sample_lora_paths,
+    sample_real_paths,
 )
+from inference.generate import load_model
 
 
 def compute_frechet_distance(
@@ -54,25 +52,6 @@ def gaussian_stats(features: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
     mu = features.mean(axis=0)
     sigma = np.cov(features, rowvar=False)
     return mu, sigma
-
-
-@torch.no_grad()
-def extract_features(
-    tensors: list[torch.Tensor], device: str, batch_size: int = 32
-) -> np.ndarray:
-    """Extract 1024-d XRV DenseNet121 features from a list of image tensors."""
-    model = xrv.models.DenseNet(weights="densenet121-res224-all").to(device).eval()
-    features: list[np.ndarray] = []
-    for i in tqdm(range(0, len(tensors), batch_size), desc="Extracting features", leave=False):
-        batch = torch.stack(tensors[i : i + batch_size]).to(device)
-        feats = model.features(batch) # (B, 1024, 7, 7)
-        feats = F.relu(feats, inplace=False)
-        feats = F.adaptive_avg_pool2d(feats, (1, 1)) # (B, 1024, 1, 1)
-        feats = feats.view(feats.size(0), -1).cpu().numpy() # (B, 1024)
-        features.append(feats)
-    del model
-    torch.cuda.empty_cache()
-    return np.vstack(features)
 
 
 def main() -> None:
