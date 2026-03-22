@@ -3,6 +3,8 @@ from __future__ import annotations
 import argparse
 import csv
 import os
+import sys
+from pathlib import Path
 
 import numpy as np
 import scipy.linalg
@@ -12,7 +14,7 @@ import torchxrayvision as xrv
 from tqdm import tqdm
 
 from config import _CHEFF_PEFT_ROOT
-from inference.generate import CLASS_PROMPTS, load_model
+from inference.generate import load_model
 from eval.umap import (
     build_transform,
     generate_base_images,
