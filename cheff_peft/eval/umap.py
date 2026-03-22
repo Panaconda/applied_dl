@@ -1,57 +1,73 @@
 from __future__ import annotations
 
 import argparse
+import json
 import os
 import random
-import sys
 from glob import glob
-from pathlib import Path
-
-# Make project root importable (needed for classifier.* imports)
-_CHEFF_PEFT_ROOT = str(Path(__file__).resolve().parents[1])
-_PROJECT_ROOT = str(Path(__file__).resolve().parents[2])
-if _PROJECT_ROOT not in sys.path:
-    sys.path.insert(0, _PROJECT_ROOT)
 
 import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import numpy as np
+import pandas as pd
 import torch
 import torch.nn.functional as F
 import torchxrayvision as xrv
 import umap
 from PIL import Image
+from torchvision.transforms.functional import InterpolationMode
+from torchvision.transforms.functional import resize as tv_resize
 from tqdm import tqdm
 
-from classifier.core.config import cfg
-from classifier.core.dataset import build_transform, load_image_id_map, load_labels
-
-# Reuse class prompts & model loader from generation script
+from config import ftcfg, _CHEFF_PEFT_ROOT
 from inference.generate import CLASS_PROMPTS, load_model
 
-# ---------------------------------------------------------------------------
-# Constants
-# ---------------------------------------------------------------------------
 PATHOLOGY_CLASSES = ["Pneumonia", "Bronchitis", "Bronchiolitis", "Brocho-pneumonia"]
 
+
+def _load_labels(csv_path: str) -> pd.DataFrame:
+    df = pd.read_csv(csv_path)
+    label_cols = [c for c in df.columns if c not in ("image_id", "rad_ID")]
+    df = df.groupby("image_id")[label_cols].max().astype(int)
+    return df[[c for c in PATHOLOGY_CLASSES if c in df.columns]]
+
+
+def _load_image_id_map(index_json_path: str, image_dir: str) -> dict[str, str]:
+    with open(index_json_path) as f:
+        index = json.load(f)
+    return {
+        entry["key"].replace(".dicom", ""): os.path.join(image_dir, f"{seq_key}.jpg")
+        for seq_key, entry in index.items()
+    }
+
+
+def build_transform(size: int = 224):
+    """Return an XRV-normalised image transform (PIL → [1, size, size] tensor)."""
+    def transform(img: Image.Image) -> torch.Tensor:
+        arr = np.array(img.convert("L")).astype(np.float32)
+        arr = xrv.datasets.normalize(arr, maxval=255)
+        tensor = torch.from_numpy(arr).unsqueeze(0)
+        tensor = tv_resize(
+            tensor, [size, size],
+            interpolation=InterpolationMode.BICUBIC, antialias=True,
+        )
+        return torch.clamp(tensor, -1024, 1024)
+    return transform
+
+
 SET_LABELS = {0: "Real", 1: "LoRA Synthetic", 2: "Base Synthetic"}
-SET_COLORS = {0: "#1f77b4", 1: "#ff7f0e", 2: "#2ca02c"}  # blue, orange, green
+SET_COLORS = {0: "#1f77b4", 1: "#ff7f0e", 2: "#2ca02c"}
 
-
-# ---------------------------------------------------------------------------
-# 1. Sample real images
-# ---------------------------------------------------------------------------
 def sample_real_paths(n_train: int = 100, n_test: int = 100, seed: int = 42) -> list[str]:
     """Return paths for 200 real images balanced across 4 pathology classes."""
     rng = random.Random(seed)
-    per_cls_train = n_train // len(PATHOLOGY_CLASSES)  # 25
-    per_cls_test = n_test // len(PATHOLOGY_CLASSES)    # 25
+    per_cls_train = n_train // len(PATHOLOGY_CLASSES)
+    per_cls_test = n_test // len(PATHOLOGY_CLASSES)
     paths: list[str] = []
 
-    # Derived paths
-    train_image_dir = os.path.join(cfg.data_dir, "pcxr_png", "train")
-    test_image_dir = os.path.join(cfg.data_dir, "pcxr_png", "test")
+    train_image_dir = os.path.join(ftcfg.data_dir, "train")
+    test_image_dir = os.path.join(ftcfg.data_dir, "test")
     train_labels_csv = os.path.join(train_image_dir, "image_labels_train.csv")
     test_labels_csv = os.path.join(test_image_dir, "image_labels_test.csv")
     train_index_json = os.path.join(train_image_dir, "index.json")
@@ -61,9 +77,9 @@ def sample_real_paths(n_train: int = 100, n_test: int = 100, seed: int = 42) -> 
         (train_image_dir, train_labels_csv, train_index_json, per_cls_train),
         (test_image_dir, test_labels_csv, test_index_json, per_cls_test),
     ]:
-        labels = load_labels(csv_path)
+        labels = _load_labels(csv_path)
         # Build image_id → file path mapping (handles sequential JPG names)
-        id_map = load_image_id_map(index_json, image_dir) if index_json else {}
+        id_map = _load_image_id_map(index_json, image_dir) if index_json else {}
         for cls in PATHOLOGY_CLASSES:
             positive_ids = labels[labels[cls] == 1].index.tolist()
             sampled = rng.sample(positive_ids, min(per_cls, len(positive_ids)))
@@ -74,9 +90,6 @@ def sample_real_paths(n_train: int = 100, n_test: int = 100, seed: int = 42) -> 
     return paths
 
 
-# ---------------------------------------------------------------------------
-# 2. Sample existing LoRA synthetic images
-# ---------------------------------------------------------------------------
 def sample_lora_paths(lora_dir: str, per_class: int = 50, seed: int = 42) -> list[str]:
     """Return paths for 200 LoRA-synthetic images (50 per pathology class)."""
     rng = random.Random(seed)
@@ -93,9 +106,6 @@ def sample_lora_paths(lora_dir: str, per_class: int = 50, seed: int = 42) -> lis
     return paths
 
 
-# ---------------------------------------------------------------------------
-# 3. Generate base CheFF images (no LoRA)
-# ---------------------------------------------------------------------------
 @torch.no_grad()
 def generate_base_images(
     wrapper, per_class: int = 50, steps: int = 100, eta: float = 1.0
@@ -120,9 +130,6 @@ def generate_base_images(
     return images
 
 
-# ---------------------------------------------------------------------------
-# 4. Feature extraction with pretrained XRV
-# ---------------------------------------------------------------------------
 @torch.no_grad()
 def extract_features(
     tensors: list[torch.Tensor], device: str, batch_size: int = 32
@@ -142,10 +149,10 @@ def extract_features(
     features: list[np.ndarray] = []
     for i in tqdm(range(0, len(tensors), batch_size), desc="Extracting features"):
         batch = torch.stack(tensors[i : i + batch_size]).to(device)
-        feats = model.features(batch)                          # (B, 1024, 7, 7)
+        feats = model.features(batch) # (B, 1024, 7, 7)
         feats = F.relu(feats, inplace=False)
-        feats = F.adaptive_avg_pool2d(feats, (1, 1))           # (B, 1024, 1, 1)
-        feats = feats.view(feats.size(0), -1)                  # (B, 1024)
+        feats = F.adaptive_avg_pool2d(feats, (1, 1)) # (B, 1024, 1, 1)
+        feats = feats.view(feats.size(0), -1) # (B, 1024)
         features.append(feats.cpu().numpy())
 
     del model
@@ -153,9 +160,6 @@ def extract_features(
     return np.vstack(features)
 
 
-# ---------------------------------------------------------------------------
-# Helpers
-# ---------------------------------------------------------------------------
 def load_paths_as_tensors(paths: list[str], transform) -> list[torch.Tensor]:
     """Load image files and apply XRV transform."""
     return [transform(Image.open(p)) for p in tqdm(paths, desc="Loading images")]
@@ -166,9 +170,6 @@ def pils_to_tensors(pil_images: list[Image.Image], transform) -> list[torch.Tens
     return [transform(img) for img in pil_images]
 
 
-# ---------------------------------------------------------------------------
-# 5. UMAP + plot
-# ---------------------------------------------------------------------------
 def fit_and_plot(
     X_real: np.ndarray,
     X_lora: np.ndarray,
@@ -213,9 +214,6 @@ def fit_and_plot(
     print(f"Plot saved to {output_path}")
 
 
-# ---------------------------------------------------------------------------
-# CLI
-# ---------------------------------------------------------------------------
 def main() -> None:
     parser = argparse.ArgumentParser(description="UMAP latent-space evaluation")
     parser.add_argument(

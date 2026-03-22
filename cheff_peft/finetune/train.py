@@ -9,7 +9,7 @@ from pytorch_lightning.callbacks import ModelCheckpoint
 from pytorch_lightning.loggers import CSVLogger
 from peft import LoraConfig, get_peft_model
 from torch.utils.data import DataLoader, random_split
-from torchvision.transforms import Compose, Resize, ToTensor, Normalize, InterpolationMode
+from torchvision.transforms import Compose, Resize, ToTensor, Normalize
 
 from config import ftcfg
 

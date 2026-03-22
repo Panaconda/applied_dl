@@ -1,33 +1,20 @@
 from __future__ import annotations
 
 import argparse
-import os
-import random
-import sys
-from glob import glob
-from pathlib import Path
-
 import csv
+import os
 
 import numpy as np
 import scipy.linalg
 import torch
 import torch.nn.functional as F
 import torchxrayvision as xrv
-from PIL import Image
 from tqdm import tqdm
 
-# Make project root importable (needed for classifier.* imports)
-_CHEFF_PEFT_ROOT = str(Path(__file__).resolve().parents[1])
-_PROJECT_ROOT = str(Path(__file__).resolve().parents[2])
-if _PROJECT_ROOT not in sys.path:
-    sys.path.insert(0, _PROJECT_ROOT)
-
-from classifier.core.config import cfg
-from classifier.core.dataset import build_transform, load_image_id_map, load_labels
+from config import _CHEFF_PEFT_ROOT
 from inference.generate import CLASS_PROMPTS, load_model
 from eval.umap import (
-    PATHOLOGY_CLASSES,
+    build_transform,
     generate_base_images,
     sample_lora_paths,
     sample_real_paths,
@@ -35,9 +22,6 @@ from eval.umap import (
     pils_to_tensors,
 )
 
-# ---------------------------------------------------------------------------
-# Fréchet distance
-# ---------------------------------------------------------------------------
 
 def compute_frechet_distance(
     mu1: np.ndarray, sigma1: np.ndarray,
@@ -70,10 +54,6 @@ def gaussian_stats(features: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
     return mu, sigma
 
 
-# ---------------------------------------------------------------------------
-# Feature extraction
-# ---------------------------------------------------------------------------
-
 @torch.no_grad()
 def extract_features(
     tensors: list[torch.Tensor], device: str, batch_size: int = 32
@@ -83,19 +63,15 @@ def extract_features(
     features: list[np.ndarray] = []
     for i in tqdm(range(0, len(tensors), batch_size), desc="Extracting features", leave=False):
         batch = torch.stack(tensors[i : i + batch_size]).to(device)
-        feats = model.features(batch)                        # (B, 1024, 7, 7)
+        feats = model.features(batch) # (B, 1024, 7, 7)
         feats = F.relu(feats, inplace=False)
-        feats = F.adaptive_avg_pool2d(feats, (1, 1))         # (B, 1024, 1, 1)
-        feats = feats.view(feats.size(0), -1).cpu().numpy()  # (B, 1024)
+        feats = F.adaptive_avg_pool2d(feats, (1, 1)) # (B, 1024, 1, 1)
+        feats = feats.view(feats.size(0), -1).cpu().numpy() # (B, 1024)
         features.append(feats)
     del model
     torch.cuda.empty_cache()
     return np.vstack(features)
 
-
-# ---------------------------------------------------------------------------
-# CLI
-# ---------------------------------------------------------------------------
 
 def main() -> None:
     parser = argparse.ArgumentParser(description="Compute FDD: real vs synthetic CXRs")
