@@ -25,9 +25,8 @@ if [ -f .env ]; then
     set -a; source .env; set +a
 fi
 
-# Fallbacks if .env not present
-DATA_DIR="${DATA_DIR:-$MCMLSCRATCH/data/pcxr_png}"
-CKPT_DIR="${CKPT_DIR:-$MCMLSCRATCH/checkpoints}"
+export DATA_DIR="${DATA_DIR:-$MCMLSCRATCH/data/pcxr_png}"
+export CKPT_DIR="${CKPT_DIR:-$MCMLSCRATCH/checkpoints}"
 
 # --- 2. Environment Setup ----------------------------------------------------------
 source ~/.bashrc
