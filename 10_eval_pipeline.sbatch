@@ -93,8 +93,6 @@ fi
 echo ""
 echo "=== Step 3/4  UMAP ==="
 cd "${HOME}/applied_dl/cheff_peft"
-# Point classifier config to scratch data (image_labels_*.csv live there)
-export DATA_DIR="${DATA_DIR}"
 python -m eval.umap \
     --lora-dir  "${SYNTH_LORA}" \
     --base-dir  "${SYNTH_BASE}" \
