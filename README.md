@@ -3,7 +3,9 @@
 ## Overview
 
 This repository provides a pipeline for adapting the diffusion model Cheff, predominantly trained on adult Chest x-ray scans to the pediatric domain. The project evaluates how Parameter-Efficient Fine-Tuning (PEFT) via LoRA can alleviate data scarcity in the PCXR domain for pathology classification.
+
 More information on the context of the research can be found in results/proposal.md.
+
 The main results of the project are shown in results/results_summary.ipynb
 
 ## Repository Structure:
